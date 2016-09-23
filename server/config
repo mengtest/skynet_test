@@ -1,6 +1,6 @@
-skynet_root = "../3rd/skynet/"
-root = "./"
-common = "../common/"
+skynet_root = "./3rd/skynet/"
+root = "./server/"
+common = "./common/"
 thread = 8
 harbor = 0
 start = "main"

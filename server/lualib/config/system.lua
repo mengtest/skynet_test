@@ -1,3 +1,5 @@
 local config = {}
 
-config.debug_port = 8000
+config.debug_port = 8123
+
+return config
