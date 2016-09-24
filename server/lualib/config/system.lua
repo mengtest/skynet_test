@@ -1,6 +1,7 @@
 local config = {}
 
 config.debug_port = 8123
+config.log_level = 1
 
 config.logind = {
 	host = "127.0.0.1",
