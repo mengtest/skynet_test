@@ -1,13 +1,9 @@
 local login = require "snax.loginserver"
 local crypt = require "crypt"
 local skynet = require "skynet"
+local config = require "config.system"
 
-local server = {
-	host = "127.0.0.1",
-	port = 8001,
-	multilogin = false,	-- disallow multilogin
-	name = "login_master",
-}
+local server = config.logind
 
 --服务器列表
 local server_list = {}

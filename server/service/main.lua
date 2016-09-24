@@ -8,9 +8,5 @@ skynet.start(function()
 	local loginserver = skynet.newservice("logind")
 	local gate = skynet.newservice("gated",loginserver)
 
-	skynet.call(gate,"lua","open",{
-			port = 8547,
-			maxclient = 64,
-			servername = "sample",
-		})
+	skynet.call(gate,"lua","open",config.gated)
 end)
