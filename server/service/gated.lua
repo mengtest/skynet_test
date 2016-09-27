@@ -1,6 +1,7 @@
 local msgserver = require "snax.msgserver"
 local crypt = require "crypt"
 local skynet = require "skynet"
+local log = require "base.syslog"
 
 local loginservice = tonumber(...)
 
@@ -14,7 +15,7 @@ local internal_id = 0
 --login server通知用户登陆game server
 function server.login_handler(uid, secret)
 	if users[uid] then
-		error(string.format("%s is already login", uid))
+		log.warningf("%s is already login", uid)
 	end
 
 	internal_id = internal_id + 1

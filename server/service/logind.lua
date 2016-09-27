@@ -2,6 +2,7 @@ local login = require "snax.loginserver"
 local crypt = require "crypt"
 local skynet = require "skynet"
 local config = require "config.system"
+local log = require "base.syslog"
 
 local server = config.logind
 
@@ -15,21 +16,21 @@ local user_login = {}
 --认证
 --在这个方法内做远程调用（skynet.call）是安全的。
 function server.auth_handler(token)
-	print("调用server.auth_handler："..token)
+	log.debugf("调用server.auth_handler："..token)
 	-- the token is base64(user)@base64(server):base64(password)
 	local user, server, password = token:match("([^@]+)@([^:]+):(.+)")
 	user = crypt.base64decode(user)
 	server = crypt.base64decode(server)
 	password = crypt.base64decode(password)
 	assert(password == "password", "Invalid password")
-	print("user:"..user.." server:"..server.." password:"..password)
+	log.debugf("user:"..user.." server:"..server.." password:"..password)
 	return server, user
 end
 
 --登陆到游戏服务器
 function server.login_handler(server, uid, secret)
-	print("调用server.login_handler:".." server:"..server.." uid:"..uid.." secret:"..secret)
-	print(string.format("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret)))
+	log.debugf("调用server.login_handler:".." server:"..server.." uid:"..uid.." secret:"..secret)
+	log.noticef("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret))
 	--校验要登陆的服务器是否存在
 	--gate启动的时候注册到server_list了
 	local gameserver = assert(server_list[server], "Unknown server")
@@ -40,7 +41,7 @@ function server.login_handler(server, uid, secret)
 		skynet.call(last.address, "lua", "kick", uid, last.subid)
 	end
 	if user_online[uid] then
-		error(string.format("user %s is already online", uid))
+		log.warningf("user %s is already online", uid)
 	end
 	--向服务器发送登陆请求
 	local subid = tostring(skynet.call(gameserver, "lua", "login", uid, secret))
@@ -52,22 +53,22 @@ local CMD = {}
 
 --注册一个服务器
 function CMD.register_gate(server, address)
-	print("调用server.login_handler:".." server:"..server.." address:"..address)
+	log.debugf("调用server.login_handler:".." server:"..server.." address:"..address)
 	server_list[server] = address
 end
 
 --玩家下线
 function CMD.logout(uid, subid)
-	print("调用CMD.logout:".." uid:"..uid.." subid:"..subid)
+	log.debugf("调用CMD.logout:".." uid:"..uid.." subid:"..subid)
 	local u = user_online[uid]
 	if u then
-		print(string.format("%s@%s is logout", uid, u.server))
+		log.noticef("%s@%s is logout", uid, u.server)
 		user_online[uid] = nil
 	end
 end
 
 function server.command_handler(command, ...)
-	print("调用server.command_handler".." command:"..command)
+	log.debugf("调用server.command_handler".." command:"..command)
 	local f = assert(CMD[command])
 	return f(...)
 end
