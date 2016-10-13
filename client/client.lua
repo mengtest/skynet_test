@@ -1,8 +1,33 @@
 local skynet_root = "./3rd/skynet/"
-package.cpath = skynet_root.."luaclib/?.so"
+package.cpath = skynet_root.."luaclib/?.so;"
+package.path = skynet_root.."lualib/?.lua;".."./common/proto/?.sproto"
 
 local socket = require "clientsocket"
 local crypt = require "crypt"
+local sprotoparser = require "sprotoparser"
+local sprotoloader = require "sprotoloader"
+
+local f = io.open("./common/proto/proto.sproto")
+if f == nil then 
+	print("open faild")
+	return
+end
+local t = f:read "a"
+f:close()
+sprotoloader.save(sprotoparser.parse(t),0)
+--host用来解析接受到的消息
+local host = sprotoloader.load(0):host "package"
+--request用来发送消息
+local request = host:attach(sprotoloader.load(0))
+
+local ping = request("ping")
+
+local type,name = host:dispatch(ping)
+
+print("Type:"..type)
+print("Name:"..name)
+
+print("")
 
 if _VERSION ~= "Lua 5.3" then
 	error "Use lua 5.3"
@@ -110,6 +135,9 @@ print("login ok, subid=", subid)
 
 local function send_request(v, session)
 	local size = #v + 4
+	--这里等效于
+	--local str = v..string.pack(">I4", session)
+	--package = string.pack(">s2",str)
 	local package = string.pack(">I2", size)..v..string.pack(">I4", session)
 	socket.send(fd, package)
 	return v, session
@@ -130,7 +158,6 @@ local function unpack_package(text)
 	if size < s+2 then
 		return nil, text
 	end
-
 	return text:sub(3,2+s), text:sub(3+s)
 end
 
@@ -141,7 +168,6 @@ local function send_package(fd, pack)
 	socket.send(fd, package)
 end
 
-local text = "echo"
 local index = 1
 
 --连接到gameserver
@@ -156,9 +182,6 @@ local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
 send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
 
 print(readpackage())
-print("===>",send_request(text,0))
--- don't recv response
--- print("<===",recv_response(readpackage()))
 
 print("disconnect")
 socket.close(fd)
@@ -176,11 +199,9 @@ local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
 send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
 
 print(readpackage())
-print("===>",send_request("fake",0))	-- request again (use last session 0, so the request message is fake)
-print("===>",send_request("again",1))	-- request again (use new session)
-print("<===",recv_response(readpackage()))
-print("<===",recv_response(readpackage()))
 
+print("===>",send_request(ping,0))
+print("<===",recv_response(readpackage()))
 
 print("disconnect")
 socket.close(fd)

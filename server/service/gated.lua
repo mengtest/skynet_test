@@ -79,6 +79,7 @@ function server.disconnect_handler(username)
 end
 
 -- call by self (when recv a request from client)
+-- 从client收到消息的时候，调用这里去call agent
 function server.request_handler(username, msg)
 	local u = username_map[username]
 	return skynet.tostring(skynet.rawcall(u.agent, "client", msg))
