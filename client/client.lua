@@ -7,6 +7,7 @@ local crypt = require "crypt"
 local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
 
+--加载解析proto文件
 local f = io.open("./common/proto/clientproto.lua")
 if f == nil then 
 	print("proto open faild")
@@ -15,19 +16,21 @@ end
 local t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t),0)
+f = io.open("./common/proto/serverproto.lua")
+if f == nil then 
+	print("proto open faild")
+	return
+end
+t = f:read "a"
+f:close()
+sprotoloader.save(sprotoparser.parse(t),1)
+
 --host用来解析接受到的消息
-local host = sprotoloader.load(0):host "package"
+local host = sprotoloader.load(1):host "package"
 --request用来发送消息
 local request = host:attach(sprotoloader.load(0))
 
-local ping = request("ping")
-
-local type,name = host:dispatch(ping)
-
-print("Type:"..type)
-print("Name:"..name)
-
-print("")
+local session_id = 0
 
 if _VERSION ~= "Lua 5.3" then
 	error "Use lua 5.3"
@@ -35,6 +38,18 @@ end
 
 --与loginserver建立连接
 local fd = assert(socket.connect("127.0.0.1", 8001))
+
+local function send_request(name, args)
+	session_id = session_id + 1
+	local str = request(name, args, session_id)
+	local size = #str + 4
+	--这里等效于
+	--local str = v..string.pack(">I4", session)
+	--package = string.pack(">s2",str)
+	local package = string.pack(">I2", size)..str..string.pack(">I4", session_id)
+	socket.send(fd, package)
+	return session_id,host:dispatch(str)
+end
 
 local function writeline(fd, text)
 	socket.send(fd, text .. "\n")
@@ -133,16 +148,6 @@ print("login ok, subid=", subid)
 ----- connect to game server
 --连接至gameserver
 
-local function send_request(v, session)
-	local size = #v + 4
-	--这里等效于
-	--local str = v..string.pack(">I4", session)
-	--package = string.pack(">s2",str)
-	local package = string.pack(">I2", size)..v..string.pack(">I4", session)
-	socket.send(fd, package)
-	return v, session
-end
-
 local function recv_response(v)
 	local size = #v - 5
 	local content, ok, session = string.unpack("c"..tostring(size).."B>I4", v)
@@ -200,7 +205,7 @@ send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
 
 print(readpackage())
 
-print("===>",send_request(ping,0))
+print("===>",send_request("ping"))
 print("<===",recv_response(readpackage()))
 
 print("disconnect")

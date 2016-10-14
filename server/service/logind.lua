@@ -29,7 +29,7 @@ end
 
 --登陆到游戏服务器
 function server.login_handler(server, uid, secret)
-	log.debugf("调用server.login_handler:".." server:"..server.." uid:"..uid.." secret:"..secret)
+	log.debug("调用server.login_handler:".." server:"..server.." uid:"..uid.." secret:"..secret)
 	log.noticef("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret))
 	--校验要登陆的服务器是否存在
 	--gate启动的时候注册到server_list了
@@ -53,7 +53,7 @@ local CMD = {}
 
 --注册一个服务器
 function CMD.register_gate(server, address)
-	log.debugf("调用server.login_handler:".." server:"..server.." address:"..address)
+	log.debugf("调用server.register_gate:".." server:"..server.." address:"..address)
 	server_list[server] = address
 end
 
