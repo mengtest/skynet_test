@@ -1,15 +1,15 @@
 local skynet_root = "./3rd/skynet/"
 package.cpath = skynet_root.."luaclib/?.so;"
-package.path = skynet_root.."lualib/?.lua;".."./common/proto/?.sproto"
+package.path = skynet_root.."lualib/?.lua;"
 
 local socket = require "clientsocket"
 local crypt = require "crypt"
 local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
 
-local f = io.open("./common/proto/proto.sproto")
+local f = io.open("./common/proto/clientproto.lua")
 if f == nil then 
-	print("open faild")
+	print("proto open faild")
 	return
 end
 local t = f:read "a"

@@ -1,7 +1,9 @@
---消息协议
-local protopatch = {
-	"proto",
-}
+--proto文件列表
+local protopatch = {}
 
+protopatch = {
+	"clientproto",
+	"serverproto",
+}
 
 return protopatch

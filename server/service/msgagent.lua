@@ -2,16 +2,12 @@ local skynet = require "skynet"
 local sprotoloader = require "sprotoloader"
 
 local host
+local request 
 
 skynet.register_protocol {
 	name = "client",
 	id = skynet.PTYPE_CLIENT,
 	unpack = function (msg,sz)
-				--可以在这里解析proto
-				--或者，在gated那边解析好了再传过来？
-				--host:dispatch (msg, sz)
-				--这边不是host:dispatch(msg)吗
-				--测试一下到底是什么样子的
 				return host:dispatch(msg,sz)
 				--return skynet.tostring(msg,sz)
 			end,
@@ -56,7 +52,7 @@ function CMD.afk(source)
 	skynet.error(string.format("AFK"))
 end
 
-local function request(name, args, response)
+local function recv_request(name, args, response)
 	local f = assert(REQUEST[name])
 	local r = f(args)
 	if response then
@@ -66,9 +62,12 @@ end
 
 skynet.start(function()
 	-- If you want to fork a work thread , you MUST do it in CMD.login
+	--加载proto
 	local protoloader = skynet.uniqueservice "protoloader"
-	local slot = skynet.call(protoloader, "lua", "index", "proto")
+	local slot = skynet.call(protoloader, "lua", "index", "clientproto")
 	host = sprotoloader.load(slot):host "package"
+	slot = skynet.call(protoloader, "lua", "index", "serverproto")
+	request = host:attach(sprotoloader.load(slot))
 
 	skynet.dispatch("lua", function(session, source, command, ...)
 		local f = assert(CMD[command])
@@ -80,7 +79,7 @@ skynet.start(function()
 		--local type, name, args, response = host:dispatch(msg)
 		--这边是收到client的消息，已经解析好的消息
 		if type == "REQUEST" then
-			local ok, result  = pcall(request, ...)
+			local ok, result  = pcall(recv_request, ...)
 			if ok then
 				if result then
 					skynet.ret(msg)
