@@ -3,6 +3,8 @@ local sprotoloader = require "sprotoloader"
 
 local host
 local request 
+local session = {}
+local session_id = 0
 
 skynet.register_protocol {
 	name = "client",
@@ -19,8 +21,24 @@ local userid, subid
 local CMD = {}
 local REQUEST = {}
 
+
+local function send_msg (msg)
+	local package = string.pack (">s2", msg)
+	if gate then
+		skynet.call(gate, "lua", "request", userid, subid,package);
+	end
+end
+
+local function send_request (name, args)
+	session_id = session_id + 1
+	local str = request (name, args, session_id)
+	send_msg (str)
+	session[session_id] = { name = name, args = args }
+end
+
 function REQUEST:ping()
-	print("Ping")
+	print("ping")
+	send_request("ping")
 end
 
 function CMD.login(source, uid, sid, secret)
@@ -29,6 +47,14 @@ function CMD.login(source, uid, sid, secret)
 	gate = source
 	userid = uid
 	subid = sid
+
+	skynet.fork(function()
+		while true do
+			send_request("ping")
+			skynet.sleep(500)
+		end
+	end)
+
 	-- you may load user data from database
 	--上线
 end
@@ -55,7 +81,7 @@ end
 local function recv_request(name, args, response)
 	local f = assert(REQUEST[name])
 	local r = f(args)
-	if response then
+	if response and r then
 		return response(r)
 	end
 end

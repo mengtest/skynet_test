@@ -206,7 +206,9 @@ send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
 print(readpackage())
 
 print("===>",send_request("ping"))
-print("<===",recv_response(readpackage()))
+while true do
+	print("<===",host:dispatch(readpackage()))
+end
 
 print("disconnect")
 socket.close(fd)

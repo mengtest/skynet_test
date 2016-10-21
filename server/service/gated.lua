@@ -96,6 +96,15 @@ function server.register_handler(name)
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
 end
 
+function server.send_request_handler(uid, subid, msg)
+	local u = users[uid]
+	if u then
+		local username = msgserver.username(uid, subid, servername)
+		assert(u.username == username)
+		msgserver.request(u.username,msg)
+	end
+end
+
 --向msgserver注册前面server中定义的方法
 msgserver.start(server)
 
