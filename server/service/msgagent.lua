@@ -38,7 +38,7 @@ end
 
 function REQUEST:ping()
 	print("ping")
-	send_request("ping")
+	return { ok = true}
 end
 
 function CMD.login(source, uid, sid, secret)
@@ -50,7 +50,7 @@ function CMD.login(source, uid, sid, secret)
 
 	skynet.fork(function()
 		while true do
-			send_request("ping")
+			send_request("heartbeat")
 			skynet.sleep(500)
 		end
 	end)
@@ -108,7 +108,8 @@ skynet.start(function()
 			local ok, result  = pcall(recv_request, ...)
 			if ok then
 				if result then
-					skynet.ret(msg)
+
+					skynet.ret(result)
 				end
 			else
 				skynet.error(result)

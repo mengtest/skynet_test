@@ -4,4 +4,4 @@
 	ud 2 : string
 }
 
-ping 1 {}
+heartbeat 1 {}

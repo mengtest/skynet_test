@@ -4,7 +4,14 @@
 	ud 2 : string
 }
 
-ping 1 {}
+ping 1 {
+	request {
+		userid 0 : string
+	}
+	response {
+		ok 0 : boolean
+	}
+}
 
 signup 2 {
 	request {

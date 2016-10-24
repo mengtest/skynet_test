@@ -25,8 +25,24 @@ t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t),1)
 
+print("测试开始")
+local clienthost = sprotoloader.load(0):host "package"
+local serverhost = sprotoloader.load(1):host "package"
+local clientrequest = clienthost:attach(sprotoloader.load(0))
+local serverrequest = serverhost:attach(sprotoloader.load(1))
+
+local str = clientrequest("ping",{userid = 123456},99)
+local type, session, args,response = clienthost:dispatch(str)
+print(type, session, args,response)
+
+local str2 = response({ok = true})
+local type, session, args,response = clienthost:dispatch(str2)
+print(type, session, args,response)
+print("测试结束")
+
+
 --host用来解析接受到的消息
-local host = sprotoloader.load(1):host "package"
+local host = sprotoloader.load(0):host "package"
 --request用来发送消息
 local request = host:attach(sprotoloader.load(0))
 
@@ -207,9 +223,9 @@ print(readpackage())
 
 print("===>",send_request("ping"))
 while true do
-	print("<===",host:dispatch(readpackage()))
+	local type, session, args, response = host:dispatch(readpackage())
+	print("<===",type, session, args, response)
 end
 
 print("disconnect")
 socket.close(fd)
-
