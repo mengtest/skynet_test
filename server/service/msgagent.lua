@@ -1,5 +1,6 @@
 local skynet = require "skynet"
 local sprotoloader = require "sprotoloader"
+local log = require "base.syslog"
 
 local host
 local request 
@@ -114,6 +115,8 @@ skynet.start(function()
 			else
 				skynet.error(result)
 			end
+		else if type == "RESPONSE" then
+			log.debug("get RESPONSE from client")
 		end
 		skynet.sleep(10)	-- sleep a while
 	end)

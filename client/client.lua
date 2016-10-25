@@ -25,24 +25,35 @@ t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t),1)
 
-print("测试开始")
-local clienthost = sprotoloader.load(0):host "package"
-local serverhost = sprotoloader.load(1):host "package"
-local clientrequest = clienthost:attach(sprotoloader.load(0))
-local serverrequest = serverhost:attach(sprotoloader.load(1))
+--[[
+--proto消息解析测试
+local hostclient = sprotoloader.load(1):host "package"
+local requestclient = hostclient:attach(sprotoloader.load(0))
 
-local str = clientrequest("ping",{userid = 123456},99)
-local type, session, args,response = clienthost:dispatch(str)
+local hostserver = sprotoloader.load(0):host "package"
+local requestserver = hostserver:attach(sprotoloader.load(1))
+
+--client发送
+local str = requestclient("ping",{userid = 123456},99)
+--server解析
+local type, session, args,response = hostserver:dispatch(str)
 print(type, session, args,response)
-
+--server返回response
 local str2 = response({ok = true})
-local type, session, args,response = clienthost:dispatch(str2)
+--client解析
+local type, session, args,response = hostclient:dispatch(str2)
 print(type, session, args,response)
-print("测试结束")
 
+--server发送
+local str3 = requestserver("heartbeat")
+--client解析
+local type, session, args,response = hostclient:dispatch(str3)
+print(type, session, args,response)
+
+]]
 
 --host用来解析接受到的消息
-local host = sprotoloader.load(0):host "package"
+local host = sprotoloader.load(1):host "package"
 --request用来发送消息
 local request = host:attach(sprotoloader.load(0))
 
@@ -64,7 +75,7 @@ local function send_request(name, args)
 	--package = string.pack(">s2",str)
 	local package = string.pack(">I2", size)..str..string.pack(">I4", session_id)
 	socket.send(fd, package)
-	return session_id,host:dispatch(str)
+	return session_id,"REQUEST",name
 end
 
 local function writeline(fd, text)
