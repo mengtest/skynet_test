@@ -115,7 +115,7 @@ skynet.start(function()
 			else
 				skynet.error(result)
 			end
-		else if type == "RESPONSE" then
+		elseif type == "RESPONSE" then
 			log.debug("get RESPONSE from client")
 		end
 		skynet.sleep(10)	-- sleep a while
