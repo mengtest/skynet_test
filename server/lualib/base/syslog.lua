@@ -24,7 +24,7 @@ end
 local function write (priority, ...)
 	if priority >= level then
 		if select("#", ...) == 1 then
-			skynet.error (syslog.prefix[priority] .. string.format (...))
+			skynet.error (syslog.prefix[priority] .. ...)
 		else
 			syslog.format(priority, ...)
 		end

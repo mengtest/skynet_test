@@ -31,6 +31,7 @@ local function logout()
 	skynet.exit()
 end
 
+--心跳检测
 local last_heartbeat_time = 0
 local HEARTBEAT_TIME_MAX = 0 -- 60 * 100
 local function heartbeat_check ()
@@ -49,7 +50,7 @@ local traceback = debug.traceback
 --接受到的请求
 local REQUEST = {}
 function REQUEST:ping()
-	print("ping")
+	log.debug ("ping")
 	return { ok = true}
 end
 local function handle_request (name, args, response)
@@ -124,12 +125,6 @@ function CMD.login(source, uid, sid, secret)
 	-- you may use secret to make a encrypted data stream
 	skynet.error(string.format("%s is login", uid))
 	gate = source
-	skynet.fork(function()
-		while true do
-			send_request("heartbeat")
-			skynet.sleep(500)
-		end
-	end)
 
 	user = { 
 		userid = uid,

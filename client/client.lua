@@ -64,7 +64,7 @@ if _VERSION ~= "Lua 5.3" then
 end
 
 --与loginserver建立连接
-local fd = assert(socket.connect("127.0.0.1", 8001))
+local fd = assert(socket.connect("127.0.0.1", 8101))
 
 local function send_request(name, args)
 	session_id = session_id + 1

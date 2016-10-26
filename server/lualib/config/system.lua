@@ -6,7 +6,7 @@ config.log_level = 1
 
 config.logind = {
 	host = "127.0.0.1",
-	port = 8001,
+	port = 8101,
 	multilogin = false,	-- disallow multilogin
 	name = "login_master",
 }
