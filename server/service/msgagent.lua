@@ -2,6 +2,8 @@ local skynet = require "skynet"
 local sprotoloader = require "sprotoloader"
 local log = require "base.syslog"
 
+local testhandler = require "agent.testhandler"
+
 local host
 local request 
 local session = {}
@@ -28,6 +30,7 @@ local function logout()
 	if gate then
 		skynet.call(gate, "lua", "logout", user.userid, user.subid)
 	end
+	testhandler.unregister(user)
 	skynet.exit()
 end
 
@@ -134,10 +137,11 @@ function CMD.login(source, uid, sid, secret)
 		CMD = CMD,
 		send_request = send_request,
 	}
+	
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
 	-- you may load user data from database
-
+	testhandler:register(user)
 	--心跳检测
 	last_heartbeat_time = skynet.now ()
 	heartbeat_check ()
