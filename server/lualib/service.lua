@@ -25,7 +25,7 @@ function service.init(mod)
 			if f then
 				skynet.ret(skynet.pack(f(...)))
 			else
-				log.noticef("Unknown command : [%s]", cmd)
+				log.notice("Unknown command : [%s]", cmd)
 				skynet.response()(false)
 			end
 		end)

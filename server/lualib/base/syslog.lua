@@ -17,15 +17,17 @@ function syslog.level (lv)
 	level = lv
 end
 
-local function write (priority, fmt, ...)
-	if priority >= level then
-		skynet.error (syslog.prefix[priority] .. fmt, ...)
-	end
+function syslog.format(priority,fmt, ...)
+	skynet.error(syslog.prefix[priority] .. string.format(fmt, ...))
 end
 
-local function writef (priority, ...)
+local function write (priority, ...)
 	if priority >= level then
-		skynet.error (syslog.prefix[priority] .. string.format (...))
+		if select("#", ...) == 1 then
+			skynet.error (syslog.prefix[priority] .. string.format (...))
+		else
+			syslog.format(priority, ...)
+		end
 	end
 end
 
@@ -33,40 +35,23 @@ function syslog.debug (...)
 	write (1, ...)
 end
 
-function syslog.debugf (...)
-	writef (1, ...)
-end
 
 function syslog.info (...)
 	write (2, ...)
 end
 
-function syslog.infof (...)
-	writef (2, ...)
-end
 
 function syslog.notice (...)
 	write (3, ...)
 end
 
-function syslog.noticef (...)
-	writef (3, ...)
-end
 
 function syslog.warning (...)
 	write (4, ...)
 end
 
-function syslog.warningf (...)
-	writef (4, ...)
-end
-
 function syslog.err (...)
 	write (5, ...)
-end
-
-function syslog.errf (...)
-	writef (5, ...)
 end
 
 syslog.level (tonumber (config.log_level) or 3)

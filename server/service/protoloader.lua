@@ -18,7 +18,7 @@ end
 function loader.load(list)
 	for i, name in ipairs(list) do
 		local p = load(name)
-		log.noticef("load proto [%s] in slot %d", name, i)
+		log.notice("load proto [%s] in slot %d", name, i)
 		data[name] = i
 		sprotoloader.save(p, i)
 	end
@@ -27,6 +27,12 @@ end
 
 function loader.index(name)
 	return data[name]
+end
+
+function loader.get()
+	local host = sprotoloader.load (self.index("clientproto")):host "package"
+	local request = host:attach (sprotoloader.load (self.index("serverproto")))
+	return host, request
 end
 
 service.init {
