@@ -30,13 +30,13 @@ local function logout()
 	if gate then
 		skynet.call(gate, "lua", "logout", user.userid, user.subid)
 	end
-	testhandler.unregister(user)
+	testhandler:unregister(user)
 	skynet.exit()
 end
 
 --心跳检测
 local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 0 -- 60 * 100
+local HEARTBEAT_TIME_MAX = 500 -- 60 * 100
 local function heartbeat_check ()
 	if HEARTBEAT_TIME_MAX <= 0 then return end
 

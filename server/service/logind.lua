@@ -16,7 +16,6 @@ local user_login = {}
 --认证
 --在这个方法内做远程调用（skynet.call）是安全的。
 function server.auth_handler(token)
-	log.debug("调用server.auth_handler："..token)
 	-- the token is base64(user)@base64(server):base64(password)
 	local user, server, password = token:match("([^@]+)@([^:]+):(.+)")
 	user = crypt.base64decode(user)
@@ -29,7 +28,6 @@ end
 
 --登陆到游戏服务器
 function server.login_handler(server, uid, secret)
-	log.debug("调用server.login_handler:".." server:"..server.." uid:"..uid.." secret:"..secret)
 	log.notice("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret))
 	--校验要登陆的服务器是否存在
 	--gate启动的时候注册到server_list了
@@ -53,13 +51,11 @@ local CMD = {}
 
 --注册一个服务器
 function CMD.register_gate(server, address)
-	log.debug("调用server.register_gate:".." server:"..server.." address:"..address)
 	server_list[server] = address
 end
 
 --玩家下线
 function CMD.logout(uid, subid)
-	log.debug("调用CMD.logout:".." uid:"..uid.." subid:"..subid)
 	local u = user_online[uid]
 	if u then
 		log.notice("%s@%s is logout", uid, u.server)
@@ -68,7 +64,6 @@ function CMD.logout(uid, subid)
 end
 
 function server.command_handler(command, ...)
-	log.debug("调用server.command_handler".." command:"..command)
 	local f = assert(CMD[command])
 	return f(...)
 end
