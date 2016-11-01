@@ -36,7 +36,7 @@ end
 
 --心跳检测
 local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 500 -- 60 * 100
+local HEARTBEAT_TIME_MAX = 0 -- 60 * 100
 local function heartbeat_check ()
 	if HEARTBEAT_TIME_MAX <= 0 then return end
 
@@ -115,7 +115,7 @@ skynet.register_protocol {
 		elseif type == "RESPONSE" then
 			handle_response (...)
 		else
-			syslog.warningf ("invalid message type : %s", type) 
+			log.warning("invalid message type : %s", type) 
 			logout()
 		end
 		skynet.sleep(10)
@@ -126,7 +126,7 @@ local CMD = {}
 
 function CMD.login(source, uid, sid, secret)
 	-- you may use secret to make a encrypted data stream
-	skynet.error(string.format("%s is login", uid))
+	log.notice("%s is login",uid)
 	gate = source
 
 	user = { 
@@ -150,13 +150,13 @@ end
 function CMD.logout(source)
 	--下线
 	-- NOTICE: The logout MAY be reentry
-	skynet.error(string.format("%s is logout", userid))
+	log.notice("%s is logout",user.userid)
 	logout()
 end
 
 function CMD.afk(source)
 	-- the connection is broken, but the user may back
-	skynet.error(string.format("AFK"))
+	log.notice("%s AFK",user.userid)
 end
 
 skynet.start(function()

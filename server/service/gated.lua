@@ -16,7 +16,7 @@ local agentpool = {}
 --login server通知用户登陆game server
 function server.login_handler(uid, secret)
 	if users[uid] then
-		log.warningf("%s is already login", uid)
+		log.warning("%s is already login", uid)
 	end
 
 	internal_id = internal_id + 1
@@ -27,10 +27,10 @@ function server.login_handler(uid, secret)
 	local agent = nil
 	if #agentpool == 0 then
 		agent = skynet.newservice "msgagent"
-		log.debug("pool is empty, new agent(%d) created", agent)
+		log.debug("pool is empty, new agent(:%08X) created", agent)
 	else
 		agent = table.remove(agentpool,1)
-		log.debug("agent(%d) assigned, %d remain in pool", agent, #agentpool)
+		log.debug("agent(:%08X) assigned, %d remain in pool", agent, #agentpool)
 	end
 
 	local u = {
@@ -75,6 +75,7 @@ function server.kick_handler(uid, subid)
 		local username = msgserver.username(uid, subid, servername)
 		assert(u.username == username)
 		-- NOTICE: logout may call skynet.exit, so you should use pcall.
+		log.debug("kick %s ",uid)
 		pcall(skynet.call, u.agent, "lua", "logout")
 	end
 end
@@ -98,16 +99,13 @@ end
 --注册自己，当服务启动的时候
 --通过对gate发送open请求的时候
 --在msgserver的open中调用了
-function server.register_handler(name)
-	servername = name
+function server.register_handler(conf)
+	servername = assert(conf.servername)
 	--向logind发送请求
 	--将自己注册到server_list
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
-end
 
---call by self(when gate open)
-function server.serverinit_handler(count)
-	local n = count or 0
+	local n = assert(conf.agentpool) or 0
 	for i = 1, n do
 		table.insert(agentpool,skynet.newservice("msgagent"))
 	end
