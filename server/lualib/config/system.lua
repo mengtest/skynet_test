@@ -16,7 +16,7 @@ config.gated = {
 	port = 8547,
 	maxclient = 64,
 	servername = "sample",
-	agentpool = 10
+	agentpool = 3
 }
 
 return config

@@ -1,6 +1,6 @@
 local skynet = require "skynet"
 local sprotoloader = require "sprotoloader"
-local log = require "base.syslog"
+local log = require "syslog"
 
 local testhandler = require "agent.testhandler"
 
@@ -10,7 +10,10 @@ local session = {}
 local session_id = 0
 local gate
 
+local running = false
+
 local user
+
 
 local function send_msg (msg)
 	local package = string.pack (">s2", msg)
@@ -31,14 +34,17 @@ local function logout()
 		skynet.call(gate, "lua", "logout", user.userid, user.subid)
 	end
 	testhandler:unregister(user)
-	skynet.exit()
+	running = false
+	--不退出，在这里清理agent的数据就行了
+	--会在gated里面将该agent加到agentpool中
+	--skynet.exit()
 end
 
 --心跳检测
 local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 0 -- 60 * 100
+local HEARTBEAT_TIME_MAX = 500 -- 60 * 100
 local function heartbeat_check ()
-	if HEARTBEAT_TIME_MAX <= 0 then return end
+	if HEARTBEAT_TIME_MAX <= 0 or not running then return end
 
 	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
 	if t <= 0 then
@@ -142,6 +148,7 @@ function CMD.login(source, uid, sid, secret)
 	RESPONSE = user.RESPONSE
 	-- you may load user data from database
 	testhandler:register(user)
+	running = true
 	--心跳检测
 	last_heartbeat_time = skynet.now ()
 	heartbeat_check ()

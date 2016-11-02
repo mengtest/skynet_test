@@ -1,7 +1,7 @@
 local msgserver = require "snax.msgserver"
 local crypt = require "crypt"
 local skynet = require "skynet"
-local log = require "base.syslog"
+local log = require "syslog"
 
 local loginservice = tonumber(...)
 
@@ -65,6 +65,7 @@ function server.logout_handler(uid, subid)
 		users[uid] = nil
 		username_map[u.username] = nil
 		skynet.call(loginservice, "lua", "logout",uid, subid)
+		table.insert(agentpool,u.agent)
 	end
 end
 
