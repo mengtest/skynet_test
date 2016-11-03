@@ -10,8 +10,7 @@ skynet.start(function()
 	local proto = skynet.uniqueservice "protoloader"
 	skynet.call(proto, "lua", "load", protopatch)
 
-	local dbmgr = skynet.uniqueservice "dbmgr"
-	skynet.call(dbmgr, "lua", "open")
+	skynet.uniqueservice "dbmgr"
 
 	local loginserver = skynet.newservice("logind")
 	local gate = skynet.newservice("gated",loginserver)

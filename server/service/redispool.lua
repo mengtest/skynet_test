@@ -2,7 +2,6 @@ local skynet = require "skynet"
 local service = require "service"
 local redis = require "redis"
 local config = require "config.redisconf"
-local account = require "db.account"
 
 local CMD = {}
 local center
@@ -38,19 +37,30 @@ function connection_handler (key)
 end
 
 local CMD = {}
-local function module_init (name, mod)
-	CMD[name] = mod
-	mod.init (connection_handler)
-end
 
 function CMD.open()
-	module_init ("account", account)
 
 	center = redis.connect(config.center)
 	ngroup = #config.group
 	for _, c in ipairs (config.group) do
 		table.insert (group, redis.connect (c))
 	end
+end
+
+function CMD.hget(uid, key,filed)
+	if not key then return end
+
+	local db = connection_handler(uid)
+	local result = db:hget(key,filed)
+	
+	return result
+end
+
+function CMD.hset(uid, key, filed, value)
+	local db = connection_handler(uid)
+	local result = db:hset(key,filed,value)
+	
+	return result
 end
 
 service.init {

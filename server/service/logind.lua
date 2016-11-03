@@ -6,6 +6,8 @@ local log = require "syslog"
 
 local server = config.logind
 
+local dbmgrserver
+
 --服务器列表
 local server_list = {}
 --在线玩家列表
@@ -22,7 +24,14 @@ function server.auth_handler(token)
 	server = crypt.base64decode(server)
 	password = crypt.base64decode(password)
 	assert(password == "password", "Invalid password")
-	log.debug("user:"..user.." server:"..server.." password:"..password)
+	log.debug("%s@%s is auth, password is %s", user, server, password)
+	if not dbmgrserver then 
+		dbmgrserver = skynet.uniqueservice "dbmgr"
+	end
+
+	--数据库查询角色信息
+	local result = skynet.call(dbmgrserver, "lua", "account", "auth" ,user, password)
+	
 	return server, user
 end
 
