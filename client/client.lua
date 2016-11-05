@@ -122,7 +122,7 @@ end
 
 local subid
 
-local index = 0
+local index = 1
 
 local function login()
 	--连接到gameserver
@@ -134,10 +134,15 @@ local function login()
 end
 
 function RESPONSE:login(args)
+	print("send ping")
 	send_request("ping")
-	
+end
+
+function RESPONSE:ping( args )
+	print("ping:"..tostring(args.ok))
+
 	index = index + 1
-	if index >= 3 then 
+	if index > 3 then 
 		return 
 	end
 	--断开连接
@@ -146,6 +151,16 @@ function RESPONSE:login(args)
 
 	--再次连接到gameserver
 	login()
+
+	--[[index = index + 1
+	if index >= 2 then 
+		return 
+	end
+
+	print("disconnect")
+	socket.close(fd)
+
+	login()]]
 end
 
 local REQUEST = {}
@@ -212,7 +227,7 @@ local function unpack_package(text)
 	if size < s+2 then
 		return nil, text
 	end
-	return text:sub(3,2+s), text:sub(3+s)
+	return text:sub(3,2+s - 4), text:sub(3+s)
 end
 
 local readpackage = unpack_f(unpack_package)
