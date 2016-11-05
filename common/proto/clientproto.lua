@@ -13,26 +13,36 @@ ping 1 {
 	}
 }
 
-signup 2 {
+handshake 2 {
 	request {
-		userid 0 : string
+		clientkey 0 : string
 	}
 	response {
-		ok 0 : boolean
+		challenge 0 : string
+		serverkey 1 : string
 	}
 }
 
-signin 3 {
+auth 3 {
 	request {
-		userid 0 : string
+		hmac 0 : string
 	}
 	response {
-		ok 0 : boolean
+		result 0 : string
 	}
 }
 
-login 4 {
+etoken 4 {
+	request {
+		etokens 0 : string
+	}
+}
+
+login 5 {
+	request {
+		handshake 0 : string
+	}
 	response {
-		ok 0 : boolean
+		result 0 : string
 	}
 }

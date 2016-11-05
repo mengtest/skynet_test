@@ -5,3 +5,9 @@
 }
 
 heartbeat 1 {}
+
+subid 2 {
+	request {
+		result 0 : string
+	}
+}
