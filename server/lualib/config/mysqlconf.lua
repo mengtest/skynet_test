@@ -1,0 +1,28 @@
+local conf = {}
+
+local host = "127.0.0.1"
+local port = 3306
+local database = "test"
+local user = "root"
+local password = "root"
+local max_packet_size = 1024 * 1024
+
+local center = {
+	host = host,
+	port = port,
+	database = database,
+	user = user,
+	password = password,
+	max_packet_size = max_packet_size,
+}
+
+local ngroup = 0
+local group = {}
+for i = 1, ngroup do
+	table.insert (group, { host = host, port = port + i, database = database, 
+		user = user, password = password,max_packet_size = max_packet_size,})
+end
+
+conf = { center = center , group = group }
+
+return conf

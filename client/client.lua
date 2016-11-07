@@ -151,16 +151,6 @@ function RESPONSE:ping( args )
 
 	--再次连接到gameserver
 	login()
-
-	--[[index = index + 1
-	if index >= 2 then 
-		return 
-	end
-
-	print("disconnect")
-	socket.close(fd)
-
-	login()]]
 end
 
 local REQUEST = {}

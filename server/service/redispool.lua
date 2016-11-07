@@ -36,8 +36,6 @@ function connection_handler (key)
 	end
 end
 
-local CMD = {}
-
 function CMD.open()
 
 	center = redis.connect(config.center)

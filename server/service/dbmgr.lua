@@ -5,6 +5,7 @@ local MODULE = {}
 local service = {}
 local servername = {
 	"redispool",
+	"mysqlpool",
 }
 
 local function module_init (name, mod)
