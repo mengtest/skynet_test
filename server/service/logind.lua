@@ -31,7 +31,11 @@ function server.auth_handler(token)
 
 	--数据库查询角色信息
 	local result = skynet.call(dbmgrserver, "lua", "account", "auth" ,user, password)
-	
+	local str = "auth false"
+	if result then
+		str = "auth success"
+	end
+	log.debug("%s "..str,user)
 	return server, user
 end
 

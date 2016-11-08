@@ -7,6 +7,10 @@ local user = "root"
 local password = "root"
 local max_packet_size = 1024 * 1024
 
+local function on_connect(db)
+	db:query("set charset utf8");
+end
+
 local center = {
 	host = host,
 	port = port,
@@ -14,6 +18,7 @@ local center = {
 	user = user,
 	password = password,
 	max_packet_size = max_packet_size,
+	on_connect = on_connect
 }
 
 local ngroup = 0

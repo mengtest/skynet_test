@@ -9,7 +9,7 @@ local group = {}
 local ngroup
 local index = 1
 
-function connection_handler (write)
+function getconn (write)
 	local db
 	if write then
 		db = center
@@ -29,27 +29,16 @@ function connection_handler (write)
 end
 
 function CMD.open()
-
 	center = mysql.connect(config.center)
-	if center then 
-		center:query("set charset utf8")
-	else
-		error("mysql connect error")
-	end
 	ngroup = #config.group
 	for _, c in ipairs (config.group) do
 		local db = mysql.connect (c)
 		table.insert (group, db)
-		if db then 
-			db:query("set charset utf8")
-		else
-			error("mysql connect error")
-		end
 	end
 end
 
 function CMD.execute(sql, write)
-	local db = connection_handler(write)
+	local db = getconn(write)
 	return db:query(sql)
 end
 

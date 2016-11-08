@@ -6,6 +6,7 @@ local service = {}
 local servername = {
 	"redispool",
 	"mysqlpool",
+	"dbsync",
 }
 
 local function module_init (name, mod)
@@ -21,11 +22,11 @@ skynet.start(function()
 		end
 	end
 
-	module_init ("account", account)
-
 	for _,v in pairs(servername) do
 		skynet.call(service[v],"lua","open")
 	end
+	
+	module_init ("account", account)
 
 	skynet.dispatch("lua", function (_,_, cmd, subcmd, ...)
 		local m = MODULE[cmd]
