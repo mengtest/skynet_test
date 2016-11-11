@@ -13,6 +13,7 @@ ping 1 {
 	}
 }
 
+#握手
 handshake 2 {
 	request {
 		clientkey 0 : string
@@ -23,7 +24,7 @@ handshake 2 {
 	}
 }
 
-auth 3 {
+challenge 3 {
 	request {
 		hmac 0 : string
 	}
@@ -32,12 +33,14 @@ auth 3 {
 	}
 }
 
-etoken 4 {
+#账号认证
+auth 4 {
 	request {
 		etokens 0 : string
 	}
 }
 
+#登录game
 login 5 {
 	request {
 		handshake 0 : string

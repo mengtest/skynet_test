@@ -96,7 +96,7 @@ function RESPONSE:handshake(args)
 
 	--回应服务器第一步握手的挑战码，确认握手正常。
 	hmac = crypt.hmac64(challenge, secret)
-	send_request("auth",{hmac = crypt.base64encode(hmac)})
+	send_request("challenge",{hmac = crypt.base64encode(hmac)})
 end
 
 local token = {
@@ -112,12 +112,12 @@ local function encode_token(token)
 		crypt.base64encode(token.pass))
 end
 
-function RESPONSE:auth(args)
+function RESPONSE:challenge(args)
 	print(args.result)
 
 	--使用DES算法，以secret做key，加密传输token串
 	local etoken = crypt.desencode(secret, encode_token(token))
-	send_request("etoken",{etokens = crypt.base64encode(etoken)})
+	send_request("auth",{etokens = crypt.base64encode(etoken)})
 end
 
 local subid

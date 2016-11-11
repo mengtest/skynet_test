@@ -22,6 +22,7 @@ local function send_msg (msg)
 	end
 end
 
+
 local function send_request (name, args)
 	session_id = session_id + 1
 	local str = request (name, args, session_id)
