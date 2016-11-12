@@ -135,7 +135,7 @@ function CMD:add(config, nosync)
 		end
 
 		local sql = "insert into " .. tbname .. "(" .. columns .. ") values(" .. values .. ")"
-		skynet.call(service["dbsync"], "lua", "sync", sql, true)
+		skynet.call(service["dbsync"], "lua", "sync", sql)
 	end
 
 	return true

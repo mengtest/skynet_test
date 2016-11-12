@@ -27,10 +27,10 @@ end
 function account.auth(user, password)
 	log.debug("auth:%s\t%s",user, password)
 	local result = dbmgrcmd:do_redis({ "hmget", make_key(user) ,"account"}, user)
-	--if result[1] then
-	--	log.debug("find account in redis")
-	--	return 0
-	--else
+	if result[1] then
+		log.debug("find account in redis")
+		return 0
+	else
 		log.debug("add account to redis and mysql")
 		--不存在于redis中的时候，添加记录
 		local row = { }
@@ -39,7 +39,7 @@ function account.auth(user, password)
 		row.logintime = row.createtime
 		config.row = row
 		dbmgrcmd:add(config)
-	--end
+	end
 end
 
 return account
