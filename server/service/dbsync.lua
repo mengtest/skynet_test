@@ -1,5 +1,6 @@
 local skynet = require "skynet"
 local service = require "service"
+local log = require "syslog"
 
 local queue = {}
 local CMD = {}
@@ -9,7 +10,10 @@ local mysqlpool
 local function sync_impl()
     while true do
         for k, v in pairs(queue) do
-            skynet.call(mysqlpool, "lua", "execute", v, true)
+            local ret = skynet.call(mysqlpool, "lua", "execute", v, true)
+            if ret.badresult then
+                log.debug("errno:"..ret.errno.." sqlstate:"..ret.sqlstate.." err:"..ret.err.."\nsql:"..v)
+            end
             queue[k] = nil
         end
         skynet.sleep(500)
