@@ -169,8 +169,34 @@ function CMD:add(config, nosync)
 		local sql = "insert into " .. tbname .. "(" .. columns .. ") values(" .. values .. ")"
 		skynet.call(service["dbsync"], "lua", "sync", sql)
 	end
+end
 
-	return true
+-- redis中更新一行记录，并同步到mysql
+function CMD:update(config, nosync)
+	local uid = config.row.uid
+	local tbname = config.tbname
+	local row = config.row
+	local key = config.rediskey
+	local indexkey = config.indexkey
+	local pk = config.primarykey
+	local rediskey = make_rediskey(row, key)
+	do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
+	if indexkey then
+		local linkey = make_rediskey(row,indexkey)
+		do_redis({ "zadd", tbname..":index:"..linkey, 0, rediskey }, uid)
+	end
+
+	if not nosync then
+		local setvalues = ""
+
+		for k, v in pairs(row) do
+			setvalues = setvalues .. k .. "='" .. v .. "',"
+		end
+		setvalues = setvalues:trim(",")
+
+		local sql = "update " .. tbname .. " set " .. setvalues .. " where " .. pk .. "='" .. row[pk] .. "'"
+		skynet.call(service["dbsync"], "lua", "sync", sql)
+	end
 end
 
 local function module_init (name, mod)

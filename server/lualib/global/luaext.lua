@@ -1,7 +1,9 @@
+----table
 table.empty = function(t)
     return not next(t)
 end
 
+----string
 string.split = function(s, delim)
     local split = {}
     local pattern = "[^" .. delim .. "]+"
@@ -9,6 +11,21 @@ string.split = function(s, delim)
     return split
 end
 
+string.ltrim = function(s, c)
+    local pattern = "^" .. (c or "%s") .. "+"
+    return (string.gsub(s, pattern, ""))
+end
+
+string.rtrim = function(s, c)
+    local pattern = (c or "%s") .. "+" .. "$"
+    return (string.gsub(s, pattern, ""))
+end
+
+string.trim = function(s, c)
+    return string.rtrim(string.ltrim(s, c), c)
+end
+
+----function
 local function dump(obj)
     local getIndent, quoteStr, wrapKey, wrapVal, dumpObj
     getIndent = function(level)

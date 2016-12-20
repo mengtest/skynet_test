@@ -32,11 +32,14 @@ function account.auth(user, password)
 		log.debug("find account:%s",user)
 		if result["account"] == user then
 			log.debug("account:%s update login time",user)
-			-- TODO update login time
+			local row = { }
+			row.account = user
+			row.logintime = os.time()
+			config.row = row
+			dbmgrcmd:update(config)
 		else
 			log.debug("find account:%s in DB,but result['account'] = %s",user,result["account"])
 		end
-		return 0
 	else
 		log.debug("add account to redis and mysql")
 		--不存在于redis中的时候，添加记录
@@ -47,7 +50,9 @@ function account.auth(user, password)
 		row.uuid = uuid.gen()
 		config.row = row
 		dbmgrcmd:add(config)
+		config.row = {}
 	end
+	return true
 end
 
 return account
