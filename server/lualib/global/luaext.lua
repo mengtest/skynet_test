@@ -1,3 +1,6 @@
+table.empty = function(t)
+    return not next(t)
+end
 
 string.split = function(s, delim)
     local split = {}

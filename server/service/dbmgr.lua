@@ -13,7 +13,7 @@ local servername = {
 
 --向redis发送cmd请求
 --这里的uid主要用于在redis中选择redis server
-function CMD:do_redis(args, uid)
+function do_redis(args, uid)
 	local cmd = assert(args[1])
 	args[1] = uid
 	return skynet.call(service["redispool"], "lua", cmd, table.unpack(args))
@@ -55,6 +55,8 @@ end
 
 --在mysql中根据config指定的信息读取数据，并写入到redis
 --如果有uid，那么只读该玩家的信息并写入redis
+--返回的data为table，为结果集
+--集合中table中值的类型和数据库中的类型相符
 function CMD:load_data_impl(config, uid)
 	local tbname = config.tbname
 	local pk = config.primarykey
@@ -69,26 +71,26 @@ function CMD:load_data_impl(config, uid)
 				sql = string.format("select %s from %s order by %s asc limit %d, 1000", config.columns, tbname, pk, offset)
 			end
 		else
+			--这边看是不是要修改一下，account = '%s'，尽量用数字ID查询？
 			if not config.columns then
-				sql = string.format("select * from %s where uid = %d order by %s asc limit %d, 1000", tbname, uid, pk, offset)
+				sql = string.format("select * from %s where account = '%s' order by %s asc limit %d, 1000", tbname, uid, pk, offset)
 			else
-				sql = string.format("select %s from %s where uid = %d order by %s asc limit %d, 1000", config.columns, tbname, uid, pk, offset)
+				sql = string.format("select %s from %s where account = '%s' order by %s asc limit %d, 1000", config.columns, tbname, uid, pk, offset)
 			end
 		end
 
 		local rs = skynet.call(service["mysqlpool"], "lua", "execute", sql)
-
 		if #rs <= 0 then break end
 
 		for _, row in pairs(rs) do
 			--将mysql中读取到的信息添加到redis的哈希表中
 			local rediskey = make_rediskey(row, config.rediskey)
-			self:do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
+			do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
 			
 			--对需要排序的数据插入有序集合
 			if config.indexkey then
 				local indexkey = make_rediskey(row, config.indexkey)
-				self:do_redis({ "zadd", tbname .. ":index:" .. indexkey, 0, rediskey }, uid) 
+				do_redis({ "zadd", tbname .. ":index:" .. indexkey, 0, rediskey }, uid) 
 			end
 
 			table.insert(data, row)
@@ -103,6 +105,36 @@ function CMD:load_data_impl(config, uid)
 	return data
 end
 
+-- 到redis中查询，没有的话到mysql中查询
+-- 在mysql中查询的时候，如果查到了，会同步到redis中去的
+-- redis和mysql中都没有找到的时候返回空的table
+-- 目前为单条查询
+function CMD:execute(config,rediskey,uid,fields)
+	local result
+	if fields then
+		result = do_redis({ "hmget", rediskey, table.unpack(fields) }, uid)
+		result = make_pairs_table(result, fields)
+	else
+		result = do_redis({ "hgetall", rediskey }, uid)
+		result = make_pairs_table(result)
+	end
+
+	-- redis没有数据返回，则从mysql加载
+	if table.empty(result) then
+		log.debug("load data from mysql:"..uid)
+		local t = self:load_data_impl(config, uid)
+		if fields and not table.empty(t) then
+			result = {}
+			for k, v in pairs(fields) do
+				result[v] = t[v]
+			end
+		elseif  not table.empty(t) then
+			result = t[1]
+		end
+	end
+	return result
+end
+
 -- redis中增加一行记录，默认同步到mysql
 function CMD:add(config, nosync)
 	local uid = config.row.uid
@@ -111,10 +143,10 @@ function CMD:add(config, nosync)
 	local key = config.rediskey
 	local indexkey = config.indexkey
 	local rediskey = make_rediskey(row, key)
-	self:do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
+	do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
 	if indexkey then
 		local linkey = make_rediskey(row,indexkey)
-		self:do_redis({ "zadd", tbname..":index:"..linkey, 0, rediskey }, uid)
+		do_redis({ "zadd", tbname..":index:"..linkey, 0, rediskey }, uid)
 	end
 
 	if not nosync then
