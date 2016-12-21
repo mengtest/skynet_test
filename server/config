@@ -8,7 +8,7 @@ start = "main"
 lualoader = skynet_root.."lualib/loader.lua"
 lua_path = skynet_root.."lualib/?.lua;"..root.."lualib/?.lua;"..root.."lualib/base/?.lua;"..root.."lualib/global/?.lua;"
 lua_cpath = skynet_root.."luaclib/?.so;"..root.."luaclib/?.so;"
-cpath = skynet_root.."cservice/?.so;"
+cpath = skynet_root.."cservice/?.so;"..root.."cservice/?.so;"
 luaservice = skynet_root.."service/?.lua;"..root.."service/?.lua;"..root.."lualib/db/?.lua;"
 
 preload = root.."lualib/global/preload.lua"

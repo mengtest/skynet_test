@@ -5,6 +5,8 @@ local uuid = require "uuid"
 local dbmgrcmd = {}
 local account = {}
 
+--这里的config也许可以写到dbmgr中去管理
+--然后这边的execute、add和update等命令传入tablename和row等参数即可
 local config = {
 	tbname = "account",--表名
 	rediskey = "account",--用表中哪些字段来生成redis的key,","分割

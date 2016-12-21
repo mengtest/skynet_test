@@ -1,6 +1,10 @@
 local skynet = require "skynet"
 local config = require "config.system"
 local protopatch = require "config.protopatch"
+require "skynet.manager"
+
+local aoi = skynet.launch("test", skynet.self(), 110)
+print(aoi)
 
 skynet.start(function()
 	skynet.error("Server start")

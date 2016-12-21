@@ -90,7 +90,7 @@ function CMD:load_data_impl(config, uid)
 			--对需要排序的数据插入有序集合
 			if config.indexkey then
 				local indexkey = make_rediskey(row, config.indexkey)
-				do_redis({ "zadd", tbname .. ":index:" .. indexkey, 0, rediskey }, uid) 
+				do_redis({ "zadd", tbname .. ":index:" .. indexkey, row[indexkey], rediskey }, uid) 
 			end
 
 			table.insert(data, row)
@@ -146,7 +146,7 @@ function CMD:add(config, nosync)
 	do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
 	if indexkey then
 		local linkey = make_rediskey(row,indexkey)
-		do_redis({ "zadd", tbname..":index:"..linkey, 0, rediskey }, uid)
+		do_redis({ "zadd", tbname..":index:"..linkey, row[indexkey], rediskey }, uid)
 	end
 
 	if not nosync then
@@ -183,7 +183,7 @@ function CMD:update(config, nosync)
 	do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
 	if indexkey then
 		local linkey = make_rediskey(row,indexkey)
-		do_redis({ "zadd", tbname..":index:"..linkey, 0, rediskey }, uid)
+		do_redis({ "zadd", tbname..":index:"..linkey, row[indexkey], rediskey }, uid)
 	end
 
 	if not nosync then
