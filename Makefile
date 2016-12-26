@@ -1,7 +1,7 @@
 THIRD_LIB_ROOT ?= ./3rd/
 
-SKYNET_ROOT ?= $(THIRD_LIB_ROOT)skynet/
-include $(SKYNET_ROOT)platform.mk
+SKYNET_ROOT ?= $(THIRD_LIB_ROOT)skynet
+include $(SKYNET_ROOT)/platform.mk
 
 LUA_CLIB_PATH ?= ./server/luaclib
 LUA_CSRC_PATH ?= ./server/lualib-src
@@ -26,13 +26,13 @@ all : \
 $(LUA_CLIB_PATH) :
 	mkdir $(LUA_CLIB_PATH)
 
-$(LUA_CLIB_PATH)/uuid.so : $(LUA_CSRC_PATH)/lua-uuid.c | $(LUA_CLIB_PATH)
-	$(CC) $(CFLAGS) $(SHARED) $^  -o $@ 
+$(LUA_CLIB_PATH)/uuid.so : $(LUA_CSRC_PATH)/lua-uuid.c
+	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
 
 $(MYCSERVICE_PATH) :
 	mkdir $(MYCSERVICE_PATH)
 
-$(MYCSERVICE_PATH)/test.so : $(MYCSERVICE_CSRC_PATH)/test.c | $(MYCSERVICE_PATH)
+$(MYCSERVICE_PATH)/test.so : $(MYCSERVICE_CSRC_PATH)/test.c $(MYCSERVICE_CSRC_PATH)/aoi.c
 	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
 
 clean :

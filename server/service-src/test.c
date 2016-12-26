@@ -1,4 +1,4 @@
-#include "aoi.c"
+#include "aoi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
