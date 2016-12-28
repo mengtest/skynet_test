@@ -125,4 +125,3 @@ end
 
 --向msgserver注册前面server中定义的方法
 msgserver.start(server)
-

@@ -1,3 +1,4 @@
+--！！！留意一下，貌似如果使用的地方的语法错误，这边就得不到返回，假死
 local skynet = require "skynet"
 local service = require "service"
 local redis = require "redis"
@@ -41,7 +42,7 @@ local function hash_num (num)
 end
 
 function getconn (key)
-	if key == nil then 
+	if key == nil then
 		return center
 	end
 
@@ -63,7 +64,7 @@ end
 function CMD.hset(uid, key, filed, value)
 	local db = getconn(uid)
 	local result = db:hset(key,filed,value)
-	
+
 	return result
 end
 
@@ -73,7 +74,7 @@ function CMD.hget(uid, key,filed)
 
 	local db = getconn(uid)
 	local result = db:hget(key,filed)
-	
+
 	return result
 end
 
@@ -97,7 +98,7 @@ function CMD.hmget(uid, key, ...)
 
 	local db = getconn(uid)
 	local result = db:hmget(key, ...)
-	
+
 	return result
 end
 
@@ -105,7 +106,7 @@ end
 function CMD.hgetall(uid, key)
 	local db = getconn(uid)
 	local result = db:hgetall(key)
-	
+
 	return result
 end
 
@@ -121,7 +122,7 @@ end
 function CMD.del(uid, key)
 	local db = getconn(uid)
 	local result = db:del(key)
-	
+
 	return result
 end
 

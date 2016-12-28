@@ -2,10 +2,8 @@ local handler = require "agent.handler"
 local log = require "base.syslog"
 
 local REQUEST = {}
-local RESPONSE = {}
-local CMD = {}
 
-_handler = handler.create (REQUEST)
+_handler = handler.new (REQUEST)
 
 local user
 

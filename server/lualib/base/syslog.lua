@@ -1,4 +1,5 @@
 local skynet = require "skynet"
+local profile = require "profile"
 
 local config = require "config.system"
 
@@ -31,8 +32,14 @@ local function write (priority, ...)
 	end
 end
 
+--这边看一下消耗...经常log出现endless loop提示...
 function syslog.debug (...)
+	profile.start()
 	write (1, ...)
+	local time = profile.stop()
+	if time > 1 then
+		print("log.debug cost time:"..time)
+	end
 end
 
 

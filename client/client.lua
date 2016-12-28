@@ -9,7 +9,7 @@ local sprotoloader = require "sprotoloader"
 
 --加载解析proto文件
 local f = io.open("./common/proto/clientproto.lua")
-if f == nil then 
+if f == nil then
 	print("proto open faild")
 	return
 end
@@ -17,7 +17,7 @@ local t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t),0)
 f = io.open("./common/proto/serverproto.lua")
-if f == nil then 
+if f == nil then
 	print("proto open faild")
 	return
 end
@@ -142,8 +142,8 @@ function RESPONSE:ping( args )
 	print("ping:"..tostring(args.ok))
 
 	index = index + 1
-	if index > 3 then 
-		return 
+	if index > 3 then
+		return
 	end
 	--断开连接
 	print("disconnect")

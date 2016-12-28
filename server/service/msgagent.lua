@@ -5,7 +5,7 @@ local log = require "syslog"
 local testhandler = require "agent.testhandler"
 
 local host
-local request 
+local request
 local session = {}
 local session_id = 0
 local gate
@@ -59,16 +59,13 @@ end
 local traceback = debug.traceback
 --接受到的请求
 local REQUEST = {}
-function REQUEST:ping()
-	log.debug ("ping")
-	return { ok = true}
-end
+
 local function handle_request (name, args, response)
 	local f = REQUEST[name]
 	if f then
 		local ok, ret = xpcall (f, traceback, args)
 		if not ok then
-			log.warning ("handle message(%s) failed : %s", name, ret) 
+			log.warning ("handle message(%s) failed : %s", name, ret)
 			logout()
 		else
 			last_heartbeat_time = skynet.now ()
@@ -101,7 +98,7 @@ local function handle_response (id, args)
 
 	local ok, ret = xpcall (f, traceback, s.args, args)
 	if not ok then
-		log.warning ("handle response(%d-%s) failed : %s", id, s.name, ret) 
+		log.warning ("handle response(%d-%s) failed : %s", id, s.name, ret)
 		logout()
 	end
 end
@@ -116,13 +113,13 @@ skynet.register_protocol {
 	dispatch = function (_, _, type, ...)
 		if type == "REQUEST" then
 			local result = handle_request (...)
-			if result then 
+			if result then
 				skynet.ret(result)
 			end
 		elseif type == "RESPONSE" then
 			handle_response (...)
 		else
-			log.warning("invalid message type : %s", type) 
+			log.warning("invalid message type : %s", type)
 			logout()
 		end
 		skynet.sleep(10)
@@ -136,7 +133,7 @@ function CMD.login(source, uid, sid, secret)
 	log.notice("%s is login",uid)
 	gate = source
 
-	user = { 
+	user = {
 		userid = uid,
 		subid = sid,
 		REQUEST = {},
@@ -144,7 +141,7 @@ function CMD.login(source, uid, sid, secret)
 		CMD = CMD,
 		send_request = send_request,
 	}
-	
+
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
 	-- you may load user data from database

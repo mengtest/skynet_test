@@ -25,11 +25,11 @@ function server.auth_handler(token)
 	password = crypt.base64decode(password)
 	assert(password == "password", "Invalid password")
 	log.debug("%s@%s is auth, password is %s", user, server, password)
-	if not dbmgrserver then 
+	if not dbmgrserver then
 		dbmgrserver = skynet.uniqueservice "dbmgr"
 	end
 
-	--数据库查询角色信息
+	--数据库查询账号信息
 	--没有就创建
 	local result = skynet.call(dbmgrserver, "lua", "account", "auth" ,user, password)
 	local str = "auth false"

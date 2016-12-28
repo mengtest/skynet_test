@@ -4,7 +4,7 @@ local mt = { __index = handler }
 
 local log = require "base.syslog"
 
-function handler.create (request, response, cmd)
+function handler.new (request, response, cmd)
 	return setmetatable ({
 		init_func = {},
 		request = request,
