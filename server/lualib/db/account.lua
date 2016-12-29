@@ -1,6 +1,5 @@
 local skynet = require "skynet"
 local log = require "syslog"
-local uuid = require "uuid"
 
 local dbmgrcmd = {}
 local account = {}

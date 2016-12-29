@@ -136,7 +136,7 @@ end
 
 function RESPONSE:login(args)
 	print("send ping")
-	send_request("ping")
+	send_request("ping",{userid = "hahaha"})
 end
 
 local function getcharacterlist()
@@ -144,8 +144,15 @@ local function getcharacterlist()
 	send_request("getcharacterlist")
 end
 
-function RESPONSE:getcharacterlist(args)
-	print("getcharacterlist:")
+local function charactercreate()
+	print("send charactercreate")
+	local character_create = {
+		name = "dingdalong",
+		job = 1,
+		sex = 1,
+	}
+	print(character_create)
+	send_request("charactercreate",character_create)
 end
 
 function RESPONSE:ping( args )
@@ -162,6 +169,18 @@ function RESPONSE:ping( args )
 
 	--再次连接到gameserver
 	login()
+end
+
+function RESPONSE:getcharacterlist(args)
+	print("getcharacterlist:")
+	--print(args)
+	charactercreate()
+end
+
+
+function RESPONSE:charactercreate(args)
+	print("charactercreate:")
+	print(args)
 end
 
 local REQUEST = {}

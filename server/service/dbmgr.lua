@@ -329,7 +329,7 @@ function CMD:add(tbname, row, nosync)
 	do_redis({ "hmset", tbname .. ":" .. rediskey, row }, uid)
 	if indexkey then
 		local linkey = make_rediskey(row,indexkey)
-		do_redis({ "zadd", tbname..":index:"..linkey, row[indexkey], rediskey }, uid)
+		do_redis({ "zadd", tbname..":index:"..linkey, 0, rediskey }, uid)
 	end
 
 	if not nosync then

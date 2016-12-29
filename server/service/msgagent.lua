@@ -19,7 +19,7 @@ local user
 local function send_msg (msg)
 	local package = string.pack (">s2", msg)
 	if gate then
-		skynet.call(gate, "lua", "request", user.userid, user.subid,package);
+		skynet.call(gate, "lua", "request", user.uid, user.subid,package);
 	end
 end
 
@@ -33,7 +33,7 @@ end
 
 local function logout()
 	if gate then
-		skynet.call(gate, "lua", "logout", user.userid, user.subid)
+		skynet.call(gate, "lua", "logout", user.uid, user.subid)
 	end
 	testhandler:unregister(user)
 	running = false
@@ -135,7 +135,7 @@ function CMD.login(source, uid, sid, secret)
 	gate = source
 
 	user = {
-		userid = uid,
+		uid = uid,
 		subid = sid,
 		REQUEST = {},
 		RESPONSE = {},
@@ -157,13 +157,13 @@ end
 function CMD.logout(source)
 	--下线
 	-- NOTICE: The logout MAY be reentry
-	log.notice("%s is logout",user.userid)
+	log.notice("%s is logout",user.uid)
 	logout()
 end
 
 function CMD.afk(source)
 	-- the connection is broken, but the user may back
-	log.notice("%s AFK",user.userid)
+	log.notice("%s AFK",user.uid)
 end
 
 skynet.start(function()

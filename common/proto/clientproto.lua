@@ -8,8 +8,15 @@
 	uuid 0 : integer
 	level 1 : integer
 	job 2 : integer
-	rolename 3 : string
-	createtime 4 : string
+	sex 3 : integer
+	rolename 4 : string
+	createtime 5 : string
+}
+
+.character_create{
+	name 0 : string
+	job 1 : integer
+	sex 2 : integer
 }
 
 ping 1 {
@@ -62,5 +69,16 @@ getcharacterlist 6 {
 	response {
 		#(uuid) is optional, means character_overview.uuid is main index.
 		character 0 : *character_overview(uuid)
+	}
+}
+
+charactercreate 7 {
+	request {
+		name 0 : string
+		job 1 : integer
+		sex 2 : integer
+	}
+	response {
+		character 0 : character_overview
 	}
 }
