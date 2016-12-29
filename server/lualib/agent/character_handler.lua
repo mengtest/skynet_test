@@ -14,20 +14,21 @@ _handler:init (function (u)
   dbmgr = skynet.uniqueservice ("dbmgr")
 end)
 
-local function load_list (account)
-	local list = skynet.call (dbmgr, "lua", "playerdate", "getlist", account)
+local function load_list ()
+	local list = skynet.call (dbmgr, "lua", "playerdate", "getlist", user.userid)
 	if not list then
 		list = {}
 	end
 	return list
 end
 
-local function check_character (account, id)
+local function check_character (uid, id)
 
 end
 
-function REQUEST.character_list ()
-
+function REQUEST.getcharacterlist ()
+	local character = load_list()
+	return { character = character }
 end
 
 local function create (name, race, class)

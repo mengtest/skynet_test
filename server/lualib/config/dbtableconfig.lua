@@ -10,8 +10,8 @@ conf["account"] = {
 }
 
 conf["playerdate"] = {
-  rediskey = "uid",
-  indexkey = "uuid",
+  rediskey = "uuid",
+  indexkey = "uid",
 }
 
 for k,v in pairs(conf) do

@@ -1,12 +1,13 @@
 local skynet_root = "./3rd/skynet/"
+local common = "./common/"
 package.cpath = skynet_root.."luaclib/?.so;"
-package.path = skynet_root.."lualib/?.lua;"
+package.path = skynet_root.."lualib/?.lua;"..common.."?.lua"
 
 local socket = require "clientsocket"
 local crypt = require "crypt"
 local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
-
+require "luaext"
 --加载解析proto文件
 local f = io.open("./common/proto/clientproto.lua")
 if f == nil then
@@ -138,11 +139,21 @@ function RESPONSE:login(args)
 	send_request("ping")
 end
 
+local function getcharacterlist()
+	print("send getcharacterlist")
+	send_request("getcharacterlist")
+end
+
+function RESPONSE:getcharacterlist(args)
+	print("getcharacterlist:")
+end
+
 function RESPONSE:ping( args )
 	print("ping:"..tostring(args.ok))
 
 	index = index + 1
 	if index > 3 then
+		getcharacterlist()
 		return
 	end
 	--断开连接

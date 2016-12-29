@@ -118,6 +118,13 @@ function CMD.zadd(uid, key, score, member)
 	return result
 end
 
+function CMD.zrange(uid, key, from, to)
+	local db = getconn(uid)
+	local result = db:zrange(key, from, to)
+
+	return result
+end
+
 --删除key
 function CMD.del(uid, key)
 	local db = getconn(uid)

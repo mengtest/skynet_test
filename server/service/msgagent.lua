@@ -3,6 +3,7 @@ local sprotoloader = require "sprotoloader"
 local log = require "syslog"
 
 local testhandler = require "agent.testhandler"
+local character_handler = require "agent.character_handler"
 
 local host
 local request
@@ -146,6 +147,7 @@ function CMD.login(source, uid, sid, secret)
 	RESPONSE = user.RESPONSE
 	-- you may load user data from database
 	testhandler:register(user)
+	character_handler:register(user)
 	running = true
 	--心跳检测
 	last_heartbeat_time = skynet.now ()

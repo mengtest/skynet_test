@@ -1,9 +1,8 @@
---proto文件列表
 local protopatch = {}
 
 protopatch = {
-	"clientproto",
-	"serverproto",
+  "clientproto",
+  "serverproto",
 }
 
 return protopatch

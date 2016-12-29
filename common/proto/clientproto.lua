@@ -4,6 +4,14 @@
 	ud 2 : string
 }
 
+.character_overview{
+	uuid 0 : integer
+	level 1 : integer
+	job 2 : integer
+	rolename 3 : string
+	createtime 4 : string
+}
+
 ping 1 {
 	request {
 		userid 0 : string
@@ -47,5 +55,12 @@ login 5 {
 	}
 	response {
 		result 0 : string
+	}
+}
+
+getcharacterlist 6 {
+	response {
+		#(uuid) is optional, means character_overview.uuid is main index.
+		character 0 : *character_overview(uuid)
 	}
 }

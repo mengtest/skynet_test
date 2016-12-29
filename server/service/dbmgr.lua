@@ -170,7 +170,7 @@ function CMD:load_data_impl(config, uid)
 			--对需要排序的数据插入有序集合
 			if config.indexkey then
 				local indexkey = make_rediskey(row, config.indexkey)
-				do_redis({ "zadd", tbname .. ":index:" .. indexkey, row[config.indexkey], rediskey }, uid)
+				do_redis({ "zadd", tbname .. ":index:" .. indexkey, 0, rediskey }, uid)
 			end
 
 			table.insert(data, row)
@@ -248,11 +248,73 @@ end
 -- 到redis中查询，没有的话到mysql中查询
 -- 在mysql中查询的时候，如果查到了，会同步到redis中去的
 -- redis和mysql中都没有找到的时候返回空的table
--- 多条查询
-function CMD:execute_multi(tbname, uid, fields)
-	local config = dbtableconfig[tbname]
+-- 多条查询,当有id的时候，只提取多条中的一条
+function CMD:execute_multi(tbname, uid, id, fields)
+	local result
 	local rediskey = tbname .. ":index:" .. uid
+	local ids = do_redis({ "zrange", rediskey, 0, -1 }, uid)
 
+	if not table.empty(ids) then
+		if id then
+			--获取一条数据
+			if fields then
+				result = do_redis({ "hmget", tbname .. ":" .. id, table.unpack(fields) }, uid)
+				result = make_pairs_table(result,fields)
+			else
+				result = do_redis({ "hgetall", tbname .. ":" .. id }, uid)
+				result = make_pairs_table(result)
+			end
+
+		else
+			--获取全部数据
+			result = {}
+			if fields then
+				for _, id in pairs(ids) do
+					local t = do_redis({ "hmget", tbname .. ":" .. id, table.unpack(fields)}, uid)
+					t = make_pairs_table(t,fields)
+					t = convert_record(tbname, t)
+					result[tonumber(id)] = t
+				end
+			else
+				for _, id in pairs(ids) do
+					local t = do_redis({ "hgetall", tbname .. ":" .. id }, uid)
+					t = make_pairs_table(t)
+					t = convert_record(tbname, t)
+					result[tonumber(id)] = t
+				end
+			end
+		end
+	else
+		-- mysql查询
+		local t = self:load_user_multi(tbname, uid)
+
+		if id then
+			if fields then
+				result = {}
+				for k, v in pairs(fields) do
+					result[v] = t[id][v]
+				end
+			else
+				result = t[id]
+			end
+		else
+			if fields then
+				result = {}
+				for k, v in pairs(t) do
+					result[k] = {}
+					setmetatable(result, { __mode = "k" })
+
+					for i=1, #fields do
+						result[k][fields[i]] = t[k][fields[i]]
+					end
+				end
+			else
+				result = t
+			end
+		end
+	end
+
+	return result
 end
 
 --！！这边的add、update都会导致uid这个字段跟着更新...可能需要调整一下
@@ -326,13 +388,11 @@ local function module_init (name, mod)
 	mod.init (CMD)
 	CMD:load_data_impl(dbtableconfig[name])
 end
+local system = {}
 
-skynet.start(function()
-	if servername then
-		local s = servername
-		for _, name in ipairs(s) do
-			service[name] = skynet.uniqueservice(name)
-		end
+function system.open(tbname, row, nosync)
+	for _, name in ipairs(servername) do
+		service[name] = skynet.uniqueservice(name)
 	end
 
 	for _,v in pairs(servername) do
@@ -342,7 +402,11 @@ skynet.start(function()
 	load_schema_to_redis()
 	module_init ("account", account)
 	module_init ("playerdate", playerdate)
+end
 
+MODULE["system"] = system
+
+skynet.start(function()
 	skynet.dispatch("lua", function (_,_, cmd, subcmd, ...)
 		local m = MODULE[cmd]
 		if not m then
