@@ -22,6 +22,8 @@ skynet.start(function()
 	local dbmgr = skynet.uniqueservice "dbmgr"
 	skynet.call(dbmgr,"lua","system","open")
 
+	skynet.uniqueservice "namecheck"
+
 	local loginserver = skynet.newservice("logind")
 	local gate = skynet.newservice("gated",loginserver)
 

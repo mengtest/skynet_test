@@ -111,6 +111,7 @@ function server.register_handler(conf)
 		table.insert(agentpool,skynet.newservice("msgagent"))
 	end
 	log.notice("create %d agent",n)
+	skynet.uniqueservice ("gdd")
 end
 
 --call by msgagent(server send request)

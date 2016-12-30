@@ -22,7 +22,7 @@ end
 
 --保存角色信息
 function playerdate.save(uid,character)
-	dbmgrcmd:add("playerdate",character)
+	return dbmgrcmd:add("playerdate",character)
 end
 
 return playerdate

@@ -2,9 +2,12 @@ local skynet = require "skynet"
 local handler = require "agent.handler"
 local log = require "base.syslog"
 local uuid = require "uuid"
+local sharedata = require "sharedata"
 
 local user
 local dbmgr
+local namecheck
+local job = {}
 
 local REQUEST = {}
 
@@ -13,6 +16,9 @@ _handler = handler.new (REQUEST)
 _handler:init (function (u)
 	user = u
   dbmgr = skynet.uniqueservice ("dbmgr")
+	namecheck = skynet.uniqueservice ("namecheck")
+	local obj = sharedata.query "gdd"
+	job = obj["job"]
 end)
 
 local function load_list ()
@@ -51,9 +57,25 @@ end
 
 --创建角色
 function REQUEST.charactercreate (args)
-	--TODO 检查name合法性
+	local characterlist = load_list()
+	print(table.size(characterlist))
+	if table.size(characterlist) >= 3 then
+		log.debug("%s create character failed, character num >= 3!",user.uid)
+		return
+	end
+	local result = skynet.call(namecheck,"lua","playernamecheck",args.name)
+	if not result then
+		log.debug("%s create character failed, name repeat!",user.uid)
+		return
+	end
+	if job[args.job] == nil then
+		log.debug("%s create character failed, job error!",user.uid)
+		return
+	end
 	local character = create(args.name, args.job, args.sex)
-	_handler.save(character)
+	if _handler.save(character) then
+		log.debug("%s create character succ!",user.uid)
+	end
 	return { character = character}
 end
 
