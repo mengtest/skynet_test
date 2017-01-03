@@ -155,6 +155,11 @@ local function charactercreate()
 	send_request("charactercreate",character_create)
 end
 
+local function characterpick(uuid)
+	print("send characterpick")
+	send_request("characterpick",{uuid = uuid})
+end
+
 function RESPONSE:ping( args )
 	print("ping:"..tostring(args.ok))
 
@@ -173,14 +178,27 @@ end
 
 function RESPONSE:getcharacterlist(args)
 	print("getcharacterlist:")
-	--print(args)
-	charactercreate()
+	if(table.size(args.character) < 3) then
+		charactercreate()
+	else
+		local uuid = 0
+		for k,_ in pairs(args.character)do
+			uuid = k
+			break
+		end
+		characterpick(uuid)
+	end
 end
 
 
 function RESPONSE:charactercreate(args)
 	print("charactercreate:")
 	print(args)
+end
+
+function RESPONSE:characterpick(args)
+	print("characterpick:")
+	print(args.ok)
 end
 
 local REQUEST = {}
@@ -254,7 +272,7 @@ local readpackage = unpack_f(unpack_package)
 
 local function dispatch_message()
 	local type, id, args, response = host:dispatch(readpackage())
-	print("<===",type, id, args, response)
+	--print("<===",type, id, args, response)
 	if type == "RESPONSE" then
 		local s = assert(session[id])
 		session[id] = nil

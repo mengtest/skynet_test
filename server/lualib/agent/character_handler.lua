@@ -36,6 +36,10 @@ end
 --获取角色列表
 function REQUEST.getcharacterlist ()
 	local character = load_list()
+	user.characterlist = {}
+	for k,_ in pairs(character) do
+		user.characterlist[k] = true
+	end
 	return { character = character }
 end
 
@@ -57,9 +61,7 @@ end
 
 --创建角色
 function REQUEST.charactercreate (args)
-	local characterlist = load_list()
-	print(table.size(characterlist))
-	if table.size(characterlist) >= 3 then
+	if table.size(user.characterlist) >= 3 then
 		log.debug("%s create character failed, character num >= 3!",user.uid)
 		return
 	end
@@ -74,14 +76,25 @@ function REQUEST.charactercreate (args)
 	end
 	local character = create(args.name, args.job, args.sex)
 	if _handler.save(character) then
+		user.characterlist[character.uuid] = true
 		log.debug("%s create character succ!",user.uid)
 	end
 	return { character = character}
 end
 
 --选择角色
-function REQUEST.character_pick (args)
-
+function REQUEST.characterpick (args)
+	if user.characterlist[args.uuid] == nil then
+		log.debug("%s pick character failed!",user.uid)
+		return
+	end
+	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
+	if list.uuid then
+		log.debug("%s pick character[%s] succ!",user.uid,list.name)
+		return {ok = true}
+	else
+		return {ok = false}
+	end
 end
 
 --初始化角色信息

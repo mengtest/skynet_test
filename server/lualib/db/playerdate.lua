@@ -16,8 +16,10 @@ function playerdate.getlist(uid)
 	return list
 end
 
-function playerdate.load(account)
-
+--加载角色信息
+function playerdate.load(uid,uuid)
+	local list = dbmgrcmd:execute_multi("playerdate",uid,uuid,row)
+	return list
 end
 
 --保存角色信息

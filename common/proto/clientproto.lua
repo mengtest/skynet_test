@@ -82,3 +82,12 @@ charactercreate 7 {
 		character 0 : character_overview
 	}
 }
+
+characterpick 8{
+	request {
+		uuid 0 : integer
+	}
+	response {
+		ok 0 : boolean
+	}
+}
