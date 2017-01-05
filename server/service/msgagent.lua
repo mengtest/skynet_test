@@ -35,8 +35,19 @@ local function logout()
 	if gate then
 		skynet.call(gate, "lua", "logout", user.uid, user.subid)
 	end
+
+	if user.map then
+		skynet.call(user.map, "lua", "characterlevel", user.character.uuid)
+	end
+	if user.world then
+		skynet.call(user.world, "lua", "characterlevel", user.character.uuid)
+	end
+
 	testhandler:unregister(user)
 	running = false
+	user = nil
+	session = {}
+	gate = nil
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
 	--skynet.exit()
@@ -44,7 +55,7 @@ end
 
 --心跳检测
 local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 60 * 100
+local HEARTBEAT_TIME_MAX = 0
 local function heartbeat_check ()
 	if HEARTBEAT_TIME_MAX <= 0 or not running then return end
 
@@ -60,7 +71,6 @@ end
 local traceback = debug.traceback
 --接受到的请求
 local REQUEST = {}
-
 local function handle_request (name, args, response)
 	local f = REQUEST[name]
 	if f then
@@ -81,7 +91,7 @@ local function handle_request (name, args, response)
 end
 
 --接受到的回应
-local RESPONSE
+local RESPONSE = {}
 local function handle_response (id, args)
 	local s = session[id]
 	if not s then
@@ -129,6 +139,13 @@ skynet.register_protocol {
 
 local CMD = {}
 
+function CMD.worldenter(source,world)
+	character_handler.init(user.character)
+	user.world = world
+	character_handler:unregister (user)
+	return user.character.map,user.character.pos
+end
+
 function CMD.login(source, uid, sid, secret)
 	-- you may use secret to make a encrypted data stream
 	log.notice("%s is login",uid)
@@ -157,7 +174,7 @@ end
 function CMD.logout(source)
 	--下线
 	-- NOTICE: The logout MAY be reentry
-	log.notice("%s is logout",user.uid)
+	log.notice("%s is logout ,agent(%d)",user.uid,skynet.self())
 	logout()
 end
 

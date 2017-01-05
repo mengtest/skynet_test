@@ -105,13 +105,15 @@ function server.register_handler(conf)
 	--向logind发送请求
 	--将自己注册到server_list
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
+	skynet.uniqueservice ("gdd")
+	local world = skynet.uniqueservice ("world")
+	skynet.call(world, "lua", "open")
 
 	local n = assert(conf.agentpool) or 0
 	for i = 1, n do
 		table.insert(agentpool,skynet.newservice("msgagent"))
 	end
 	log.notice("create %d agent",n)
-	skynet.uniqueservice ("gdd")
 end
 
 --call by msgagent(server send request)

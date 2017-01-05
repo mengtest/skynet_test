@@ -8,6 +8,7 @@ local user
 local dbmgr
 local namecheck
 local job = {}
+local world
 
 local REQUEST = {}
 
@@ -17,6 +18,7 @@ _handler:init (function (u)
 	user = u
   dbmgr = skynet.uniqueservice ("dbmgr")
 	namecheck = skynet.uniqueservice ("namecheck")
+	world = skynet.uniqueservice ("world")
 	local obj = sharedata.query "gdd"
 	job = obj["job"]
 end)
@@ -27,10 +29,6 @@ local function load_list ()
 		list = {}
 	end
 	return list
-end
-
-local function check_character (args)
-
 end
 
 --获取角色列表
@@ -90,6 +88,9 @@ function REQUEST.characterpick (args)
 	end
 	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
 	if list.uuid then
+		user.character = list
+		user.characterlist = nil
+		skynet.call (world, "lua", "characterenter", user.character.uuid)
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
 		return {ok = true}
 	else
@@ -99,12 +100,16 @@ end
 
 --初始化角色信息
 function _handler.init (character)
-
+	character.map = "main"
+	character.pos = { nx = 1,ny = 1,nz = 1}
 end
 
 --保存角色信息
 function _handler.save (character)
-
+	if not character then
+		log.debug("save character failed,not character.")
+		return
+	end
 	skynet.call (dbmgr, "lua", "playerdate", "save", user.uid,character)
 end
 

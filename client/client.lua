@@ -199,6 +199,7 @@ end
 function RESPONSE:characterpick(args)
 	print("characterpick:")
 	print(args.ok)
+	--getcharacterlist()
 end
 
 local REQUEST = {}

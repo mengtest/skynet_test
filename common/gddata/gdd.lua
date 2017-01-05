@@ -1,5 +1,6 @@
 local gddata = {
-  job = require "gddata.job"
+  job = require "gddata.job",
+  map = require "gddata.map",
 }
 
 return gddata
