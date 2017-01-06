@@ -3,6 +3,7 @@ local log = require "syslog"
 
 local CMD = {}
 local onlinecharacter = {}
+local aoi
 
 local world = tonumber(...)
 local config
@@ -23,6 +24,8 @@ end
 
 function CMD.open(conf)
   config = conf
+  aoi = skynet.newservice("aoi")
+  skynet.call(aoi,"lua","open",config)
   log.debug("map(%s) open",config.name)
 end
 

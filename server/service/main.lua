@@ -3,13 +3,11 @@ local config = require "config.system"
 local protopatch = require "config.protopatch"
 local profile = require "profile"
 local log = require "syslog"
---require "skynet.manager"
+--[[require "skynet.manager"
 
---[[cserver测试
+--cserver测试
 local aoi = skynet.launch("test",skynet.self())
-print(aoi)
 ]]
-
 skynet.start(function()
 	profile.start()
 	skynet.error("Server start")
