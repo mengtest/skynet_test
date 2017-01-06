@@ -101,7 +101,15 @@ end
 --初始化角色信息
 function _handler.init (character)
 	character.map = "main"
-	character.pos = { nx = 1,ny = 1,nz = 1}
+	character.aoiobj = {
+		tempid = 1,
+		mode = "wm",
+		pos = {
+			x = character.nX,
+			y = character.nY,
+			z = character.nZ,
+		},
+	}
 end
 
 --保存角色信息

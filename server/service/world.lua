@@ -24,7 +24,7 @@ function CMD.characterenter(agent, uuid)
 	onlinecharacter[uuid] = agent
 	log.notice ("uuid(%d) enter world ,agent(%d)", uuid,agent)
   --获取玩家需要去的地图和坐标
-	local map, pos = skynet.call (agent, "lua", "worldenter", skynet.self ())
+	local map, aoiobj = skynet.call (agent, "lua", "worldenter", skynet.self ())
 
 	local m = mapinstance[map]
 	if not m then
@@ -33,11 +33,11 @@ function CMD.characterenter(agent, uuid)
 		return
 	end
 
-	skynet.call (m, "lua", "characterenter", agent, uuid, pos)
+	skynet.call (m, "lua", "characterenter", agent, uuid, aoiobj)
 end
 
-function CMD.characterlevel(agent,uuid)
-  log.notice ("uuid(%d) level world ,agent(%d)", uuid,agent)
+function CMD.characterleave(agent,uuid,aoiobj)
+  log.notice ("uuid(%d) leave world ,agent(%d)", uuid,agent)
   onlinecharacter[uuid] = nil
 end
 

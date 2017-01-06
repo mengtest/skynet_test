@@ -14,6 +14,7 @@ local gate
 local running = false
 
 local user
+local aoilist = {}
 
 
 local function send_msg (msg)
@@ -37,10 +38,10 @@ local function logout()
 	end
 
 	if user.map then
-		skynet.call(user.map, "lua", "characterlevel", user.character.uuid)
+		skynet.call(user.map, "lua", "characterleave", user.character.uuid,user.character.aoiobj)
 	end
 	if user.world then
-		skynet.call(user.world, "lua", "characterlevel", user.character.uuid)
+		skynet.call(user.world, "lua", "characterleave", user.character.uuid,user.character.aoiobj)
 	end
 
 	testhandler:unregister(user)
@@ -55,7 +56,7 @@ end
 
 --心跳检测
 local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 0
+local HEARTBEAT_TIME_MAX = 10*100
 local function heartbeat_check ()
 	if HEARTBEAT_TIME_MAX <= 0 or not running then return end
 
@@ -143,7 +144,17 @@ function CMD.worldenter(source,world)
 	character_handler.init(user.character)
 	user.world = world
 	character_handler:unregister (user)
-	return user.character.map,user.character.pos
+	return user.character.map,user.character.aoiobj
+end
+
+function CMD.mapenter(source,map,tempid)
+	user.map = map
+	user.character.aoiobj.tempid = tempid
+end
+
+function CMD.addaoiobj(source,agent,tempid)
+	log.debug("agent(%d) tempid(%d) can watch agent(%d) tempid(%d)",skynet.self(),user.character.aoiobj.tempid,agent,tempid)
+	aoilist[tempid] = agent
 end
 
 function CMD.login(source, uid, sid, secret)

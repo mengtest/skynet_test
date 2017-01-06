@@ -8,17 +8,25 @@ local aoi
 local world = tonumber(...)
 local config
 
-function CMD.characterenter(agent, uuid,pos)
+local temp = 1
+
+function CMD.characterenter(agent, uuid,aoiobj)
   if onlinecharacter[uuid] then
     log.debug("uuid(%d) alreday in map(%s)",uuid,config.name)
     return
   end
   log.debug("uuid(%d) enter map(%s)",uuid,config.name)
   onlinecharacter[uuid] = agent
+  assert(aoi)
+  aoiobj.tempid = temp
+  temp = temp + 1
+  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
+  skynet.call (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
 end
 
-function CMD.characterlevel(agent,uuid)
-  log.debug("uuid(%d) level map(%s)",uuid,config.name)
+function CMD.characterleave(uuid,aoiobj)
+  log.debug("uuid(%d) leave map(%s)",uuid,config.name)
+  skynet.call(aoi,"lua","characterleave",aoiobj)
   onlinecharacter[uuid] = nil
 end
 
