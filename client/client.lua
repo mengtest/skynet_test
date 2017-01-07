@@ -3,6 +3,8 @@ local common = "./common/"
 package.cpath = skynet_root.."luaclib/?.so;"
 package.path = skynet_root.."lualib/?.lua;"..common.."?.lua"
 
+local account ,name = ...
+
 local socket = require "clientsocket"
 local crypt = require "crypt"
 local sprotoparser = require "sprotoparser"
@@ -102,7 +104,7 @@ end
 
 local token = {
 	server = "sample",
-	user = "hello",
+	user = account,
 	pass = "password",
 }
 
@@ -147,11 +149,10 @@ end
 local function charactercreate()
 	print("send charactercreate")
 	local character_create = {
-		name = "dingdalong",
+		name = name,
 		job = 1,
 		sex = 1,
 	}
-	print(character_create)
 	send_request("charactercreate",character_create)
 end
 
@@ -178,7 +179,7 @@ end
 
 function RESPONSE:getcharacterlist(args)
 	print("getcharacterlist:")
-	if(table.size(args.character) < 3) then
+	if(table.size(args.character) < 1) then
 		charactercreate()
 	else
 		local uuid = 0
@@ -193,7 +194,7 @@ end
 
 function RESPONSE:charactercreate(args)
 	print("charactercreate:")
-	print(args)
+	getcharacterlist()
 end
 
 function RESPONSE:characterpick(args)

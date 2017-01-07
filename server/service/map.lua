@@ -20,8 +20,8 @@ function CMD.characterenter(agent, uuid,aoiobj)
   assert(aoi)
   aoiobj.tempid = temp
   temp = temp + 1
-  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
   skynet.call (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
+  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
 end
 
 function CMD.characterleave(uuid,aoiobj)

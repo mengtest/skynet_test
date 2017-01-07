@@ -49,6 +49,7 @@ local function logout()
 	user = nil
 	session = {}
 	gate = nil
+	aoilist = {}
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
 	--skynet.exit()
@@ -56,7 +57,7 @@ end
 
 --心跳检测
 local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 10*100
+local HEARTBEAT_TIME_MAX = 0 * 100
 local function heartbeat_check ()
 	if HEARTBEAT_TIME_MAX <= 0 or not running then return end
 
@@ -150,6 +151,7 @@ end
 function CMD.mapenter(source,map,tempid)
 	user.map = map
 	user.character.aoiobj.tempid = tempid
+	log.debug("enter map and set tempid:"..user.character.aoiobj.tempid)
 end
 
 function CMD.addaoiobj(source,agent,tempid)

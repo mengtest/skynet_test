@@ -51,9 +51,9 @@ local function create (name, job, sex)
 	character.level = 1
 	character.createtime = os.time()
 	character.logintime = os.time()
-	character.nx = 0
-	character.ny = 0
-	character.nz = 0
+	character.nX = 0
+	character.nY = 0
+	character.nZ = 0
 	return character
 end
 
