@@ -4,6 +4,8 @@ local log = require "syslog"
 
 local testhandler = require "agent.testhandler"
 local character_handler = require "agent.character_handler"
+local map_handler = require "agent.map_handler"
+local aoi_handler = require "agent.aoi_handler"
 
 local host
 local request
@@ -44,12 +46,13 @@ local function logout()
 		skynet.call(user.world, "lua", "characterleave", user.character.uuid,user.character.aoiobj)
 	end
 
+	map_handler:unregister(user)
+	aoi_handler:unregister(user)
 	testhandler:unregister(user)
 	running = false
 	user = nil
 	session = {}
 	gate = nil
-	aoilist = {}
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
 	--skynet.exit()
@@ -151,12 +154,10 @@ end
 function CMD.mapenter(source,map,tempid)
 	user.map = map
 	user.character.aoiobj.tempid = tempid
-	log.debug("enter map and set tempid:"..user.character.aoiobj.tempid)
-end
 
-function CMD.addaoiobj(source,agent,tempid)
-	log.debug("agent(%d) tempid(%d) can watch agent(%d) tempid(%d)",skynet.self(),user.character.aoiobj.tempid,agent,tempid)
-	aoilist[tempid] = agent
+	log.debug("enter map and set tempid:"..user.character.aoiobj.tempid)
+	map_handler:register(user)
+	aoi_handler:register(user)
 end
 
 function CMD.login(source, uid, sid, secret)

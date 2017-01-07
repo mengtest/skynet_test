@@ -90,9 +90,9 @@ function REQUEST.characterpick (args)
 	if list.uuid then
 		user.character = list
 		user.characterlist = nil
-		skynet.call (world, "lua", "characterenter", user.character.uuid)
+		local ret = skynet.call (world, "lua", "characterenter", user.character.uuid)
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
-		return {ok = true}
+		return {ok = ret}
 	else
 		return {ok = false}
 	end

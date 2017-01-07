@@ -12,11 +12,13 @@ function aoicallback(w,m)
   assert(OBJ[m])
   log.debug("AOI CALLBACK:%d(%d,%d) => %d(%d,%d)",w,OBJ[w].pos.x,OBJ[w].pos.y,m,OBJ[m].pos.x,OBJ[m].pos.y)
   --将视野内的玩家通知agent
+  assert(OBJ[w].agent)
   skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m].agent,OBJ[m].tempid)
 end
 
 --添加到aoi
 function CMD.characterenter(agent,obj)
+  assert(agent)
   assert(obj)
   log.debug("!!!AOI ENTER %d %s %d %d %d",obj.tempid,obj.mode,obj.pos.x,obj.pos.y,obj.pos.z)
   OBJ[obj.tempid] = obj

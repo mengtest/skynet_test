@@ -161,6 +161,11 @@ local function characterpick(uuid)
 	send_request("characterpick",{uuid = uuid})
 end
 
+local function mapready()
+	print("send mapready")
+	send_request("mapready")
+end
+
 function RESPONSE:ping( args )
 	print("ping:"..tostring(args.ok))
 
@@ -200,6 +205,7 @@ end
 function RESPONSE:characterpick(args)
 	print("characterpick:")
 	print(args.ok)
+	mapready()
 	--getcharacterlist()
 end
 

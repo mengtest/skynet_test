@@ -91,3 +91,7 @@ characterpick 8{
 		ok 0 : boolean
 	}
 }
+
+mapready 9{
+	
+}

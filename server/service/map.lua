@@ -13,7 +13,7 @@ local temp = 1
 function CMD.characterenter(agent, uuid,aoiobj)
   if onlinecharacter[uuid] then
     log.debug("uuid(%d) alreday in map(%s)",uuid,config.name)
-    return
+    return false
   end
   log.debug("uuid(%d) enter map(%s)",uuid,config.name)
   onlinecharacter[uuid] = agent
@@ -21,6 +21,11 @@ function CMD.characterenter(agent, uuid,aoiobj)
   aoiobj.tempid = temp
   temp = temp + 1
   skynet.call (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
+  return true
+end
+
+function CMD.characterready(agent,uuid,aoiobj)
+  log.debug("uuid(%d) load map ready",uuid)
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
 end
 
