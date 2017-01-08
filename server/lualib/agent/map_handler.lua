@@ -14,7 +14,8 @@ end)
 
 function REQUEST.mapready ()
 	assert(user.map)
-	skynet.call (user.map, "lua", "characterready", skynet.self(),user.character.uuid,user.character.aoiobj)
+	local ok = skynet.call (user.map, "lua", "characterready", skynet.self(),user.character.uuid,user.character.aoiobj)
+	return { ok = ok }
 end
 
 return _handler

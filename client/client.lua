@@ -166,6 +166,16 @@ local function mapready()
 	send_request("mapready")
 end
 
+local function moveto()
+	print("send moveto")
+	local pos = {
+		x = 1,
+		y = 2,
+		z = 3,
+	}
+	send_request("moveto",{ pos = pos })
+end
+
 function RESPONSE:ping( args )
 	print("ping:"..tostring(args.ok))
 
@@ -206,7 +216,17 @@ function RESPONSE:characterpick(args)
 	print("characterpick:")
 	print(args.ok)
 	mapready()
-	--getcharacterlist()
+end
+
+function RESPONSE:mapready(args)
+	print("mapready:")
+	print(args.ok)
+	moveto()
+end
+
+function RESPONSE:moveto(args)
+	print("moveto:")
+	print(args.pos)
 end
 
 local REQUEST = {}

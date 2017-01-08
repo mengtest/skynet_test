@@ -6,6 +6,7 @@ local testhandler = require "agent.testhandler"
 local character_handler = require "agent.character_handler"
 local map_handler = require "agent.map_handler"
 local aoi_handler = require "agent.aoi_handler"
+local move_handler = require "agent.move_handler"
 
 local host
 local request
@@ -40,7 +41,7 @@ local function logout()
 	end
 
 	if user.map then
-		skynet.call(user.map, "lua", "characterleave", user.character.uuid,user.character.aoiobj)
+		skynet.call(user.map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
 	end
 	if user.world then
 		skynet.call(user.world, "lua", "characterleave", user.character.uuid,user.character.aoiobj)
@@ -48,6 +49,7 @@ local function logout()
 
 	map_handler:unregister(user)
 	aoi_handler:unregister(user)
+	move_handler:unregister(user)
 	testhandler:unregister(user)
 	running = false
 	user = nil
@@ -158,6 +160,7 @@ function CMD.mapenter(source,map,tempid)
 	log.debug("enter map and set tempid:"..user.character.aoiobj.tempid)
 	map_handler:register(user)
 	aoi_handler:register(user)
+	move_handler:register(user)
 end
 
 function CMD.login(source, uid, sid, secret)

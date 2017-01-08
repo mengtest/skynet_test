@@ -19,6 +19,12 @@
 	sex 2 : integer
 }
 
+.character_pos{
+	x 0 : integer
+	y 1 : integer
+	z 2 : integer
+}
+
 ping 1 {
 	request {
 		userid 0 : string
@@ -93,5 +99,16 @@ characterpick 8{
 }
 
 mapready 9{
-	
+	response {
+		ok 0 : boolean
+	}
+}
+
+moveto 10{
+	request {
+		pos 0 : character_pos
+	}
+	response {
+		pos 0 : character_pos
+	}
 }
