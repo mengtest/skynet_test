@@ -1,5 +1,4 @@
 local msgserver = require "snax.msgserver"
-local crypt = require "crypt"
 local skynet = require "skynet"
 local log = require "syslog"
 
@@ -10,6 +9,7 @@ local users = {}
 local username_map = {}
 local internal_id = 0
 local agentpool = {}
+local servername
 
 -- login server disallow multi login, so login_handler never be reentry
 -- call by login server
@@ -22,9 +22,8 @@ function server.login_handler(uid, secret)
 	internal_id = internal_id + 1
 	local id = internal_id	-- don't use internal_id directly
 	local username = msgserver.username(uid, id, servername)
-
 	-- agent pool
-	local agent = nil
+	local agent
 	if #agentpool == 0 then
 		agent = skynet.newservice "msgagent"
 		log.debug("pool is empty, new agent(:%08X) created", agent)
@@ -110,13 +109,14 @@ function server.register_handler(conf)
 	skynet.call(world, "lua", "open")
 
 	local n = assert(conf.agentpool) or 0
-	for i = 1, n do
+	for _ = 1, n do
 		table.insert(agentpool,skynet.newservice("msgagent"))
 	end
 	log.notice("create %d agent",n)
 end
 
 --call by msgagent(server send request)
+--这边要扩展一下，弄成可以多用户广播的
 function server.send_request_handler(uid, subid, msg)
 	local u = users[uid]
 	if u then

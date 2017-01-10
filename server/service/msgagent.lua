@@ -15,10 +15,7 @@ local session_id = 0
 local gate
 
 local running = false
-
 local user
-local aoilist = {}
-
 
 local function send_msg (msg)
 	local package = string.pack (">s2", msg)
@@ -146,14 +143,14 @@ skynet.register_protocol {
 
 local CMD = {}
 
-function CMD.worldenter(source,world)
+function CMD.worldenter(_,world)
 	character_handler.init(user.character)
 	user.world = world
 	character_handler:unregister (user)
 	return user.character.map,user.character.aoiobj
 end
 
-function CMD.mapenter(source,map,tempid)
+function CMD.mapenter(_,map,tempid)
 	user.map = map
 	user.character.aoiobj.tempid = tempid
 
@@ -188,14 +185,14 @@ function CMD.login(source, uid, sid, secret)
 	heartbeat_check ()
 end
 
-function CMD.logout(source)
+function CMD.logout(_)
 	--下线
 	-- NOTICE: The logout MAY be reentry
 	log.notice("%s is logout ,agent(%d)",user.uid,skynet.self())
 	logout()
 end
 
-function CMD.afk(source)
+function CMD.afk(_)
 	-- the connection is broken, but the user may back
 	log.notice("%s AFK",user.uid)
 end
@@ -209,7 +206,7 @@ skynet.start(function()
 	slot = skynet.call(protoloader, "lua", "index", "serverproto")
 	request = host:attach(sprotoloader.load(slot))
 
-	skynet.dispatch("lua", function(session, source, command, ...)
+	skynet.dispatch("lua", function(_, source, command, ...)
 		local f = assert(CMD[command])
 		skynet.ret(skynet.pack(f(source, ...)))
 	end)

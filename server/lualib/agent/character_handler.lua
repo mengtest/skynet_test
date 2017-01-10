@@ -7,12 +7,12 @@ local sharedata = require "sharedata"
 local user
 local dbmgr
 local namecheck
-local job = {}
+local jobdata = {}
 local world
 
 local REQUEST = {}
 
-_handler = handler.new (REQUEST)
+local _handler = handler.new (REQUEST)
 
 _handler:init (function (u)
 	user = u
@@ -20,7 +20,7 @@ _handler:init (function (u)
 	namecheck = skynet.uniqueservice ("namecheck")
 	world = skynet.uniqueservice ("world")
 	local obj = sharedata.query "gdd"
-	job = obj["job"]
+	jobdata = obj["job"]
 end)
 
 local function load_list ()
@@ -63,12 +63,13 @@ function REQUEST.charactercreate (args)
 		log.debug("%s create character failed, character num >= 3!",user.uid)
 		return
 	end
+	--TODO 检查名称的合法性
 	local result = skynet.call(namecheck,"lua","playernamecheck",args.name)
 	if not result then
 		log.debug("%s create character failed, name repeat!",user.uid)
 		return
 	end
-	if job[args.job] == nil then
+	if jobdata[args.job] == nil then
 		log.debug("%s create character failed, job error!",user.uid)
 		return
 	end

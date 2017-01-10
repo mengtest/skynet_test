@@ -4,7 +4,7 @@ local log = require "base.syslog"
 
 local CMD = {}
 
-_handler = handler.new (nil,nil,CMD)
+local _handler = handler.new (nil,nil,CMD)
 
 local user
 local agentlist = {}
@@ -16,6 +16,10 @@ end)
 function CMD.addaoiobj(_,agent,tempid)
 	log.debug("agent(%d) tempid(%d) can watch agent(%d) tempid(%d)",skynet.self(),user.character.aoiobj.tempid,agent,tempid)
 	agentlist[tempid] = agent
+end
+
+function CMD.boardcast()
+
 end
 
 return _handler

@@ -1,10 +1,9 @@
 local skynet = require "skynet"
 local handler = require "agent.handler"
-local log = require "base.syslog"
 
 local REQUEST = {}
 
-_handler = handler.new (REQUEST)
+local _handler = handler.new (REQUEST)
 
 local user
 
