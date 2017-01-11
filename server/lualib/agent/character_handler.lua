@@ -59,7 +59,7 @@ end
 
 --创建角色
 function REQUEST.charactercreate (args)
-	if table.size(user.characterlist) >= 3 then
+	if table.size(load_list ()) >= 3 then
 		log.debug("%s create character failed, character num >= 3!",user.uid)
 		return
 	end
@@ -77,6 +77,8 @@ function REQUEST.charactercreate (args)
 	if _handler.save(character) then
 		user.characterlist[character.uuid] = true
 		log.debug("%s create character succ!",user.uid)
+	else
+		log.debug("%s create character failed, save date failed!",user.uid)
 	end
 	return { character = character}
 end
@@ -119,7 +121,7 @@ function _handler.save (character)
 		log.debug("save character failed,not character.")
 		return
 	end
-	skynet.call (dbmgr, "lua", "playerdate", "save", user.uid,character)
+	return skynet.call (dbmgr, "lua", "playerdate", "save", user.uid,character)
 end
 
 

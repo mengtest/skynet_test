@@ -1,4 +1,5 @@
 local skynet = require "skynet"
+local queue = require "skynet.queue"
 local sprotoloader = require "sprotoloader"
 local log = require "syslog"
 
@@ -8,6 +9,9 @@ local map_handler = require "agent.map_handler"
 local aoi_handler = require "agent.aoi_handler"
 local move_handler = require "agent.move_handler"
 
+local requestqueue = queue()
+local responsequeue = queue()
+local luaqueue = queue()
 local host
 local request
 local session = {}
@@ -33,6 +37,7 @@ local function send_request (name, args)
 end
 
 local function logout()
+	if not user then return end
 	if gate then
 		skynet.call(gate, "lua", "logout", user.uid, user.subid)
 	end
@@ -127,12 +132,12 @@ skynet.register_protocol {
 	end,
 	dispatch = function (_, _, type, ...)
 		if type == "REQUEST" then
-			local result = handle_request (...)
+			local result = requestqueue(handle_request, ...)
 			if result then
 				skynet.ret(result)
 			end
 		elseif type == "RESPONSE" then
-			handle_response (...)
+			responsequeue(handle_response, ...)
 		else
 			log.warning("invalid message type : %s", type)
 			logout()
@@ -208,6 +213,6 @@ skynet.start(function()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
 		local f = assert(CMD[command])
-		skynet.ret(skynet.pack(f(source, ...)))
+		skynet.ret(skynet.pack(luaqueue(f,source, ...)))
 	end)
 end)

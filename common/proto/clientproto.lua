@@ -9,7 +9,7 @@
 	level 1 : integer
 	job 2 : integer
 	sex 3 : integer
-	rolename 4 : string
+	name 4 : string
 	createtime 5 : string
 }
 

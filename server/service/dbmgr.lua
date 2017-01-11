@@ -319,7 +319,7 @@ end
 
 --！！这边的add、update都会导致uid这个字段跟着更新...可能需要调整一下
 -- redis中增加一行记录，默认同步到mysql
-function CMD:add(tbname, row, nosync)
+function CMD:add(tbname, row, immed, nosync)
 	local config = dbtableconfig[tbname]
 	local uid = row.uid
 	local key = config.rediskey
@@ -350,7 +350,7 @@ function CMD:add(tbname, row, nosync)
 		end
 
 		local sql = "insert into " .. tbname .. "(" .. columns .. ") values(" .. values .. ")"
-		skynet.call(service["dbsync"], "lua", "sync", sql)
+		return skynet.call(service["dbsync"], "lua", "sync", sql, immed)
 	end
 	return true
 end

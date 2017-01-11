@@ -30,8 +30,17 @@ function CMD.stop()
     run = false
 end
 
-function CMD.sync(sql,write)
+function CMD.sync(sql,now)
+  if not now then
     table.insert(queue, sql)
+  else
+    local ret = skynet.call(mysqlpool, "lua", "execute", sql, true)
+    if ret.badresult then
+        log.debug("errno:"..ret.errno.." sqlstate:"..ret.sqlstate.." err:"..ret.err.."\nsql:"..sql)
+        return false
+    end
+  end
+  return true
 end
 
 service.init {

@@ -157,7 +157,7 @@ local function charactercreate()
 end
 
 local function characterpick(uuid)
-	print("send characterpick")
+	print("send characterpick :"..uuid)
 	send_request("characterpick",{uuid = uuid})
 end
 
@@ -193,16 +193,23 @@ function RESPONSE:ping( args )
 end
 
 function RESPONSE:getcharacterlist(args)
-	print("getcharacterlist:")
+	print("getcharacterlist size:"..table.size(args.character))
 	if(table.size(args.character) < 1) then
-		charactercreate()
+			charactercreate()
 	else
 		local uuid = 0
-		for k,_ in pairs(args.character)do
-			uuid = k
-			break
+		local bpick = false
+		for k,v in pairs(args.character)do
+			if v.name == name then
+				uuid = k
+				characterpick(uuid)
+				bpick = true
+				break
+			end
 		end
-		characterpick(uuid)
+		if not bpick then
+				charactercreate()
+		end
 	end
 end
 

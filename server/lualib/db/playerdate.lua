@@ -11,7 +11,7 @@ end
 
 --agent请求角色列表
 function playerdate.getlist(uid)
-	local row = {"uuid","rolename","createtime","job","level","sex"}
+	local row = {"uuid","name","createtime","job","level","sex"}
   local list = dbmgrcmd:execute_multi("playerdate",uid,nil,row)
 	return list
 end
@@ -24,7 +24,7 @@ end
 
 --保存角色信息
 function playerdate.save(uid,character)
-	return dbmgrcmd:add("playerdate",character)
+	return dbmgrcmd:add("playerdate",character,true)
 end
 
 return playerdate
