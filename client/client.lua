@@ -255,6 +255,15 @@ function REQUEST.subid(args)
 	login()
 end
 
+function REQUEST.heartbeat()
+	print("===heartbeat===")
+end
+
+function REQUEST.characterupdate(args)
+	print("characterupdate:")
+	print(args)
+end
+
 ----- connect to game server
 --连接至gameserver
 

@@ -4,16 +4,15 @@ local aoi = require "aoi.core"
 local log = require "syslog"
 
 local CMD = {}
-local config
 local OBJ = {}
 
-function aoicallback(w,m)
+function _G.aoicallback(w,m)
   assert(OBJ[w])
   assert(OBJ[m])
   log.debug("AOI CALLBACK:%d(%d,%d) => %d(%d,%d)",w,OBJ[w].pos.x,OBJ[w].pos.y,m,OBJ[m].pos.x,OBJ[m].pos.y)
   --将视野内的玩家通知agent
   assert(OBJ[w].agent)
-  skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m].agent,OBJ[m].tempid)
+  skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m].info)
 end
 
 --添加到aoi
@@ -36,11 +35,9 @@ function CMD.characterleave(obj)
   OBJ[obj.tempid] = nil
 end
 
-function CMD.open(conf)
-  config = conf
+function CMD.open()
   log.debug("aoi open")
   aoi.init()
-  --test()
 end
 
 function CMD.close()

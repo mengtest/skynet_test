@@ -116,13 +116,24 @@ function server.register_handler(conf)
 end
 
 --call by msgagent(server send request)
---这边要扩展一下，弄成可以多用户广播的
 function server.send_request_handler(uid, subid, msg)
 	local u = users[uid]
 	if u then
 		local username = msgserver.username(uid, subid, servername)
 		assert(u.username == username)
 		msgserver.request(u.username,msg)
+	end
+end
+
+--发送同一条消息给多个user
+function server.send_board_request_handler(msg,userlist)
+	for _,v in pairs(userlist) do
+		local u = users[v.uid]
+		if u then
+			local username = msgserver.username(v.uid, v.subid, servername)
+			assert(u.username == username)
+			msgserver.request(u.username,msg)
+		end
 	end
 end
 

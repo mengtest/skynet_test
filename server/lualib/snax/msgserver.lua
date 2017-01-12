@@ -152,14 +152,15 @@ function server.start(conf)
 		logout = assert(conf.logout_handler),
 		kick = assert(conf.kick_handler),
 		request = assert(conf.send_request_handler),
+		boardrequest = assert(conf.send_board_request_handler),
 	}
 
-	function handler.command(cmd, source, ...)
+	function handler.command(cmd, _, ...)
 		local f = assert(CMD[cmd])
 		return f(...)
 	end
 
-	function handler.open(source, gateconf)
+	function handler.open(_, gateconf)
 		local protoloader = skynet.uniqueservice "protoloader"
 		local slot = skynet.call(protoloader, "lua", "index", "clientproto")
 		host = sprotoloader.load(slot):host "package"
@@ -243,7 +244,7 @@ function server.start(conf)
 		end
 	end
 
-	local request_handler = assert(conf.request_handler)
+	assert(conf.request_handler)
 
 	-- u.response is a struct { return_fd , response, version, index }
 	local function retire_response(u)

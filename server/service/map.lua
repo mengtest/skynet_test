@@ -18,6 +18,8 @@ function CMD.characterenter(agent, uuid,aoiobj)
   temp = temp + 1
   pendingcharacter[agent] = uuid
   skynet.call (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
+  aoiobj.mode = "w"
+  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
   return true
 end
 
@@ -35,19 +37,21 @@ end
 
 function CMD.characterready(agent,uuid,aoiobj)
   if pendingcharacter[agent] == nil then
-    log.debug("uuid(%d) post load map ready,BUT not find in pendingcharacter",uuid)
+    log.debug("user(%s) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
     return false
   end
   onlinecharacter[agent] = pendingcharacter[agent]
   pendingcharacter[agent] = nil
   log.debug("uuid(%d) load map ready",uuid)
+  aoiobj.mode = "wm"
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
+  skynet.call(agent,"lua","updateinfo")
   return true
 end
 
 function CMD.moveto(agent,aoiobj)
   if onlinecharacter[agent] == nil then
-    log.debug("uuid(%d) post load map ready,BUT not find in pendingcharacter",uuid)
+    log.debug("user(%d) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
     return false
   end
   --TODO 这边应该检查pos的合法性
@@ -58,7 +62,7 @@ end
 function CMD.open(conf)
   config = conf
   aoi = skynet.newservice("aoi")
-  skynet.call(aoi,"lua","open",config)
+  skynet.call(aoi,"lua","open")
   log.debug("map(%s) open",config.name)
 end
 

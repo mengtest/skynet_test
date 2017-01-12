@@ -112,6 +112,10 @@ function _handler.init (character)
 			y = character.nY,
 			z = character.nZ,
 		},
+		info = {
+			uid = user.uid,
+			subid = user.subid
+		}
 	}
 end
 

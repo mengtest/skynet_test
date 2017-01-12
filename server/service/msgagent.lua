@@ -17,23 +17,38 @@ local request
 local session = {}
 local session_id = 0
 local gate
+local CMD = {}
 
 local running = false
 local user
 
-local function send_msg (msg)
-	local package = string.pack (">s2", msg)
+local function send_msg (msg,sessionid)
+	local str = msg..string.pack(">I4", sessionid)
+	local package = string.pack (">s2", str)
 	if gate then
 		skynet.call(gate, "lua", "request", user.uid, user.subid,package);
 	end
 end
 
+local function send_boardmsg (msg,sessionid)
+	local str = msg..string.pack(">I4", sessionid)
+	local package = string.pack (">s2", str)
+	assert(CMD.boardcast)
+	CMD.boardcast(gate,package)
+end
 
 local function send_request (name, args)
 	session_id = session_id + 1
 	local str = request (name, args, session_id)
-	send_msg (str)
+	send_msg (str,session_id)
 	session[session_id] = { name = name, args = args }
+end
+
+local function send_boardrequest (name, args)
+	--session_id = session_id + 1
+	local str = request (name, args, 0)
+	send_boardmsg (str,0)
+	--session[session_id] = { name = name, args = args }
 end
 
 local function logout()
@@ -146,8 +161,6 @@ skynet.register_protocol {
 	end,
 }
 
-local CMD = {}
-
 function CMD.worldenter(_,world)
 	character_handler.init(user.character)
 	user.world = world
@@ -177,6 +190,7 @@ function CMD.login(source, uid, sid, secret)
 		RESPONSE = {},
 		CMD = CMD,
 		send_request = send_request,
+		send_boardrequest = send_boardrequest,
 	}
 
 	REQUEST = user.REQUEST
