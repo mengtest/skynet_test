@@ -3,4 +3,6 @@
 
 
 记得看一下，aoi那边的aoicallback为什么调用call会出错
+
 move_handler那边看到角色的pos值为string，应该是数据库那边返回的是这个类型，这边需要查找并修复一下
+这个是redis这边取出来的结果为string

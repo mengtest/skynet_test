@@ -260,9 +260,11 @@ function CMD:execute_multi(tbname, uid, id, fields)
 			if fields then
 				result = do_redis({ "hmget", tbname .. ":" .. id, table.unpack(fields) }, uid)
 				result = make_pairs_table(result,fields)
+				result = convert_record(tbname,result)
 			else
 				result = do_redis({ "hgetall", tbname .. ":" .. id }, uid)
 				result = make_pairs_table(result)
+				result = convert_record(tbname,result)
 			end
 
 		else
