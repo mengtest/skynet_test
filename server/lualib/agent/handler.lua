@@ -1,12 +1,10 @@
 local handler = {}
 local mt = { __index = handler }
 
-
-local log = require "base.syslog"
-
 function handler.new (request, response, cmd)
 	return setmetatable ({
 		init_func = {},
+		release_func = {},
 		request = request,
 		response = response,
 		cmd = cmd,
@@ -15,6 +13,10 @@ end
 
 function handler:init (f)
 	table.insert (self.init_func, f)
+end
+
+function handler:release (f)
+	table.insert (self.release_func, f)
 end
 
 local function merge (dest, t)
@@ -42,6 +44,10 @@ local function clean (dest, t)
 end
 
 function handler:unregister (user)
+	for _, f in pairs (self.release_func) do
+		f ()
+	end
+
 	clean (user.REQUEST, self.request)
 	clean (user.RESPONSE, self.response)
 	clean (user.CMD, self.cmd)

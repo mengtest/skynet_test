@@ -176,6 +176,10 @@ local function moveto()
 	send_request("moveto",{ pos = pos })
 end
 
+local function quitgame()
+	send_request("quitgame")
+end
+
 function RESPONSE:ping( args )
 	print("ping:"..tostring(args.ok))
 
@@ -234,6 +238,7 @@ end
 function RESPONSE:moveto(args)
 	print("moveto:")
 	print(args.pos)
+	quitgame()
 end
 
 local REQUEST = {}

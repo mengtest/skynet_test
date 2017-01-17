@@ -112,3 +112,7 @@ moveto 10{
 		pos 0 : character_pos
 	}
 }
+
+quitgame 11{
+	
+}

@@ -7,7 +7,7 @@ local CMD = {}
 
 local _handler = handler.new (nil,nil,CMD)
 
-local AOI_RADIS2 = 200
+local AOI_RADIS2 = 100
 local user
 local agentlist
 local readerlist
@@ -19,11 +19,18 @@ _handler:init (function (u)
 	readerlist = {}
 end)
 
+_handler:release (function ()
+	user.characterwriter = nil
+	user = nil
+	agentlist = nil
+	readerlist = nil
+end)
+
 local function updateagentlist()
 	for k,v in pairs(readerlist) do
 		v:update()
 		assert(v.pos)
-		if v.pos.x*v.pos.x+v.pos.y*v.pos.y+v.pos.z*v.pos.z > 200 then
+		if v.pos.x*v.pos.x+v.pos.y*v.pos.y+v.pos.z*v.pos.z > AOI_RADIS2 then
 			readerlist[k] = nil
 			agentlist[k] = nil
 		end

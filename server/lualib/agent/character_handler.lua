@@ -7,7 +7,7 @@ local sharedata = require "sharedata"
 local user
 local dbmgr
 local namecheck
-local jobdata = {}
+local jobdata
 local world
 
 local REQUEST = {}
@@ -21,6 +21,14 @@ _handler:init (function (u)
 	world = skynet.uniqueservice ("world")
 	local obj = sharedata.query "gdd"
 	jobdata = obj["job"]
+end)
+
+_handler:release (function ()
+	user = nil
+	dbmgr = nil
+	namecheck = nil
+	jobdata = nil
+	world = nil
 end)
 
 local function load_list ()
@@ -96,8 +104,9 @@ function REQUEST.characterpick (args)
 	if list.uuid then
 		user.character = list
 		user.characterlist = nil
-		local ret = skynet.call (world, "lua", "characterenter", user.character.uuid)
+
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
+		local ret = skynet.call (world, "lua", "characterenter", user.character.uuid)
 		return {ok = ret}
 	else
 		return {ok = false}

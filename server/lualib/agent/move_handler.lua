@@ -12,6 +12,10 @@ _handler:init (function (u)
 	user = u
 end)
 
+_handler:release (function ()
+	user = nil
+end)
+
 function CMD.updateinfo()
 	local info = {
 		name = user.character.name,

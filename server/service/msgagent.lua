@@ -14,8 +14,8 @@ local responsequeue = queue()
 local luaqueue = queue()
 local host
 local request
-local session = {}
-local session_id = 0
+local session
+local session_id
 local gate
 local CMD = {}
 
@@ -70,7 +70,8 @@ local function logout()
 	testhandler:unregister(user)
 	running = false
 	user = nil
-	session = {}
+	session = nil
+	session_id = nil
 	gate = nil
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
@@ -195,6 +196,8 @@ function CMD.login(source, uid, sid, secret)
 
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
+	session = {}
+	session_id = 0
 	-- you may load user data from database
 	testhandler:register(user)
 	character_handler:register(user)
