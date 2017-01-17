@@ -9,7 +9,7 @@ local onlinecharacter = {}
 function CMD.kick (uuid)
 	local a = onlinecharacter[uuid]
 	if a then
-		skynet.call (a, "lua", "logout")
+		skynet.send (a, "lua", "logout")
 		onlinecharacter[uuid] = nil
     log.debug("kick uuid(%d) out of world",uuid)
 	end

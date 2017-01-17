@@ -17,8 +17,8 @@ function CMD.characterenter(agent, uuid,aoiobj)
   aoiobj.tempid = temp
   temp = temp + 1
   pendingcharacter[agent] = uuid
-  skynet.call (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
-  aoiobj.mode = "w"
+  skynet.send (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
+  aoiobj.movement.mode = "w"
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
   return true
 end
@@ -43,7 +43,7 @@ function CMD.characterready(agent,uuid,aoiobj)
   onlinecharacter[agent] = pendingcharacter[agent]
   pendingcharacter[agent] = nil
   log.debug("uuid(%d) load map ready",uuid)
-  aoiobj.mode = "wm"
+  aoiobj.movement.mode = "wm"
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
   skynet.call(agent,"lua","updateinfo")
   return true
@@ -56,7 +56,7 @@ function CMD.moveto(agent,aoiobj)
   end
   --TODO 这边应该检查pos的合法性
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
-  return true, aoiobj.pos
+  return true, aoiobj.movement.pos
 end
 
 function CMD.open(conf)

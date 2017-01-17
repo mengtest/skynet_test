@@ -42,18 +42,21 @@ function REQUEST.getcharacterlist ()
 end
 
 local function create (name, job, sex)
-	local character = {}
-	character.uid = user.uid
-	character.name = name
-	character.job = job
-	character.sex = sex
-	character.uuid = uuid.gen()
-	character.level = 1
-	character.createtime = os.time()
-	character.logintime = os.time()
-	character.nX = 0
-	character.nY = 0
-	character.nZ = 0
+	local character = {
+		uid = user.uid,
+		name = name,
+		job = job,
+		sex = sex,
+		uuid = uuid.gen(),
+		level = 1,
+		createtime = os.time(),
+		logintime = os.time(),
+		mapid = 0,
+		x = 0,
+		y = 0,
+		z = 0,
+	}
+
 	return character
 end
 
@@ -106,16 +109,19 @@ function _handler.init (character)
 	character.map = "main"
 	character.aoiobj = {
 		tempid = 1,
-		mode = "wm",
-		pos = {
-			x = character.nX,
-			y = character.nY,
-			z = character.nZ,
+		movement = {
+			mode = "wm",
+			pos = {
+				x = character.x,
+				y = character.y,
+				z = character.z,
+			},
 		},
 		info = {
 			uid = user.uid,
-			subid = user.subid
-		}
+			subid = user.subid,
+			uuid = character.uuid,
+		},
 	}
 end
 

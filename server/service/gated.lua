@@ -1,5 +1,6 @@
 local msgserver = require "snax.msgserver"
 local skynet = require "skynet"
+local sharemap = require "sharemap"
 local log = require "syslog"
 
 local loginservice = tonumber(...)
@@ -107,6 +108,7 @@ function server.register_handler(conf)
 	skynet.uniqueservice ("gdd")
 	local world = skynet.uniqueservice ("world")
 	skynet.call(world, "lua", "open")
+	sharemap.register("./common/sharemap/sharemap.sp")
 
 	local n = assert(conf.agentpool) or 0
 	for _ = 1, n do

@@ -34,7 +34,7 @@ local function send_boardmsg (msg,sessionid)
 	local str = msg..string.pack(">I4", sessionid)
 	local package = string.pack (">s2", str)
 	assert(CMD.boardcast)
-	CMD.boardcast(gate,package)
+	CMD.boardcast(nil,gate,package)
 end
 
 local function send_request (name, args)
