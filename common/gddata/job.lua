@@ -1,7 +1,10 @@
 local job = {
   [1] = {
-    name = "fighter"
-  }
+    name = "warrior",
+  },
+  [2] = {
+    name = "master",
+  },
 }
 
 return job

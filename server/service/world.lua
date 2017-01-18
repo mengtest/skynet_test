@@ -36,18 +36,17 @@ function CMD.characterenter(agent, uuid)
 	 return skynet.call (m, "lua", "characterenter", agent, uuid, aoiobj)
 end
 
-function CMD.characterleave(agent,uuid,aoiobj)
+function CMD.characterleave(agent,uuid)
   log.notice ("uuid(%d) leave world ,agent(%d)", uuid,agent)
   onlinecharacter[uuid] = nil
 end
 
 function CMD.open()
-  log.debug("world open")
   local obj = sharedata.query "gdd"
   local mapdata = obj["map"]
   for _, conf in pairs (mapdata) do
 		local name = conf.name
-		local m = skynet.newservice ("map", skynet.self ())
+		local m = skynet.newservice ("map", skynet.self (),name)
 		skynet.call (m, "lua", "open", conf)
 		mapinstance[name] = m
 	end

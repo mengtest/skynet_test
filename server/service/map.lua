@@ -6,7 +6,8 @@ local onlinecharacter = {}
 local pendingcharacter = {}
 local aoi
 
-local world = tonumber(...)
+local world = ...
+world = tonumber(world)
 local config
 
 local temp = 1
@@ -62,8 +63,7 @@ end
 function CMD.open(conf)
   config = conf
   aoi = skynet.newservice("aoi")
-  skynet.call(aoi,"lua","open")
-  log.debug("map(%s) open",config.name)
+  skynet.call(aoi,"lua","open",config.name)
 end
 
 function CMD.close()

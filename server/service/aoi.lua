@@ -36,7 +36,6 @@ function CMD.characterleave(obj)
 end
 
 function CMD.open()
-  log.debug("aoi open")
   aoi.init()
 end
 

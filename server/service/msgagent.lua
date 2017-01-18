@@ -61,7 +61,7 @@ local function logout()
 		skynet.call(user.map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
 	end
 	if user.world then
-		skynet.call(user.world, "lua", "characterleave", user.character.uuid,user.character.aoiobj)
+		skynet.call(user.world, "lua", "characterleave", user.character.uuid)
 	end
 
 	map_handler:unregister(user)
