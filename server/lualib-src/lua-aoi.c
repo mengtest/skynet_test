@@ -44,7 +44,7 @@ struct alloc_cookie cookie = { 0,0,0 };
 struct aoi_space * space = NULL;
 
 static int
-update (lua_State *L) {
+lupdate (lua_State *L) {
 	uint32_t id = luaL_checkinteger(L, 1);
 	const char *mode = luaL_checkstring(L, 2);
 	float pos[3] = {0};
@@ -57,33 +57,41 @@ update (lua_State *L) {
 }
 
 static int
-message (lua_State *L) {
+lmessage (lua_State *L) {
 	aoi_message(space, callbackmessage, NULL);
 	return 1;
 }
 
 static int
-init (lua_State *L) {
+linit (lua_State *L) {
 	_L = L;
   space = aoi_create(my_alloc , &cookie);
 	return 1;
 }
 
 static int
-release (lua_State *L) {
+lrelease (lua_State *L) {
 	aoi_release(space);
-  printf("max memory = %d, current memory = %d\n", cookie.max , cookie.current);
 	return 1;
+}
+
+static int
+lmeminfo (lua_State *L) {
+	lua_pushinteger (L, cookie.count);
+	lua_pushinteger (L, cookie.max);
+	lua_pushinteger (L, cookie.current);
+	return 3;
 }
 
 int
 luaopen_aoi_core (lua_State *L) {
 	luaL_checkversion (L);
 	luaL_Reg l[] = {
-		{ "update", update },
-		{ "message", message },
-  	{ "init", init },
-    { "release", release },
+		{ "update", lupdate },
+		{ "message", lmessage },
+  	{ "init", linit },
+    { "release", lrelease },
+		{ "meminfo", lmeminfo },
 		{ NULL, NULL },
 	};
 	luaL_newlib (L,l);

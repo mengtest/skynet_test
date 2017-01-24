@@ -72,6 +72,7 @@ local fd = assert(socket.connect("127.0.0.1", 8101))
 
 --发送proto协议封装的消息
 local function send_request(name, args)
+	print("==send :"..name)
 	session_id = session_id + 1
 	local str = request(name, args, session_id)
 	local size = #str + 4
@@ -239,6 +240,11 @@ function RESPONSE:moveto(args)
 	print("moveto:")
 	print(args.pos)
 	quitgame()
+end
+
+function RESPONSE:quitgame(args)
+	print("quitgame:")
+	print(args.ok)
 end
 
 local REQUEST = {}

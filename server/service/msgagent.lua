@@ -51,23 +51,39 @@ local function send_boardrequest (name, args)
 	--session[session_id] = { name = name, args = args }
 end
 
-local function logout()
+--当请求退出和被T出的时候
+--因为请求消息在requestqueue，而被T的消息在luaqueue中
+--这边可能重入
+local function logout(type)
 	if not user then return end
+	log.notice("logout, agent(:%08X) type(%d) subid(%d)",skynet.self(),type,user.subid)
+
 	if gate then
 		skynet.call(gate, "lua", "logout", user.uid, user.subid)
 	end
 
 	if user.map then
-		skynet.call(user.map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
+		local map = user.map
+		user.map = nil
+		if map then
+			skynet.call(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
+			--在玩家被挤下线的时候，这边可能还没有init
+			--所以要放在这边release
+			map_handler:unregister(user)
+			aoi_handler:unregister(user)
+			move_handler:unregister(user)
+		end
 	end
 	if user.world then
-		skynet.call(user.world, "lua", "characterleave", user.character.uuid)
+		local world = user.map
+		user.world = nil
+		if world then
+			skynet.call(world, "lua", "characterleave", user.character.uuid)
+		end
 	end
 
-	map_handler:unregister(user)
-	aoi_handler:unregister(user)
-	move_handler:unregister(user)
 	testhandler:unregister(user)
+	character_handler:unregister (user)
 	running = false
 	user = nil
 	session = nil
@@ -87,7 +103,7 @@ local function heartbeat_check ()
 	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
 	if t <= 0 then
 		log.warning ("heatbeat check failed")
-		logout()
+		logout(1)
 	else
 		skynet.timeout (t, heartbeat_check)
 	end
@@ -97,12 +113,13 @@ local traceback = debug.traceback
 --接受到的请求
 local REQUEST = {}
 local function handle_request (name, args, response)
+	log.warning ("get handle_request from client: %s", name)
 	local f = REQUEST[name]
 	if f then
 		local ok, ret = xpcall (f, traceback, args)
 		if not ok then
 			log.warning ("handle message(%s) failed : %s", name, ret)
-			logout()
+			logout(2)
 		else
 			last_heartbeat_time = skynet.now ()
 			if response and ret then
@@ -111,7 +128,7 @@ local function handle_request (name, args, response)
 		end
 	else
 		log.warning ("unhandled message : %s", name)
-		logout()
+		logout(3)
 	end
 end
 
@@ -121,21 +138,21 @@ local function handle_response (id, args)
 	local s = session[id]
 	if not s then
 		log.warning ("session %d not found", id)
-		logout()
+		logout(4)
 		return
 	end
 
 	local f = RESPONSE[s.name]
 	if not f then
 		log.warning ("unhandled response : %s", s.name)
-		logout()
+		logout(5)
 		return
 	end
 
 	local ok, ret = xpcall (f, traceback, s.args, args)
 	if not ok then
 		log.warning ("handle response(%d-%s) failed : %s", id, s.name, ret)
-		logout()
+		logout(6)
 	end
 end
 
@@ -156,12 +173,13 @@ skynet.register_protocol {
 			responsequeue(handle_response, ...)
 		else
 			log.warning("invalid message type : %s", type)
-			logout()
+			logout(7)
 		end
 		skynet.sleep(10)
 	end,
 }
 
+--被T的时候，这边已经收到了请求，会导致user为nil
 function CMD.worldenter(_,world)
 	character_handler.init(user.character)
 	user.world = world
@@ -210,8 +228,7 @@ end
 function CMD.logout(_)
 	--下线
 	-- NOTICE: The logout MAY be reentry
-	log.notice("%s is logout ,agent(%d)",user.uid,skynet.self())
-	logout()
+	logout(0)
 end
 
 function CMD.afk(_)

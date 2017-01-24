@@ -113,9 +113,16 @@ function REQUEST.characterpick (args)
 	end
 end
 
+local test = false
 --初始化角色信息
 function _handler.init (character)
-	character.map = "main"
+	if test then
+		character.map = "main"
+		test = false
+	else
+		character.map = "second"
+		test = true
+	end
 	character.aoiobj = {
 		tempid = 1,
 		movement = {

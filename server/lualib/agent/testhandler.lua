@@ -23,6 +23,7 @@ end
 function REQUEST.quitgame()
 	log.debug("query quit game")
 	user.CMD.logout()
+	return {ok = true}
 end
 
 function CMD.test(...)

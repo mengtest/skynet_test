@@ -114,5 +114,7 @@ moveto 10{
 }
 
 quitgame 11{
-	
+	response {
+		ok 0 : boolean
+	}
 }
