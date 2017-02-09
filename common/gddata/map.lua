@@ -1,8 +1,8 @@
 local map = {
-	["main"] = {
+	[0] = {
 		name = "main",
 	},
-	["second"] = {
+	[1] = {
 		name = "second",
 	},
 }

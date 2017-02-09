@@ -19,6 +19,7 @@ function CMD.characterenter(agent, uuid)
   if onlinecharacter[uuid] ~= nil then
 		log.notice ("multiple login detected, uuid %d", uuid)
 		CMD.kick (uuid)
+		return
 	end
 
 	onlinecharacter[uuid] = agent

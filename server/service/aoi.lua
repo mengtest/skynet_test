@@ -19,7 +19,7 @@ end
 function CMD.characterenter(agent,obj)
   assert(agent)
   assert(obj)
-  log.debug("!!!AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
+  log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
   OBJ[obj.tempid] = obj
   OBJ[obj.tempid].agent = agent
   aoi.update(obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)

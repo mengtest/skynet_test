@@ -139,5 +139,11 @@ function server.send_board_request_handler(msg,userlist)
 	end
 end
 
+-- call by agent
+function server.addtoagentpool_handler(agent)
+	log.debug("!!!add old agent(:%08X) to pool",agent)
+	table.insert(agentpool,agent)
+end
+
 --向msgserver注册前面server中定义的方法
 msgserver.start(server)

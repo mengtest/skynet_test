@@ -19,7 +19,13 @@ local session_id
 local gate
 local CMD = {}
 
-local running = false
+agentstatus = {
+	AGENT_INIT = 1,
+	AGENT_RUNNING = 2,
+	AGENT_QUIT = 3,
+}
+
+local running = agentstatus.AGENT_INIT
 local user
 
 local function send_msg (msg,sessionid)
@@ -59,14 +65,14 @@ local function logout(type)
 	log.notice("logout, agent(:%08X) type(%d) subid(%d)",skynet.self(),type,user.subid)
 
 	if gate then
-		skynet.call(gate, "lua", "logout", user.uid, user.subid)
+		skynet.send(gate, "lua", "logout", user.uid, user.subid)
 	end
 
 	if user.map then
 		local map = user.map
 		user.map = nil
 		if map then
-			skynet.call(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
+			skynet.send(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)
@@ -75,19 +81,21 @@ local function logout(type)
 		end
 	end
 	if user.world then
-		local world = user.map
+		local world = user.world
 		user.world = nil
 		if world then
-			skynet.call(world, "lua", "characterleave", user.character.uuid)
+			skynet.send(world, "lua", "characterleave", user.character.uuid)
 		end
 	end
 
 	testhandler:unregister(user)
 	character_handler:unregister (user)
-	running = false
 	user = nil
 	session = nil
 	session_id = nil
+	--if gate then
+	--	skynet.send(gate, "lua", "addtoagentpool", skynet.self())
+	--end
 	gate = nil
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
@@ -98,7 +106,7 @@ end
 local last_heartbeat_time = 0
 local HEARTBEAT_TIME_MAX = 0 * 100
 local function heartbeat_check ()
-	if HEARTBEAT_TIME_MAX <= 0 or not running then return end
+	if HEARTBEAT_TIME_MAX <= 0 or running == agentstatus.AGENT_RUNNING then return end
 
 	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
 	if t <= 0 then
@@ -179,7 +187,6 @@ skynet.register_protocol {
 	end,
 }
 
---被T的时候，这边已经收到了请求，会导致user为nil
 function CMD.worldenter(_,world)
 	character_handler.init(user.character)
 	user.world = world
@@ -219,7 +226,7 @@ function CMD.login(source, uid, sid, secret)
 	-- you may load user data from database
 	testhandler:register(user)
 	character_handler:register(user)
-	running = true
+	running = agentstatus.AGENT_RUNNING
 	--心跳检测
 	last_heartbeat_time = skynet.now ()
 	heartbeat_check ()
@@ -234,6 +241,12 @@ end
 function CMD.afk(_)
 	-- the connection is broken, but the user may back
 	log.notice("%s AFK",user.uid)
+end
+
+local function docmd(f,source, ...)
+	if running ~= agentstatus.AGENT_QUIT then
+		return f(source, ...)
+	end
 end
 
 skynet.start(function()

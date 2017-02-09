@@ -153,6 +153,7 @@ function server.start(conf)
 		kick = assert(conf.kick_handler),
 		request = assert(conf.send_request_handler),
 		boardrequest = assert(conf.send_board_request_handler),
+		addtoagentpool = assert(conf.addtoagentpool_handler),
 	}
 
 	function handler.command(cmd, _, ...)

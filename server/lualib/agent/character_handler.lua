@@ -8,6 +8,7 @@ local user
 local dbmgr
 local namecheck
 local jobdata
+local mapdata
 local world
 
 local REQUEST = {}
@@ -21,6 +22,7 @@ _handler:init (function (u)
 	world = skynet.uniqueservice ("world")
 	local obj = sharedata.query "gdd"
 	jobdata = obj["job"]
+	mapdata = obj["map"]
 end)
 
 _handler:release (function ()
@@ -28,6 +30,7 @@ _handler:release (function ()
 	dbmgr = nil
 	namecheck = nil
 	jobdata = nil
+	mapdata = nil
 	world = nil
 end)
 
@@ -113,16 +116,10 @@ function REQUEST.characterpick (args)
 	end
 end
 
-local test = false
 --初始化角色信息
 function _handler.init (character)
-	if test then
-		character.map = "main"
-		test = false
-	else
-		character.map = "second"
-		test = true
-	end
+	assert(mapdata[character.mapid])
+	character.map = mapdata[character.mapid].name
 	character.aoiobj = {
 		tempid = 1,
 		movement = {
