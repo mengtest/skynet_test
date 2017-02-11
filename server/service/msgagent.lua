@@ -259,7 +259,7 @@ skynet.start(function()
 	request = host:attach(sprotoloader.load(slot))
 
 	skynet.dispatch("lua", function(_, source, command, ...)
-		local f = assert(CMD[command])
+		local f = assert(CMD[command],command)
 		skynet.ret(skynet.pack(luaqueue(f,source, ...)))
 	end)
 end)
