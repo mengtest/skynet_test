@@ -61,7 +61,8 @@ end
 --因为请求消息在requestqueue，而被T的消息在luaqueue中
 --这边可能重入
 local function logout(type)
-	if not user then return end
+	if not user or running ~= agentstatus.AGENT_RUNNING then return end
+	running = agentstatus.AGENT_QUIT
 	log.notice("logout, agent(:%08X) type(%d) subid(%d)",skynet.self(),type,user.subid)
 
 	if gate then
@@ -93,10 +94,11 @@ local function logout(type)
 	user = nil
 	session = nil
 	session_id = nil
-	--if gate then
-	--	skynet.send(gate, "lua", "addtoagentpool", skynet.self())
-	--end
+	if gate then
+		skynet.send(gate, "lua", "addtoagentpool", skynet.self())
+	end
 	gate = nil
+	running = agentstatus.AGENT_INIT
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
 	--skynet.exit()
@@ -106,7 +108,7 @@ end
 local last_heartbeat_time = 0
 local HEARTBEAT_TIME_MAX = 0 * 100
 local function heartbeat_check ()
-	if HEARTBEAT_TIME_MAX <= 0 or running == agentstatus.AGENT_RUNNING then return end
+	if HEARTBEAT_TIME_MAX <= 0 or running ~= agentstatus.AGENT_RUNNING then return end
 
 	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
 	if t <= 0 then
@@ -241,12 +243,6 @@ end
 function CMD.afk(_)
 	-- the connection is broken, but the user may back
 	log.notice("%s AFK",user.uid)
-end
-
-local function docmd(f,source, ...)
-	if running ~= agentstatus.AGENT_QUIT then
-		return f(source, ...)
-	end
 end
 
 skynet.start(function()
