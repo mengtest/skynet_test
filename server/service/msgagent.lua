@@ -245,6 +245,12 @@ function CMD.afk(_)
 	log.notice("%s AFK",user.uid)
 end
 
+function CMD.close()
+	log.notice("close agent(:%08X)",skynet.self())
+	logout(8)
+	skynet.exit()
+end
+
 skynet.start(function()
 	-- If you want to fork a work thread , you MUST do it in CMD.login
 	--加载proto

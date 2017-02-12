@@ -21,6 +21,10 @@ function CMD.playernamecheck(name)
   end
 end
 
+function CMD.close()
+  log.notice("close namecheck...")
+end
+
 function init()
   mysqlpool = skynet.uniqueservice("mysqlpool")
 end

@@ -11,6 +11,7 @@ local username_map = {}
 local internal_id = 0
 local agentpool = {}
 local servername
+local world
 
 -- login server disallow multi login, so login_handler never be reentry
 -- call by login server
@@ -106,7 +107,7 @@ function server.register_handler(conf)
 	--将自己注册到server_list
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
 	skynet.uniqueservice ("gdd")
-	local world = skynet.uniqueservice ("world")
+	world = skynet.uniqueservice ("world")
 	skynet.call(world, "lua", "open")
 	sharemap.register("./common/sharemap/sharemap.sp")
 
@@ -143,6 +144,15 @@ end
 function server.addtoagentpool_handler(agent)
 	log.debug("!!!add old agent(:%08X) to pool",agent)
 	table.insert(agentpool,agent)
+end
+
+-- 退出服务
+function server.close_handler()
+	log.notice("close gated...")
+	--这边通知所有服务退出
+	skynet.call(world, "lua", "close")
+	local dbmgr = skynet.uniqueservice "dbmgr"
+	skynet.call(dbmgr, "lua", "system", "close")
 end
 
 --向msgserver注册前面server中定义的方法

@@ -406,6 +406,13 @@ function system.open(tbname, row, nosync)
 	module_init ("playerdate", playerdate)
 end
 
+function system.close()
+	log.notice("close dbmgr...")
+	for _,v in pairs(servername) do
+		skynet.call(service[v],"lua","close")
+	end
+end
+
 MODULE["system"] = system
 
 skynet.start(function()

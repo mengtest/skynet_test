@@ -3,6 +3,7 @@ local skynet = require "skynet"
 local service = require "service"
 local redis = require "redis"
 local config = require "config.redisconf"
+local log = require "syslog"
 
 local CMD = {}
 local center
@@ -19,6 +20,7 @@ function CMD.open()
 end
 
 function CMD.close()
+	log.notice("close redispol...")
 	--清空redis中的数据并断开连接
 	center:flushall()
 	center:disconnect()

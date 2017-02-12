@@ -39,7 +39,8 @@ function CMD.open()
   aoi.init()
 end
 
-function CMD.close()
+function CMD.close(name)
+  log.notice("close aoi(%s)...",name)
   aoi.release()
 end
 

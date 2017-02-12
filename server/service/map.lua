@@ -67,7 +67,11 @@ function CMD.open(conf)
 end
 
 function CMD.close()
-  log.debug("map(%s) close",config.name)
+  log.notice("close map(%s)...",config.name)
+  skynet.call(aoi,"lua","close",config.name)
+  for k,v in pairs(onlinecharacter) do
+    skynet.call(k,"lua","close")
+  end
 end
 
 skynet.start (function ()

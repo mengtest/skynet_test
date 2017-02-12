@@ -154,10 +154,11 @@ function server.start(conf)
 		request = assert(conf.send_request_handler),
 		boardrequest = assert(conf.send_board_request_handler),
 		addtoagentpool = assert(conf.addtoagentpool_handler),
+		close = assert(conf.close_handler),
 	}
 
 	function handler.command(cmd, _, ...)
-		local f = assert(CMD[cmd])
+		local f = assert(CMD[cmd],cmd)
 		return f(...)
 	end
 

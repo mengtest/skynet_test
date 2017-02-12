@@ -48,7 +48,9 @@ function gateserver.start(handler)
 
 	function CMD.close()
 		assert(socket)
+		skynet.error("gateserver close socket...")
 		socketdriver.close(socket)
+		handler.command("close")
 	end
 
 	local MSG = {}

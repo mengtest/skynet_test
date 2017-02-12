@@ -26,8 +26,9 @@ function CMD.open()
     run = true
 end
 
-function CMD.stop()
-    run = false
+function CMD.close()
+  log.notice("close dbsync...")
+  run = false
 end
 
 function CMD.sync(sql,now)

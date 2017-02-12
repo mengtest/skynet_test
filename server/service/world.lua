@@ -54,7 +54,7 @@ function CMD.open()
 end
 
 function CMD.close()
-  log.debug("world close")
+  log.notice("close world...")
   for name, map in pairs (mapinstance) do
     skynet.call (map, "lua", "close")
     mapinstance[name] = nil

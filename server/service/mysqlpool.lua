@@ -2,6 +2,7 @@ local skynet = require "skynet"
 local service = require "service"
 local mysql = require "mysql"
 local config = require "config.mysqlconf"
+local log = require "syslog"
 
 local CMD = {}
 local center
@@ -42,7 +43,8 @@ function CMD.execute(sql, write)
 	return db:query(sql)
 end
 
-function CMD.stop()
+function CMD.close()
+	log.notice("close mysqlpoll...")
 	center:disconnect()
 	center = nil
 	for _, db in pairs(group) do

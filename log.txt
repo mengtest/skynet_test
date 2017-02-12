@@ -7,6 +7,8 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 热更新、cluster --2017.1.18
 
+退出流程要做好，注意先后顺序，目标退出顺序是否并发 --2017.2.12
+
 warning:
 
 aoi那边的aoicallback调用call会出错,用sand就没问题...
@@ -36,6 +38,7 @@ error：
 一个是在lua-aoi中，为每个map单独创建space；
 一个是重写，把aoi写成CSERVICE
 最好重写CSERVICE吧，这个总是要实现的..趁现在就搞清楚
+因为公用还导致地图退出的时候，多次release aoi的core dump
 
 dbmgr那边的服务可能需要加队列
 
