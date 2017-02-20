@@ -377,8 +377,9 @@ function CMD:update(tbname, row, nosync)
 		for k, v in pairs(row) do
 			setvalues = setvalues .. k .. "='" .. v .. "',"
 		end
+		print(setvalues)
 		setvalues = setvalues:trim(",")
-
+		print(setvalues)
 		local pk = schema[tbname]["pk"]
 		local sql = "update " .. tbname .. " set " .. setvalues .. " where " .. pk .. "='" .. row[pk] .. "'"
 		skynet.call(service["dbsync"], "lua", "sync", sql)

@@ -11,7 +11,8 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
-aoi那边的aoicallback调用call会出错,用sand就没问题...
+service_aoi里面，callback那里返回的字符串的结尾有很多空格..虽然可以想办法过滤掉，但是最好弄清楚为什么会有。
+还有那边的内存申请用的是skynet_malloc，如果给skynet_send传的sz重新计算一下大小，是可以避免这个空格的，但是不知道会不会导致内存泄漏。
 
 由于伪并发...msgagent这边在疯狂的连接过程中会出现玩家已经被挤下线了，user什么的已经清空了，
 但是requestqueue中有请求还在处理，那么这个时候使用user什么的就会出问题。
@@ -33,12 +34,7 @@ error：
 为服务写个退出命令，去call主服务，然后调用其他的服务依次退出即可
 
 需要注意，aoi这边，如果玩家特别多的时候的性能，还有同一个地图，在N群玩家进出之后的性能
-
-两个map共用了一个aoi...两个方案解决：
-一个是在lua-aoi中，为每个map单独创建space；
-一个是重写，把aoi写成CSERVICE
-最好重写CSERVICE吧，这个总是要实现的..趁现在就搞清楚
-因为公用还导致地图退出的时候，多次release aoi的core dump
+主要是貌似每次update之后，如果马上message会有性能影响？得测试一下
 
 dbmgr那边的服务可能需要加队列
 
@@ -48,3 +44,10 @@ aoi这边，当添加的对象很多的时候，及时移除对象，内存并�
 
 move_handler那边看到角色的pos值为string，应该是数据库那边返回的是这个类型，这边需要查找并修复一下
 --这个是redis这边取出来的结果为string，在每次获取结果的时候，都根据mysql中的数据类型进行一次转化
+
+两个map共用了一个aoi...两个方案解决：
+一个是在lua-aoi中，为每个map单独创建space；
+一个是重写，把aoi写成CSERVICE
+最好重写CSERVICE吧，这个总是要实现的..趁现在就搞清楚
+因为公用还导致地图退出的时候，多次release aoi的core dump
+--重写了cserver

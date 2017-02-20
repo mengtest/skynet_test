@@ -3,11 +3,7 @@ local config = require "config.system"
 local protopatch = require "config.protopatch"
 local profile = require "profile"
 local log = require "syslog"
---[[require "skynet.manager"
 
---cserver测试
-local aoi = skynet.launch("test",skynet.self())
-]]
 skynet.start(function()
 	profile.start()
 	skynet.error("Server start")
@@ -28,4 +24,5 @@ skynet.start(function()
 	skynet.call(gate,"lua","open",config.gated)
 	local time = profile.stop()
 	log.debug("start server cost time:"..time)
+	skynet.exit()
 end)
