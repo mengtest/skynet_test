@@ -251,6 +251,8 @@ function CMD.close()
 	skynet.exit()
 end
 
+skynet.memlimit(1 * 1024 * 1024)
+
 skynet.start(function()
 	-- If you want to fork a work thread , you MUST do it in CMD.login
 	--加载proto

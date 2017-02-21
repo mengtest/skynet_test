@@ -35,13 +35,24 @@ my_alloc(void * ud, void *ptr, size_t sz) {
 	return NULL;
 }
 
+static int
+getnumbercount(uint32_t n) {
+	int count = 0;
+	while(n!=0)
+	{
+		n = n / 10;
+		++ count;
+	}
+	return count;
+}
+
 static void
 callbackmessage(void *ud, uint32_t watcher, uint32_t marker) {
 	struct skynet_context * ctx = ud;
-	size_t sz = sizeof(uint32_t) * 2 + 2 + 1 + sizeof("aoicallback");
+	size_t sz = getnumbercount(watcher) + getnumbercount(marker) + strlen("aoicallback") + 2;
 	char * msg = skynet_malloc(sz);
 	memset(msg,0,sz);
-	sprintf(msg,"aoicallback %u %u ",watcher,marker);
+	sprintf(msg,"aoicallback %d %d",watcher,marker);
 	skynet_send(ctx,0,addr,PTYPE_TEXT|PTYPE_TAG_DONTCOPY,0,(void *)msg,sz);
 }
 
@@ -114,6 +125,7 @@ caoi_create(void) {
 
 void
 caoi_release(struct aoi_space * space) {
+	printf("caoi_release");
 	aoi_release(space);
 }
 

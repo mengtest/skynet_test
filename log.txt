@@ -11,8 +11,7 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
-service_aoi里面，callback那里返回的字符串的结尾有很多空格..虽然可以想办法过滤掉，但是最好弄清楚为什么会有。
-还有那边的内存申请用的是skynet_malloc，如果给skynet_send传的sz重新计算一下大小，是可以避免这个空格的，但是不知道会不会导致内存泄漏。
+看怎么才能触发cservice的release
 
 由于伪并发...msgagent这边在疯狂的连接过程中会出现玩家已经被挤下线了，user什么的已经清空了，
 但是requestqueue中有请求还在处理，那么这个时候使用user什么的就会出问题。
@@ -51,3 +50,7 @@ move_handler那边看到角色的pos值为string，应该是数据库那边返�
 最好重写CSERVICE吧，这个总是要实现的..趁现在就搞清楚
 因为公用还导致地图退出的时候，多次release aoi的core dump
 --重写了cserver
+
+service_aoi里面，callback那里返回的字符串的结尾有很多空格..虽然可以想办法过滤掉，但是最好弄清楚为什么会有。
+还有那边的内存申请用的是skynet_malloc，如果给skynet_send传的sz重新计算一下大小，是可以避免这个空格的，但是不知道会不会导致内存泄漏。
+--实现计算好实际需要申请的内存大小
