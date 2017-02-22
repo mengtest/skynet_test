@@ -3,6 +3,7 @@ local handler = require "agent.handler"
 local log = require "base.syslog"
 local uuid = require "uuid"
 local sharedata = require "sharedata"
+local packer = require "db.packer"
 
 local user
 local dbmgr
@@ -66,6 +67,8 @@ local function create (name, job, sex)
 		x = 0,
 		y = 0,
 		z = 0,
+		data = {
+		}
 	}
 
 	return character
@@ -106,6 +109,7 @@ function REQUEST.characterpick (args)
 	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
 	if list.uuid then
 		user.character = list
+		user.character.data = packer.unpack(user.character.data)
 		user.characterlist = nil
 
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
@@ -144,6 +148,7 @@ function _handler.save (character)
 		log.debug("save character failed,not character.")
 		return
 	end
+	character.data = packer.pack(character.data)
 	return skynet.call (dbmgr, "lua", "playerdate", "save", user.uid,character)
 end
 
