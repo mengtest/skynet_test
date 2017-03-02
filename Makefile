@@ -14,7 +14,7 @@ SHARED := -fPIC --shared
 CFLAGS = -g -O2 -Wall
 
 #lua
-LUA_CLIB = uuid
+LUA_CLIB = uuid cutil utf8 crab
 
 #service
 MYCSERVICE = caoi
@@ -30,6 +30,15 @@ $(MYCSERVICE_PATH) :
 	mkdir $(MYCSERVICE_PATH)
 
 $(LUA_CLIB_PATH)/uuid.so : $(LUA_CSRC_PATH)/lua-uuid.c
+	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
+
+$(LUA_CLIB_PATH)/cutil.so : $(LUA_CSRC_PATH)/lua-cutil.c
+	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
+
+$(LUA_CLIB_PATH)/utf8.so : $(LUA_CSRC_PATH)/lua-utf8.c
+	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
+
+$(LUA_CLIB_PATH)/crab.so : $(LUA_CSRC_PATH)/lua-crab.c
 	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
 
 #$(LUA_CLIB_PATH)/aoi.so : $(LUA_CSRC_PATH)/lua-aoi.c $(LUA_CSRC_PATH)/aoi.c

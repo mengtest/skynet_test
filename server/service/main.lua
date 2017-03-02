@@ -6,6 +6,7 @@ local log = require "syslog"
 
 skynet.start(function()
 	profile.start()
+	t = os.clock()
 	skynet.error("Server start")
 	skynet.newservice("debug_console",config.debug_port)
 
@@ -23,6 +24,7 @@ skynet.start(function()
 
 	skynet.call(gate,"lua","open",config.gated)
 	local time = profile.stop()
-	log.debug("start server cost time:"..time)
+	t1 = os.clock()
+	log.debug("start server cost time:"..time.."=="..(t1-t))
 	skynet.exit()
 end)
