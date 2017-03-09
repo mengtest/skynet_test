@@ -131,6 +131,8 @@ static void cutil_create_config(lua_State *L)
 
 int luaopen_cutil_core(lua_State *L)
 {
+	luaL_checkversion(L);
+	
 	static const luaL_Reg funcs[] = {
 		{"filter_spec_chars", filter_spec_chars},
 		{NULL, NULL}

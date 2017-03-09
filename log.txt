@@ -12,6 +12,15 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
+aoi的cservice里面写的多线程触发message_update失败，使用的是lua那边call cservice。
+这边可能需要看一下，能不能不走call，直接在cservice那边使用多线程update
+
+aoi那边characterleave中，调用delaoiobj，使用call替换send后，
+client断线重连会导致loginserver报already login，
+这边需要处理一下，不然玩家在某些情况下，再也进不了服务器了。
+
+退出流程和进入流程需要再检查一下流程，该call的使用call，该send改用send
+
 是不是应该为每个函数加注释呢...有点小纠结...
 
 看怎么才能触发cservice的release

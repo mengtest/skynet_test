@@ -111,6 +111,10 @@ _ctrl(struct skynet_context * ctx, struct aoi_space * space, const void * msg, i
 		pos[2] = strtof(posstr , NULL);
 		//printf("id:%d,mode:%s,pos:%f-%f-%f\n",id,mode,pos[0],pos[1],pos[2]);
 		aoi_update(space, id, mode, pos);
+		//aoi_message(space, callbackmessage, ctx);
+		return;
+	}
+	if (memcmp(command,"message",i)==0) {
 		aoi_message(space, callbackmessage, ctx);
 		return;
 	}

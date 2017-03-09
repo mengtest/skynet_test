@@ -5,6 +5,7 @@ require "skynet.manager"
 local CMD = {}
 local OBJ = {}
 local aoi
+local update_thread
 
 skynet.register_protocol {
 	name = "text",
@@ -37,16 +38,24 @@ function CMD.characterleave(obj)
   assert(obj)
   log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
+	assert(OBJ[obj.tempid])
+	skynet.send(OBJ[obj.tempid].agent,"lua","delaoiobj",OBJ[obj.tempid].info.uuid)
   OBJ[obj.tempid] = nil
+end
+
+local function message_update ()
+	assert(pcall(skynet.send,aoi, "text", "message "))
+	update_thread = set_timeout (10, message_update)
 end
 
 function CMD.open()
   aoi = assert(skynet.launch("caoi", skynet.self()))
+	message_update()
 end
 
 function CMD.close(name)
   log.notice("close aoi(%s)...",name)
-
+	update_thread()
 end
 
 skynet.start(function()

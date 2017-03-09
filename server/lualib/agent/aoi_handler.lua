@@ -22,8 +22,6 @@ end)
 _handler:release (function ()
 	user.characterwriter = nil
 	user = nil
-	agentlist = nil
-	readerlist = nil
 end)
 
 local function updateagentlist()
@@ -43,12 +41,32 @@ function CMD.createreader()
 	return user.characterwriter:copy()
 end
 
+function CMD.delaoiobj(_,uuid)
+	updateagentlist()
+	if not table.empty(agentlist) then
+		for k,v in pairs(agentlist) do
+			skynet.call(v.agent, "lua", "leaveaoiobj", uuid);
+		end
+	end
+	agentlist = nil
+	readerlist = nil
+end
+
+function CMD.leaveaoiobj(_,uuid)
+	readerlist[uuid] = nil
+	agentlist[uuid] = nil
+end
+
 function CMD.addaoiobj(_,agentinfo,agent)
 	log.debug("user(%s) can watch user(%s)",user.uid,agentinfo.uid)
 	skynet.fork( function ()
-		local reader = skynet.call(agent,"lua","createreader")
-		readerlist[agentinfo.uuid] = sharemap.reader ("charactermovement", reader)
-		agentlist[agentinfo.uuid] = agentinfo
+		if readerlist[agentinfo.uuid] == nil then
+			local reader = skynet.call(agent,"lua","createreader")
+			readerlist[agentinfo.uuid] = sharemap.reader ("charactermovement", reader)
+			agentlist[agentinfo.uuid] = agentinfo
+			agentlist[agentinfo.uuid].agent = agent
+			user.CMD.updateinfo()
+		end
 	end)
 end
 

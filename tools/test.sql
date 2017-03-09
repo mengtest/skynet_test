@@ -2,15 +2,15 @@
 Navicat MySQL Data Transfer
 
 Source Server         : mysql_test
-Source Server Version : 50540
+Source Server Version : 50554
 Source Host           : localhost:3306
 Source Database       : test
 
 Target Server Type    : MYSQL
-Target Server Version : 50540
+Target Server Version : 50554
 File Encoding         : 65001
 
-Date: 2017-01-24 14:26:21
+Date: 2017-03-10 03:16:23
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -43,5 +43,6 @@ CREATE TABLE `playerdate` (
   `x` float(32,0) NOT NULL,
   `y` float(32,0) NOT NULL,
   `z` float(32,0) NOT NULL,
+  `data` mediumtext NOT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;

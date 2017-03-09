@@ -73,7 +73,7 @@ local function logout(type)
 		local map = user.map
 		user.map = nil
 		if map then
-			skynet.send(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
+			skynet.call(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)
@@ -85,7 +85,7 @@ local function logout(type)
 		local world = user.world
 		user.world = nil
 		if world then
-			skynet.send(world, "lua", "characterleave", user.character.uuid)
+			skynet.call(world, "lua", "characterleave", user.character.uuid)
 		end
 	end
 
