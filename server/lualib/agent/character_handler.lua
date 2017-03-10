@@ -149,7 +149,7 @@ function _handler.save (character)
 		return
 	end
 	character.data = packer.pack(character.data)
-	return skynet.call (dbmgr, "lua", "playerdate", "save", user.uid,character)
+	return skynet.call (dbmgr, "lua", "playerdate", "save", character)
 end
 
 

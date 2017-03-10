@@ -19,7 +19,7 @@ local session_id
 local gate
 local CMD = {}
 
-agentstatus = {
+local agentstatus = {
 	AGENT_INIT = 1,
 	AGENT_RUNNING = 2,
 	AGENT_QUIT = 3,
@@ -74,6 +74,7 @@ local function logout(type)
 		user.map = nil
 		if map then
 			skynet.call(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
+			CMD.delaoiobj(nil,user.character.uuid)
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)

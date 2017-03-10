@@ -25,7 +25,7 @@ function CMD.close()
   log.notice("close namecheck...")
 end
 
-function init()
+local function init()
   mysqlpool = skynet.uniqueservice("mysqlpool")
 end
 

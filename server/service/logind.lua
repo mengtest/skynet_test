@@ -12,8 +12,6 @@ local dbmgrserver
 local server_list = {}
 --在线玩家列表
 local user_online = {}
---玩家登陆列表
-local user_login = {}
 
 --认证
 --在这个方法内做远程调用（skynet.call）是安全的。

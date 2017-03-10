@@ -1,6 +1,7 @@
 local skynet = require "skynet"
 local log = require "syslog"
 require "skynet.manager"
+local set_timeout = set_timeout
 
 local CMD = {}
 local OBJ = {}
@@ -38,8 +39,6 @@ function CMD.characterleave(obj)
   assert(obj)
   log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
-	assert(OBJ[obj.tempid])
-	skynet.send(OBJ[obj.tempid].agent,"lua","delaoiobj",OBJ[obj.tempid].info.uuid)
   OBJ[obj.tempid] = nil
 end
 
@@ -59,7 +58,7 @@ function CMD.close(name)
 end
 
 skynet.start(function()
-	skynet.dispatch("text", function (session, source, cmd)
+	skynet.dispatch("text", function (_, _, cmd)
 		local t = cmd:split(" ")
 		local f = CMD[t[1]]
 		if f then

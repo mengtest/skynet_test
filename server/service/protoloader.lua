@@ -1,4 +1,3 @@
-local skynet = require "skynet"
 local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
 local service = require "service"

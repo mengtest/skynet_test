@@ -44,7 +44,7 @@ end
 function CMD.delaoiobj(_,uuid)
 	updateagentlist()
 	if not table.empty(agentlist) then
-		for k,v in pairs(agentlist) do
+		for _,v in pairs(agentlist) do
 			skynet.call(v.agent, "lua", "leaveaoiobj", uuid);
 		end
 	end

@@ -181,7 +181,6 @@ local function accept(conf, s, fd, addr)
 	-- 去 slave 认证
 	local ok, server, uid, secret = skynet.call(s, "lua",  fd, addr)
 	-- slave will accept(start) fd, so we can write to fd later
-
 	--根据认证结果
 	if not ok then
 		if ok ~= nil then
@@ -229,7 +228,7 @@ local function launch_master(conf)
 	--根据配置中conf.instance的的数量启动login slave
 	--其实就是在启动loginserver，但是在start中会检测是否有master
 	--当有master存在的时候，就是启动slave了
-	for i=1,instance do
+	for _ = 1,instance do
 		table.insert(slave, skynet.newservice(SERVICE_NAME))
 	end
 

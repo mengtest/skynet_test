@@ -1,4 +1,3 @@
-local skynet = require "skynet"
 local service = require "service"
 local mysql = require "mysql"
 local config = require "config.mysqlconf"
@@ -10,7 +9,7 @@ local group = {}
 local ngroup
 local index = 1
 
-function getconn (write)
+local function getconn (write)
 	local db
 	if write then
 		db = center
@@ -50,7 +49,7 @@ function CMD.close()
 	for _, db in pairs(group) do
 		db:disconnect()
 	end
-	pool = {}
+	group = {}
 end
 
 service.init {

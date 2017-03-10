@@ -21,7 +21,7 @@ local dbname = mysqlconf.center.database
 
 --向redis发送cmd请求
 --这里的uid主要用于在redis中选择redis server
-function do_redis(args, uid)
+local function do_redis(args, uid)
 	local cmd = assert(args[1])
 	args[1] = uid
 	return skynet.call(service["redispool"], "lua", cmd, table.unpack(args))
@@ -101,7 +101,7 @@ local function convert_record(tbname, record)
 end
 
 --将table row中的值，根据key的名称提取出来后组合成rediskey
-function make_rediskey(row, key)
+local function make_rediskey(row, key)
 	local rediskey = ""
 	local fields = string.split(key, ",")
 	for i, field in pairs(fields) do
@@ -116,7 +116,7 @@ function make_rediskey(row, key)
 end
 
 --通过fields提供的k将t中的数据格式化
-function make_pairs_table(t, fields)
+local function make_pairs_table(t, fields)
 	assert(type(t) == "table", "make_pairs_table t is not table")
 
 	local data = {}
@@ -138,7 +138,7 @@ end
 --如果有uid，那么只读该玩家的信息并写入redis
 --返回的data为table，为结果集
 --集合中table中值的类型和数据库中的类型相符
-function CMD:load_data_impl(config, uid)
+function CMD.load_data_impl(config, uid)
 	local tbname = config.tbname
 	local pk = schema[tbname]["pk"]
 	local offset = 0
@@ -184,9 +184,9 @@ function CMD:load_data_impl(config, uid)
 end
 
 -- 加user类型表单行数据到redis
-function CMD:load_user_single(tbname, uid)
+function CMD.load_user_single(tbname, uid)
 	local config = dbtableconfig[tbname]
-	local data = self:load_data_impl(config, uid)
+	local data = CMD.load_data_impl(config, uid)
 	assert(#data <= 1)
 	if #data == 1 then
 		return data[1]
@@ -196,13 +196,13 @@ function CMD:load_user_single(tbname, uid)
 end
 
 -- 加user类型表多行数据到redis
-function CMD:load_user_multi(tbname, uid)
+function CMD.load_user_multi(tbname, uid)
 	local config = dbtableconfig[tbname]
 	local data = {}
-	local t = self:load_data_impl(config, uid)
+	local t = CMD.load_data_impl(config, uid)
 
 	local pk = schema[tbname]["pk"]
-	for k, v in pairs(t) do
+	for _, v in pairs(t) do
 		data[v[pk]] = v
 	end
 
@@ -213,11 +213,9 @@ end
 -- 在mysql中查询的时候，如果查到了，会同步到redis中去的
 -- redis和mysql中都没有找到的时候返回空的table
 -- 单条查询
-function CMD:execute_single(tbname, uid, fields)
-	local config = dbtableconfig[tbname]
-	local rediskey = tbname .. ":" .. uid
-
+function CMD.execute_single(tbname, uid, fields)
 	local result
+	local rediskey = tbname .. ":" .. uid
 	if fields then
 		result = do_redis({ "hmget", rediskey, table.unpack(fields) }, uid)
 		result = make_pairs_table(result, fields)
@@ -229,10 +227,10 @@ function CMD:execute_single(tbname, uid, fields)
 	-- redis没有数据返回，则从mysql加载
 	if table.empty(result) then
 		log.debug("load data from mysql:"..uid)
-		local t = self:load_user_single(tbname, uid)
+		local t = CMD.load_user_single(tbname, uid)
 		if fields and not table.empty(t) then
 			result = {}
-			for k, v in pairs(fields) do
+			for _, v in pairs(fields) do
 				result[v] = t[v]
 			end
 		else
@@ -249,7 +247,7 @@ end
 -- 在mysql中查询的时候，如果查到了，会同步到redis中去的
 -- redis和mysql中都没有找到的时候返回空的table
 -- 多条查询,当有id的时候，只提取多条中的一条
-function CMD:execute_multi(tbname, uid, id, fields)
+function CMD.execute_multi(tbname, uid, id, fields)
 	local result
 	local rediskey = tbname .. ":index:" .. uid
 	local ids = do_redis({ "zrange", rediskey, 0, -1 }, uid)
@@ -271,29 +269,29 @@ function CMD:execute_multi(tbname, uid, id, fields)
 			--获取全部数据
 			result = {}
 			if fields then
-				for _, id in pairs(ids) do
-					local t = do_redis({ "hmget", tbname .. ":" .. id, table.unpack(fields)}, uid)
+				for _, _id in pairs(ids) do
+					local t = do_redis({ "hmget", tbname .. ":" .. _id, table.unpack(fields)}, uid)
 					t = make_pairs_table(t,fields)
 					t = convert_record(tbname, t)
-					result[tonumber(id)] = t
+					result[tonumber(_id)] = t
 				end
 			else
-				for _, id in pairs(ids) do
-					local t = do_redis({ "hgetall", tbname .. ":" .. id }, uid)
+				for _, _id in pairs(ids) do
+					local t = do_redis({ "hgetall", tbname .. ":" .. _id }, uid)
 					t = make_pairs_table(t)
 					t = convert_record(tbname, t)
-					result[tonumber(id)] = t
+					result[tonumber(_id)] = t
 				end
 			end
 		end
 	else
 		-- mysql查询
-		local t = self:load_user_multi(tbname, uid)
+		local t = CMD.load_user_multi(tbname, uid)
 
 		if id then
 			if fields then
 				result = {}
-				for k, v in pairs(fields) do
+				for _, v in pairs(fields) do
 					result[v] = t[id][v]
 				end
 			else
@@ -302,7 +300,7 @@ function CMD:execute_multi(tbname, uid, id, fields)
 		else
 			if fields then
 				result = {}
-				for k, v in pairs(t) do
+				for k, _ in pairs(t) do
 					result[k] = {}
 					setmetatable(result, { __mode = "k" })
 
@@ -321,7 +319,7 @@ end
 
 --！！这边的add、update都会导致uid这个字段跟着更新...可能需要调整一下
 -- redis中增加一行记录，默认同步到mysql
-function CMD:add(tbname, row, immed, nosync)
+function CMD.add(tbname, row, immed, nosync)
 	local config = dbtableconfig[tbname]
 	local uid = row.uid
 	local key = config.rediskey
@@ -358,7 +356,7 @@ function CMD:add(tbname, row, immed, nosync)
 end
 
 -- redis中更新一行记录，并同步到mysql
-function CMD:update(tbname, row, nosync)
+function CMD.update(tbname, row, nosync)
 	local config = dbtableconfig[tbname]
 	local uid = row.uid
 	local key = config.rediskey
@@ -387,11 +385,11 @@ end
 local function module_init (name, mod)
 	MODULE[name] = mod
 	mod.init (CMD)
-	CMD:load_data_impl(dbtableconfig[name])
+	CMD.load_data_impl(dbtableconfig[name])
 end
 local system = {}
 
-function system.open(tbname, row, nosync)
+function system.open()
 	for _, name in ipairs(servername) do
 		service[name] = skynet.uniqueservice(name)
 	end

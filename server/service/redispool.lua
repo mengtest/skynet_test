@@ -1,5 +1,3 @@
---！！！留意一下，貌似如果使用的地方的语法错误，这边就得不到返回，假死
-local skynet = require "skynet"
 local service = require "service"
 local redis = require "redis"
 local config = require "config.redisconf"
@@ -43,7 +41,7 @@ local function hash_num (num)
 	return hash
 end
 
-function getconn (key)
+local function getconn (key)
 	if key == nil then
 		return center
 	end

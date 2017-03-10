@@ -12,6 +12,15 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
+addaoiobj那边进入过两次..可能发了两次updateinfo()？有空看看
+
+留意一下，redispool那边貌似如果使用的地方的语法错误，这边就得不到返回，假死
+
+有条件的时候需要测试视野相关的上下线，完善aoi相关机制
+
+delaoiobj那边可能需要设置一下玩家为下线状态，然后characterwriter:commit()一下。
+然后在updateagentlist中判断玩家的在线状态
+
 aoi的cservice里面写的多线程触发message_update失败，使用的是lua那边call cservice。
 这边可能需要看一下，能不能不走call，直接在cservice那边使用多线程update
 

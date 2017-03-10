@@ -69,7 +69,7 @@ end
 function CMD.close()
   log.notice("close map(%s)...",config.name)
   skynet.call(aoi,"lua","close",config.name)
-  for k,v in pairs(onlinecharacter) do
+  for k,_ in pairs(onlinecharacter) do
     skynet.call(k,"lua","close")
   end
 end
