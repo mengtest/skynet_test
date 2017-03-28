@@ -16,7 +16,7 @@ _handler:release (function ()
 	user = nil
 end)
 
-function CMD.updateinfo()
+function CMD.updateinfo(_,aoiobj)
 	local info = {
 		name = user.character.name,
 		tempid = user.character.aoiobj.tempid,
@@ -25,7 +25,7 @@ function CMD.updateinfo()
 		level = user.character.level,
 		pos = user.character.aoiobj.movement.pos,
 	}
-	user.send_boardrequest("characterupdate",{ info = info })
+	user.send_boardrequest("characterupdate",{ info = info },aoiobj)
 end
 
 function REQUEST.moveto (args)

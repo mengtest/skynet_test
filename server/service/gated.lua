@@ -131,9 +131,9 @@ end
 --发送同一条消息给多个user
 function server.send_board_request_handler(msg,userlist)
 	for _,v in pairs(userlist) do
-		local u = users[v.uid]
+		local u = users[v.info.uid]
 		if u then
-			local username = msgserver.username(v.uid, v.subid, servername)
+			local username = msgserver.username(v.info.uid, v.info.subid, servername)
 			assert(u.username == username)
 			msgserver.request(u.username,msg)
 		end

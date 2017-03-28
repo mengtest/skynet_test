@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "aoi.h"
 
-#define AOI_RADIS 10.0f
+#define AOI_RADIS 200.0f
 
 #define INVALID_ID (~0)
 #define PRE_ALLOC 16
@@ -241,7 +241,7 @@ set_new(struct aoi_space * space) {
 	return set;
 }
 
-struct aoi_space * 
+struct aoi_space *
 aoi_create(aoi_Alloc alloc, void *ud) {
 	struct aoi_space *space = alloc(ud, NULL, sizeof(*space));
 	space->alloc = alloc;
@@ -273,7 +273,7 @@ delete_set(struct aoi_space *space, struct object_set * set) {
 	space->alloc(space->alloc_ud, set, sizeof(*set));
 }
 
-void 
+void
 aoi_release(struct aoi_space *space) {
 	map_foreach(space->object, delete_object, space);
 	map_delete(space, space->object);
@@ -285,7 +285,7 @@ aoi_release(struct aoi_space *space) {
 	space->alloc(space->alloc_ud, space, sizeof(*space));
 }
 
-inline static void 
+inline static void
 copy_position(float des[3], float src[3]) {
 	des[0] = src[0];
 	des[1] = src[1];
@@ -379,7 +379,7 @@ aoi_update(struct aoi_space * space , uint32_t id, const char * modestring , flo
 		copy_position(obj->last , pos);
 		obj->mode |= MODE_MOVE;
 		++obj->version;
-	} 
+	}
 }
 
 static void
@@ -444,7 +444,7 @@ set_push(void * s, struct object * obj) {
 		} else {
 			set_push_back(space, space->watcher_static , obj);
 		}
-	} 
+	}
 	if (mode & MODE_MARKER) {
 		if (mode & MODE_MOVE) {
 			set_push_back(space, space->marker_move , obj);
@@ -489,14 +489,14 @@ gen_pair_list(struct aoi_space *space, struct object_set * watcher, struct objec
 	}
 }
 
-void 
+void
 aoi_message(struct aoi_space *space, aoi_Callback cb, void *ud) {
 	flush_pair(space,  cb, ud);
 	space->watcher_static->number = 0;
 	space->watcher_move->number = 0;
 	space->marker_static->number = 0;
 	space->marker_move->number = 0;
-	map_foreach(space->object, set_push , space);	
+	map_foreach(space->object, set_push , space);
 	gen_pair_list(space, space->watcher_static, space->marker_move, cb, ud);
 	gen_pair_list(space, space->watcher_move, space->marker_static, cb, ud);
 	gen_pair_list(space, space->watcher_move, space->marker_move, cb, ud);
@@ -512,7 +512,7 @@ default_alloc(void * ud, void *ptr, size_t sz) {
 	return NULL;
 }
 
-struct aoi_space * 
+struct aoi_space *
 aoi_new() {
 	return aoi_create(default_alloc, NULL);
 }

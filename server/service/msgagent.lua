@@ -36,11 +36,11 @@ local function send_msg (msg,sessionid)
 	end
 end
 
-local function send_boardmsg (msg,sessionid)
+local function send_boardmsg (msg, sessionid, agentlist)
 	local str = msg..string.pack(">I4", sessionid)
 	local package = string.pack (">s2", str)
 	assert(CMD.boardcast)
-	CMD.boardcast(nil,gate,package)
+	CMD.boardcast(nil, gate, package, agentlist)
 end
 
 local function send_request (name, args)
@@ -50,10 +50,10 @@ local function send_request (name, args)
 	session[session_id] = { name = name, args = args }
 end
 
-local function send_boardrequest (name, args)
+local function send_boardrequest (name, args, agentlist)
 	--session_id = session_id + 1
 	local str = request (name, args, 0)
-	send_boardmsg (str,0)
+	send_boardmsg (str, 0, agentlist)
 	--session[session_id] = { name = name, args = args }
 end
 
@@ -74,7 +74,7 @@ local function logout(type)
 		user.map = nil
 		if map then
 			skynet.call(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
-			CMD.delaoiobj(nil,user.character.uuid)
+			CMD.delaoiobj(nil,user.character.aoiobj.tempid)
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)
@@ -124,7 +124,7 @@ local traceback = debug.traceback
 --接受到的请求
 local REQUEST = {}
 local function handle_request (name, args, response)
-	log.warning ("get handle_request from client: %s", name)
+	--log.warning ("get handle_request from client: %s", name)
 	local f = REQUEST[name]
 	if f then
 		local ok, ret = xpcall (f, traceback, args)

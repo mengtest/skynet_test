@@ -46,7 +46,7 @@ function CMD.characterready(agent,uuid,aoiobj)
   log.debug("uuid(%d) load map ready",uuid)
   aoiobj.movement.mode = "wm"
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
-  skynet.call(agent,"lua","updateinfo")
+  --skynet.call(agent,"lua","updateinfo")
   return true
 end
 

@@ -32,3 +32,9 @@ characterupdate 3 {
 		info 0 : character_info
 	}
 }
+
+characterleave 4 {
+	request {
+		tempid 0 : integer
+	}
+}

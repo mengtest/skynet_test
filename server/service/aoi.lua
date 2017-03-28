@@ -18,17 +18,17 @@ skynet.register_protocol {
 function CMD.aoicallback(w,m)
   assert(OBJ[w])
   assert(OBJ[m])
-  log.debug("AOI CALLBACK:%d(%d,%d) => %d(%d,%d)",w,OBJ[w].movement.pos.x,OBJ[w].movement.pos.y,m,OBJ[m].movement.pos.x,OBJ[m].movement.pos.y)
+  --log.debug("AOI CALLBACK:%d(%d,%d) => %d(%d,%d)",w,OBJ[w].movement.pos.x,OBJ[w].movement.pos.y,m,OBJ[m].movement.pos.x,OBJ[m].movement.pos.y)
   --将视野内的玩家通知agent
   assert(OBJ[w].agent)
-  skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m].info,OBJ[m].agent)
+  skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m])
 end
 
 --添加到aoi
 function CMD.characterenter(agent,obj)
   assert(agent)
   assert(obj)
-  log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
+  --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
   OBJ[obj.tempid] = obj
   OBJ[obj.tempid].agent = agent
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." "..obj.movement.mode.." "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))

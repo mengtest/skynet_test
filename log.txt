@@ -13,6 +13,9 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 warning:
 
 addaoiobj那边进入过两次..可能发了两次updateinfo()？有空看看
+--updateinfo()确实会发多次，不过不知道是不是addaoiobj那边进入过两次
+--因为在characterready这边会请求一次，已经注释掉了，没有必要
+--client进入之后，马上moveto了也会导致updateinfo
 
 留意一下，redispool那边貌似如果使用的地方的语法错误，这边就得不到返回，假死
 
