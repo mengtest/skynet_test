@@ -58,7 +58,11 @@ local function updateagentlist()
 					user.send_request("characterleave",{ tempid = kk })
 				end
 				--通知其他对象移除自己
-				user.send_boardrequest("characterleave",{ tempid = user.character.aoiobj.tempid },leavelist)
+				local templist = table.copy(leavelist)
+				for _,v in pairs(templist) do
+					v.cansend = true
+				end
+				user.send_boardrequest("characterleave",{ tempid = user.character.aoiobj.tempid },templist)
 			end
 			--进入视野
 			if not table.empty(enterlist) then
@@ -102,7 +106,6 @@ function CMD.addaoiobj(_,aoiobj)
 			local reader = skynet.call(aoiobj.agent,"lua","createreader")
 			readerlist[aoiobj.tempid] = sharemap.reader ("charactermovement", reader)
 			agentlist[aoiobj.tempid] = aoiobj
-			agentlist[aoiobj.tempid].cansend = true
 			skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character.aoiobj })
 			user.CMD.updateinfo()
 		end
@@ -113,11 +116,7 @@ function CMD.boardcast(_, gate, package, list)
 	if gate then
 		if list then
 			assert(type(list) == "table","boardcast list is not a table")
-			local templist = table.copy(list)
-			for _,v in pairs(templist) do
-				v.cansend = true
-			end
-			skynet.call(gate, "lua", "boardrequest", package, templist);
+			skynet.call(gate, "lua", "boardrequest", package, list);
 		else
 			updateagentlist()
 			if not table.empty(agentlist) then

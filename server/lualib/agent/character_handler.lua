@@ -125,6 +125,7 @@ function _handler.init (character)
 	assert(mapdata[character.mapid])
 	character.map = mapdata[character.mapid].name
 	character.aoiobj = {
+		cansend = true,
 		tempid = 1,
 		movement = {
 			mode = "wm",
