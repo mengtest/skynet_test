@@ -12,6 +12,8 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
+aoi总感觉乱乱的...有时间理一下..
+
 addaoiobj那边进入过两次..可能发了两次updateinfo()？有空看看
 --updateinfo()确实会发多次，不过不知道是不是addaoiobj那边进入过两次
 --因为在characterready这边会请求一次，已经注释掉了，没有必要

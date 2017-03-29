@@ -11,6 +11,34 @@ table.empty = function(t)
     return not next(t)
 end
 
+-- 浅拷贝
+table.clone = function(t, nometa)
+    local result = {}
+    if not nometa then
+        setmetatable(result, getmetatable(t))
+    end
+    for k, v in pairs (t) do
+        result[k] = v
+    end
+    return result
+end
+
+-- 深拷贝
+table.copy = function(t, nometa)
+    local result = {}
+    if not nometa then
+        setmetatable(result, getmetatable(t))
+    end
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            result[k] = table.copy(v)
+        else
+            result[k] = v
+        end
+    end
+    return result
+end
+
 ----string
 string.split = function(s, delim)
     local split = {}

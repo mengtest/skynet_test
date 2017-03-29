@@ -132,7 +132,7 @@ end
 function server.send_board_request_handler(msg,userlist)
 	for _,v in pairs(userlist) do
 		local u = users[v.info.uid]
-		if u then
+		if u and v.cansend then
 			local username = msgserver.username(v.info.uid, v.info.subid, servername)
 			assert(u.username == username)
 			msgserver.request(u.username,msg)

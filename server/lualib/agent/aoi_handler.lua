@@ -7,7 +7,8 @@ local CMD = {}
 
 local _handler = handler.new (nil,nil,CMD)
 
-local AOI_RADIS2 = 200 * 200 * 4
+local AOI_RADIS2 = 200 * 200
+local LEAVE_AOI_RADIS2 = 200 * 200 * 4
 local user
 local agentlist
 local readerlist
@@ -32,20 +33,39 @@ local function updateagentlist()
 	for k,v in pairs(readerlist) do
 		v:update()
 		assert(v.pos)
-		local list = {}
-		if DIST2(user.character.aoiobj.movement.pos,v.pos) > AOI_RADIS2 then
-			list[k] = agentlist[k]
+		local leavelist = {}
+		local enterlist = {}
+		local nDist = DIST2(user.character.aoiobj.movement.pos,v.pos)
+		if nDist <= AOI_RADIS2 then
+			if agentlist[k].cansend == false then
+				enterlist[k] = agentlist[k]
+			end
+			agentlist[k].cansend = true
+		elseif nDist > AOI_RADIS2 and nDist <= LEAVE_AOI_RADIS2 then
+			agentlist[k].cansend = false
+			leavelist[k] = agentlist[k]
+		else
+			leavelist[k] = agentlist[k]
 			readerlist[k] = nil
 			agentlist[k] = nil
 		end
 		--移除对象
 		skynet.fork( function ()
-			--移除自己视野内的对象
-			for kk,_ in pairs(list) do
-				user.send_request("characterleave",{ tempid = kk })
+			--离开视野
+			if not table.empty(leavelist) then
+				--移除自己视野内的对象
+				for kk,vv in pairs(leavelist) do
+					user.send_request("characterleave",{ tempid = kk })
+				end
+				--通知其他对象移除自己
+				user.send_boardrequest("characterleave",{ tempid = user.character.aoiobj.tempid },leavelist)
 			end
-			--通知其他对象移除自己
-			user.send_boardrequest("characterleave",{ tempid = user.character.aoiobj.tempid },list)
+			--进入视野
+			if not table.empty(enterlist) then
+				for k,v in pairs(enterlist) do
+					skynet.send(v.agent, "lua", "updateinfo", { aoiobj = user.character.aoiobj })
+				end
+			end
 		end)
 	end
 end
@@ -82,7 +102,8 @@ function CMD.addaoiobj(_,aoiobj)
 			local reader = skynet.call(aoiobj.agent,"lua","createreader")
 			readerlist[aoiobj.tempid] = sharemap.reader ("charactermovement", reader)
 			agentlist[aoiobj.tempid] = aoiobj
-			skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character.aoiobj });
+			agentlist[aoiobj.tempid].cansend = true
+			skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character.aoiobj })
 			user.CMD.updateinfo()
 		end
 	end)
@@ -92,13 +113,14 @@ function CMD.boardcast(_, gate, package, list)
 	if gate then
 		if list then
 			assert(type(list) == "table","boardcast list is not a table")
-			skynet.call(gate, "lua", "boardrequest", package, list);
+			local templist = table.copy(list)
+			for _,v in pairs(templist) do
+				v.cansend = true
+			end
+			skynet.call(gate, "lua", "boardrequest", package, templist);
 		else
 			updateagentlist()
 			if not table.empty(agentlist) then
-				--for k,v in pairs(agentlist) do
-				--	log.debug("@@@@(%s)%d,%s,%d",user.uid,k,v.uid,v.subid)
-				--end
 				skynet.call(gate, "lua", "boardrequest", package, agentlist);
 			end
 		end
