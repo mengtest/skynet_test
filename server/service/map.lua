@@ -1,5 +1,6 @@
 local skynet = require "skynet"
 local log = require "syslog"
+local mapfun = require "map.map_handle"
 
 local CMD = {}
 local onlinecharacter = {}
@@ -64,6 +65,7 @@ function CMD.open(conf)
   config = conf
   aoi = skynet.newservice("aoi")
   skynet.call(aoi,"lua","open",config.name)
+  mapfun.init(conf,aoi)
 end
 
 function CMD.close()

@@ -239,6 +239,7 @@ end
 function RESPONSE:moveto(args)
 	print("moveto:")
 	print(args.pos)
+	moveto()
 	--quitgame()
 end
 
@@ -273,6 +274,10 @@ end
 function REQUEST.characterupdate(args)
 	print("characterupdate:")
 	print(args)
+end
+
+function REQUEST.characterleave(args)
+	print("characterleave:")
 end
 
 ----- connect to game server
