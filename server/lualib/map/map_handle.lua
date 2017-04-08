@@ -1,6 +1,5 @@
 local log = require "syslog"
-local monsterfunc = require "obj.monsterfunc"
-local playerfunc = require "obj.playerfunc"
+local npc = require "obj.npc"
 
 local _aoi
 local _map = {}
@@ -10,7 +9,7 @@ local _monster = {}
 function _map.init(conf,aoi)
   _aoi = aoi
   log.debug("map init")
-  --monsterfunc.init()
+
 end
 
 function _map.run()
