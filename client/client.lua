@@ -239,7 +239,7 @@ end
 function RESPONSE:moveto(args)
 	print("moveto:")
 	print(args.pos)
-	moveto()
+	--moveto()
 	--quitgame()
 end
 

@@ -15,6 +15,7 @@ skynet.register_protocol {
 	unpack = function(buf, sz) return skynet.tostring(buf,sz) end,
 }
 
+--aoi回调
 function CMD.aoicallback(w,m)
   assert(OBJ[w])
   assert(OBJ[m])
@@ -28,6 +29,11 @@ end
 function CMD.characterenter(agent,obj)
   assert(agent)
   assert(obj)
+  assert(obj.movement)
+	assert(obj.movement.mode)
+	assert(obj.movement.pos.x)
+	assert(obj.movement.pos.y)
+	assert(obj.movement.pos.z)
   --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
   OBJ[obj.tempid] = obj
   OBJ[obj.tempid].agent = agent
@@ -42,6 +48,7 @@ function CMD.characterleave(obj)
   OBJ[obj.tempid] = nil
 end
 
+--0.1秒更新一次
 local function message_update ()
 	assert(pcall(skynet.send,aoi, "text", "message "))
 	update_thread = set_timeout (10, message_update)

@@ -13,6 +13,12 @@ end
 
 --扩展方法表
 function _basechar.expandmethod(obj)
+	--设置aoi mode
+	function obj:setaoimode(mode)
+		assert(type(mode) == "string")
+		self.aoiobj.mode = mode
+	end
+
 	--设置角色临时id
 	function obj:settempid(id)
 		assert(self.aoiobj)

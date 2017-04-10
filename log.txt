@@ -14,6 +14,8 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
+idmgr那边写了三种实现的方法...不知道哪种更好？或者都一样？
+
 aoi那边，看是player发送mapready之后再加入到aoi中还是以w模式先加到aoi，ready之后再设置为wm模式
 
 aoi总感觉乱乱的...有时间理一下..

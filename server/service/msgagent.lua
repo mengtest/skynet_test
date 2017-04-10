@@ -196,6 +196,7 @@ function CMD.worldenter(_,world)
 	--print(user)
 	user.world = world
 	character_handler:unregister (user)
+	user.character:setaoimode("w")
 	return user.character:getmapid(),user.character:getaoiobj()
 end
 

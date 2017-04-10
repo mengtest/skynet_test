@@ -1,6 +1,7 @@
 local skynet = require "skynet"
 local log = require "syslog"
 local mapfun = require "map.map_handle"
+local idmgr = require "idmgr"
 
 local CMD = {}
 local onlinecharacter = {}
@@ -11,20 +12,18 @@ local world = ...
 world = tonumber(world)
 local config
 
-local temp = 1
-
+--角色请求进入地图
 function CMD.characterenter(agent, uuid,aoiobj)
   log.debug("uuid(%d) enter map(%s)",uuid,config.name)
   assert(aoi)
-  aoiobj.tempid = temp
-  temp = temp + 1
+  aoiobj.tempid = idmgr:createid()
   pendingcharacter[agent] = uuid
   skynet.send (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
-  aoiobj.movement.mode = "w"
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
   return true
 end
 
+--角色离开地图
 function CMD.characterleave(agent, aoiobj)
   local uuid = onlinecharacter[agent] or pendingcharacter[agent]
   if uuid ~=nil then
@@ -33,10 +32,12 @@ function CMD.characterleave(agent, aoiobj)
   else
     log.debug("uuid(%d) leave map(%s) BUT cannot find !",uuid,config.name)
   end
+  idmgr:releaseid(aoiobj.tempid)
   onlinecharacter[agent] = nil
   pendingcharacter[agent] = nil
 end
 
+--角色加载地图完成，正式进入地图
 function CMD.characterready(agent,uuid,aoiobj)
   if pendingcharacter[agent] == nil then
     log.debug("user(%s) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
@@ -45,12 +46,12 @@ function CMD.characterready(agent,uuid,aoiobj)
   onlinecharacter[agent] = pendingcharacter[agent]
   pendingcharacter[agent] = nil
   log.debug("uuid(%d) load map ready",uuid)
-  aoiobj.movement.mode = "wm"
   skynet.call(aoi,"lua","characterenter",agent,aoiobj)
   --skynet.call(agent,"lua","updateinfo")
   return true
 end
 
+--角色移动
 function CMD.moveto(agent,aoiobj)
   if onlinecharacter[agent] == nil then
     log.debug("user(%d) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
@@ -63,6 +64,7 @@ end
 
 function CMD.open(conf)
   config = conf
+  idmgr:setmaxid(65535)
   aoi = skynet.newservice("aoi")
   skynet.call(aoi,"lua","open",config.name)
   mapfun.init(conf,aoi)
