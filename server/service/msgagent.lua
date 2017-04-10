@@ -73,8 +73,8 @@ local function logout(type)
 		local map = user.map
 		user.map = nil
 		if map then
-			skynet.call(map, "lua", "characterleave", skynet.self(),user.character.aoiobj)
-			CMD.delaoiobj(nil,user.character.aoiobj.tempid)
+			skynet.call(map, "lua", "characterleave", skynet.self(),user.character:getaoiobj())
+			CMD.delaoiobj(nil,user.character:gettempid())
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)
@@ -86,7 +86,7 @@ local function logout(type)
 		local world = user.world
 		user.world = nil
 		if world then
-			skynet.call(world, "lua", "characterleave", user.character.uuid)
+			skynet.call(world, "lua", "characterleave", user.character:getuuid())
 		end
 	end
 
@@ -191,17 +191,19 @@ skynet.register_protocol {
 }
 
 function CMD.worldenter(_,world)
-	character_handler.init(user.character)
+	character_handler.init(user.dbdata)
+	user.dbdata = nil
+	--print(user)
 	user.world = world
 	character_handler:unregister (user)
-	return user.character.map,user.character.aoiobj
+	return user.character:getmapid(),user.character:getaoiobj()
 end
 
 function CMD.mapenter(_,map,tempid)
 	user.map = map
-	user.character.aoiobj.tempid = tempid
+	user.character:settempid(tempid)
 
-	log.debug("enter map and set tempid:"..user.character.aoiobj.tempid)
+	log.debug("enter map and set tempid:"..user.character:gettempid())
 	map_handler:register(user)
 	aoi_handler:register(user)
 	move_handler:register(user)

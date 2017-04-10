@@ -15,7 +15,7 @@ local readerlist
 
 _handler:init (function (u)
 	user = u
-	user.characterwriter = sharemap.writer ("charactermovement", user.character.aoiobj.movement)
+	user.characterwriter = sharemap.writer ("charactermovement", user.character:getmovement())
 	agentlist = {}
 	readerlist = {}
 end)
@@ -35,7 +35,7 @@ local function updateagentlist()
 		assert(v.pos)
 		local leavelist = {}
 		local enterlist = {}
-		local nDist = DIST2(user.character.aoiobj.movement.pos,v.pos)
+		local nDist = DIST2(user.character:getpos(),v.pos)
 		if nDist <= AOI_RADIS2 then
 			if agentlist[k].cansend == false then
 				enterlist[k] = agentlist[k]
@@ -54,20 +54,20 @@ local function updateagentlist()
 			--离开视野
 			if not table.empty(leavelist) then
 				--移除自己视野内的对象
-				for kk,vv in pairs(leavelist) do
+				for kk,_ in pairs(leavelist) do
 					user.send_request("characterleave",{ tempid = kk })
 				end
 				--通知其他对象移除自己
 				local templist = table.copy(leavelist)
-				for _,v in pairs(templist) do
-					v.cansend = true
+				for _,vv in pairs(templist) do
+					vv.cansend = true
 				end
-				user.send_boardrequest("characterleave",{ tempid = user.character.aoiobj.tempid },templist)
+				user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() },templist)
 			end
 			--进入视野
 			if not table.empty(enterlist) then
-				for k,v in pairs(enterlist) do
-					skynet.send(v.agent, "lua", "updateinfo", { aoiobj = user.character.aoiobj })
+				for _,vv in pairs(enterlist) do
+					skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
 				end
 			end
 		end)
@@ -89,7 +89,7 @@ function CMD.delaoiobj(_,tempid)
 			skynet.call(v.agent, "lua", "leaveaoiobj", tempid);
 		end
 	end
-	user.send_boardrequest("characterleave",{ tempid = user.character.aoiobj.tempid })
+	user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() })
 	agentlist = nil
 	readerlist = nil
 end
@@ -106,7 +106,7 @@ function CMD.addaoiobj(_,aoiobj)
 			local reader = skynet.call(aoiobj.agent,"lua","createreader")
 			readerlist[aoiobj.tempid] = sharemap.reader ("charactermovement", reader)
 			agentlist[aoiobj.tempid] = aoiobj
-			skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character.aoiobj })
+			skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
 			user.CMD.updateinfo()
 		end
 	end)

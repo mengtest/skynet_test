@@ -4,6 +4,7 @@ local log = require "base.syslog"
 local uuid = require "uuid"
 local sharedata = require "sharedata"
 local packer = require "db.packer"
+local player = require "obj.player"
 
 local user
 local dbmgr
@@ -108,12 +109,11 @@ function REQUEST.characterpick (args)
 	end
 	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
 	if list.uuid then
-		user.character = list
-		user.character.data = packer.unpack(user.character.data)
+		user.dbdata = list
 		user.characterlist = nil
 
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
-		local ret = skynet.call (world, "lua", "characterenter", user.character.uuid)
+		local ret = skynet.call (world, "lua", "characterenter", list.uuid)
 		return {ok = ret}
 	else
 		return {ok = false}
@@ -121,26 +121,40 @@ function REQUEST.characterpick (args)
 end
 
 --初始化角色信息
-function _handler.init (character)
-	assert(mapdata[character.mapid])
-	character.map = mapdata[character.mapid].name
-	character.aoiobj = {
+--传入的是DB中playerdate的数据
+function _handler.init (dbdata)
+	assert(mapdata[dbdata.mapid])
+	user.character = player.create()
+	user.character:setmapid(mapdata[dbdata.mapid].name)
+	--aoi对象，主要用于广播相关
+	local aoiobj = {
 		cansend = true,
 		tempid = 1,
 		movement = {
 			mode = "wm",
 			pos = {
-				x = character.x,
-				y = character.y,
-				z = character.z,
+				x = dbdata.x,
+				y = dbdata.y,
+				z = dbdata.z,
 			},
 		},
 		info = {
 			uid = user.uid,
 			subid = user.subid,
-			uuid = character.uuid,
+			uuid = dbdata.uuid,
 		},
 	}
+	user.character:setaoiobj(aoiobj)
+	--角色信息
+	local playerinfo = {
+		name = dbdata.name,
+		job = dbdata.job,
+		sex = dbdata.sex,
+		level = dbdata.level,
+		uuid = dbdata.uuid,
+	}
+	user.character:setobjinfo(playerinfo)
+	user.character:setdata(dbdata.data)
 end
 
 --保存角色信息

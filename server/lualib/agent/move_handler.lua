@@ -18,30 +18,30 @@ end)
 
 function CMD.updateinfo(_,aoiobj)
 	local info = {
-		name = user.character.name,
-		tempid = user.character.aoiobj.tempid,
-		job = user.character.job,
-		sex = user.character.sex,
-		level = user.character.level,
-		pos = user.character.aoiobj.movement.pos,
+		name = user.character:getname(),
+		tempid = user.character:gettempid(),
+		job = user.character:getjob(),
+		sex = user.character:getsex(),
+		level = user.character:getlevel(),
+		pos = user.character:getpos(),
 	}
 	user.send_boardrequest("characterupdate",{ info = info },aoiobj)
 end
 
 function REQUEST.moveto (args)
   local newpos = args.pos
-  local oldpos = user.character.aoiobj.movement.pos
+  local oldpos = user.character:getpos()
   for k, v in pairs (oldpos) do
     if not newpos[k] then
       newpos[k] = v
     end
   end
-	user.character.aoiobj.movement.pos = newpos
-  local ok, pos = skynet.call(user.map,"lua","moveto",skynet.self(),user.character.aoiobj)
+	user.character:setpos(newpos)
+  local ok, pos = skynet.call(user.map,"lua","moveto",skynet.self(),user.character:getaoiobj())
   if not ok then
     pos = oldpos
   end
-	user.character.aoiobj.movement.pos = pos
+	user.character:setpos(pos)
 	assert(user.characterwriter)
 	user.characterwriter:commit()
 	CMD.updateinfo()
