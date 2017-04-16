@@ -1,4 +1,5 @@
 local basechar = require "obj.basechar"
+local enumtype = require "enumtype"
 
 local _monster = {}
 local s_method = {__index = {}}
@@ -14,8 +15,8 @@ end
 init_method(s_method.__index)
 
 --创建monster
-function _monster.create()
-  local monster = basechar.create()
+function _monster.create(id,agent)
+  local monster = basechar.create(enumtype.CHAR_TYPE_MONSTER,agent)
   --monster特有属性
   monster.id = 0
 

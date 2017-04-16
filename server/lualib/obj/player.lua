@@ -1,4 +1,5 @@
 local basechar = require "obj.basechar"
+local enumtype = require "enumtype"
 
 local _player = {}
 local s_method = {__index = {}}
@@ -55,8 +56,8 @@ end
 init_method(s_method.__index)
 
 --创建player
-function _player.create()
-  local player = basechar.create()
+function _player.create(agent)
+  local player = basechar.create(enumtype.CHAR_TYPE_PLAYER,agent)
   --player 特有属性
 
   --所在地图

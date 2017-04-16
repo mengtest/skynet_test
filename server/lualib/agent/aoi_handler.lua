@@ -30,11 +30,11 @@ local function DIST2(p1,p2)
 end
 
 local function updateagentlist()
+	local leavelist = {}
+	local enterlist = {}
 	for k,v in pairs(readerlist) do
 		v:update()
 		assert(v.pos)
-		local leavelist = {}
-		local enterlist = {}
 		local nDist = DIST2(user.character:getpos(),v.pos)
 		if nDist <= AOI_RADIS2 then
 			if agentlist[k].cansend == false then
@@ -49,29 +49,29 @@ local function updateagentlist()
 			readerlist[k] = nil
 			agentlist[k] = nil
 		end
-		--移除对象
-		skynet.fork( function ()
-			--离开视野
-			if not table.empty(leavelist) then
-				--移除自己视野内的对象
-				for kk,_ in pairs(leavelist) do
-					user.send_request("characterleave",{ tempid = kk })
-				end
-				--通知其他对象移除自己
-				local templist = table.copy(leavelist)
-				for _,vv in pairs(templist) do
-					vv.cansend = true
-				end
-				user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() },templist)
-			end
-			--进入视野
-			if not table.empty(enterlist) then
-				for _,vv in pairs(enterlist) do
-					skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
-				end
-			end
-		end)
 	end
+	--移除对象
+	skynet.fork( function ()
+		--离开视野
+		if not table.empty(leavelist) then
+			--移除自己视野内的对象
+			for kk,_ in pairs(leavelist) do
+				user.send_request("characterleave",{ tempid = kk })
+			end
+			--通知其他对象移除自己
+			local templist = table.copy(leavelist)
+			for _,vv in pairs(templist) do
+				vv.cansend = true
+			end
+			user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() },templist)
+		end
+		--进入视野
+		if not table.empty(enterlist) then
+			for _,vv in pairs(enterlist) do
+				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
+			end
+		end
+	end)
 end
 
 function CMD.createreader()

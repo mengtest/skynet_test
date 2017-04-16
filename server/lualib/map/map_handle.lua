@@ -1,8 +1,9 @@
 local log = require "syslog"
 local npc = require "obj.npc"
 
-local _aoi
 local _map = {}
+
+local _aoi
 local _npc = {}
 local _monster = {}
 

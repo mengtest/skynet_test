@@ -1,46 +1,48 @@
+local aoifun = require "obj.aoifunc"
+local enumtype = require "enumtype"
+
 local _basechar = {}
 
-function _basechar.create()
+function _basechar.create(type,agent)
 	local obj = {
+		--类型
+		type = enumtype.CHAR_TYPE_UNKNOW,
 		--aoi对象
 		aoiobj = {},
 		--角色信息
 		objinfo = {},
+		--视野内的角色
+		aoilist = {},
 	}
+	assert(type and type > enumtype.CHAR_TYPE_UNKNOW and type < enumtype.CHAR_TYPE_MAX)
+	assert(agent)
 
+	obj.aoilist.agent = agent
+	obj.type = type
 	return obj
 end
 
 --扩展方法表
 function _basechar.expandmethod(obj)
-	--设置aoi mode
-	function obj:setaoimode(mode)
-		assert(type(mode) == "string")
-		self.aoiobj.mode = mode
+
+	--获取角色类型
+	function obj:gettype()
+		return self.type
 	end
 
-	--设置角色临时id
-	function obj:settempid(id)
-		assert(self.aoiobj)
-		assert(id > 0)
-		self.aoiobj.tempid = id
+	--是否玩家
+	function obj:isplayer()
+		return self.type == enumtype.CHAR_TYPE_PLAYER
 	end
 
-	--获取角色临时id
-	function obj:gettempid()
-		assert(self.aoiobj)
-		return self.aoiobj.tempid
+	--是否玩家
+	function obj:isnpc()
+		return self.type == enumtype.CHAR_TYPE_NPC
 	end
 
-	--设置aoi对象
-	function obj:setaoiobj(aoiobj)
-		assert(aoiobj)
-		self.aoiobj = aoiobj
-	end
-
-	--获取aoi对象
-	function obj:getaoiobj()
-		return self.aoiobj
+	--是否玩家
+	function obj:ismonster()
+		return self.type == enumtype.CHAR_TYPE_MONSTER
 	end
 
 	--设置角色信息
@@ -80,24 +82,8 @@ function _basechar.expandmethod(obj)
 		return self.objinfo.level
 	end
 
-	--设置角色所在坐标点
-	function obj:setpos(pos)
-		assert(self.aoiobj)
-		assert(pos)
-		self.aoiobj.movement.pos = pos
-	end
-
-	--获取角色所在坐标点
-	function obj:getpos()
-		assert(self.aoiobj)
-		return self.aoiobj.movement.pos
-	end
-
-	--获取移动相关数据
-	function obj:getmovement()
-		assert(self.aoiobj)
-		return self.aoiobj.movement
-	end
+	--添加aoifunc
+	aoifun.expandmethod(obj)
 end
 
 return _basechar
