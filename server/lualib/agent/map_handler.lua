@@ -19,7 +19,7 @@ end)
 function REQUEST.mapready ()
 	assert(user.map)
 	user.character:setaoimode("wm")
-	local ok = skynet.call (user.map, "lua", "characterready", skynet.self(),user.character:getuuid(),user.character:getaoiobj())
+	local ok = skynet.call (user.map, "lua", "characterready", user.character:getuuid(), user.character:getaoiobj())
 	return { ok = ok }
 end
 

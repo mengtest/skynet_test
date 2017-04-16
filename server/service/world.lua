@@ -34,7 +34,7 @@ function CMD.characterenter(agent, uuid)
 		return
 	end
 
-	 return skynet.call (m, "lua", "characterenter", agent, uuid, aoiobj)
+	 return skynet.call (m, "lua", "characterenter", uuid, aoiobj)
 end
 
 function CMD.characterleave(agent,uuid)

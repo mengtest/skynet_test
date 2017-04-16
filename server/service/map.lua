@@ -13,13 +13,13 @@ world = tonumber(world)
 local config
 
 --角色请求进入地图
-function CMD.characterenter(agent, uuid,aoiobj)
+function CMD.characterenter(uuid,aoiobj)
   log.debug("uuid(%d) enter map(%s)",uuid,config.name)
   assert(aoi)
   aoiobj.tempid = idmgr:createid()
-  pendingcharacter[agent] = uuid
-  skynet.send (agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
-  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
+  pendingcharacter[aoiobj.agent] = uuid
+  skynet.send (aoiobj.agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
+  skynet.call(aoi,"lua","characterenter",aoiobj)
   return true
 end
 
@@ -38,15 +38,15 @@ function CMD.characterleave(agent, aoiobj)
 end
 
 --角色加载地图完成，正式进入地图
-function CMD.characterready(agent,uuid,aoiobj)
-  if pendingcharacter[agent] == nil then
+function CMD.characterready(uuid,aoiobj)
+  if pendingcharacter[aoiobj.agent] == nil then
     log.debug("user(%s) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
     return false
   end
-  onlinecharacter[agent] = pendingcharacter[agent]
-  pendingcharacter[agent] = nil
+  onlinecharacter[aoiobj.agent] = pendingcharacter[aoiobj.agent]
+  pendingcharacter[aoiobj.agent] = nil
   log.debug("uuid(%d) load map ready",uuid)
-  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
+  skynet.call(aoi,"lua","characterenter",aoiobj)
   --skynet.call(agent,"lua","updateinfo")
   return true
 end
@@ -58,7 +58,7 @@ function CMD.moveto(agent,aoiobj)
     return false
   end
   --TODO 这边应该检查pos的合法性
-  skynet.call(aoi,"lua","characterenter",agent,aoiobj)
+  skynet.call(aoi,"lua","characterenter",aoiobj)
   return true, aoiobj.movement.pos
 end
 

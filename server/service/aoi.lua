@@ -26,9 +26,9 @@ function CMD.aoicallback(w,m)
 end
 
 --添加到aoi
-function CMD.characterenter(agent,obj)
-  assert(agent)
+function CMD.characterenter(obj)
   assert(obj)
+	 assert(obj.agent)
   assert(obj.movement)
 	assert(obj.movement.mode)
 	assert(obj.movement.pos.x)
@@ -36,7 +36,6 @@ function CMD.characterenter(agent,obj)
 	assert(obj.movement.pos.z)
   --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
   OBJ[obj.tempid] = obj
-  OBJ[obj.tempid].agent = agent
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." "..obj.movement.mode.." "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
 end
 

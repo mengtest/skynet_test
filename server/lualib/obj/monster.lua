@@ -15,8 +15,8 @@ end
 init_method(s_method.__index)
 
 --创建monster
-function _monster.create(id,agent)
-  local monster = basechar.create(enumtype.CHAR_TYPE_MONSTER,agent)
+function _monster.create(id)
+  local monster = basechar.create(enumtype.CHAR_TYPE_MONSTER)
   --monster特有属性
   monster.id = 0
 

@@ -3,7 +3,7 @@ local enumtype = require "enumtype"
 
 local _basechar = {}
 
-function _basechar.create(type,agent)
+function _basechar.create(type)
 	local obj = {
 		--类型
 		type = enumtype.CHAR_TYPE_UNKNOW,
@@ -15,9 +15,7 @@ function _basechar.create(type,agent)
 		aoilist = {},
 	}
 	assert(type and type > enumtype.CHAR_TYPE_UNKNOW and type < enumtype.CHAR_TYPE_MAX)
-	assert(agent)
 
-	obj.aoilist.agent = agent
 	obj.type = type
 	return obj
 end

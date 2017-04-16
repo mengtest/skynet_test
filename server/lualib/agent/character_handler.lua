@@ -124,10 +124,11 @@ end
 --传入的是DB中playerdate的数据
 function _handler.init (dbdata)
 	assert(mapdata[dbdata.mapid])
-	user.character = player.create(skynet.self())
+	user.character = player.create()
 	user.character:setmapid(mapdata[dbdata.mapid].name)
 	--aoi对象，主要用于广播相关
 	local aoiobj = {
+		agent = skynet.self(),
 		cansend = true,
 		tempid = 1,
 		movement = {

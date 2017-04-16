@@ -56,8 +56,8 @@ end
 init_method(s_method.__index)
 
 --创建player
-function _player.create(agent)
-  local player = basechar.create(enumtype.CHAR_TYPE_PLAYER,agent)
+function _player.create()
+  local player = basechar.create(enumtype.CHAR_TYPE_PLAYER)
   --player 特有属性
 
   --所在地图

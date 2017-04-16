@@ -15,8 +15,8 @@ end
 init_method(s_method.__index)
 
 --创建npc
-function _npc.create(id,agent)
-  local npc = basechar.create(enumtype.CHAR_TYPE_NPC,agent)
+function _npc.create(id)
+  local npc = basechar.create(enumtype.CHAR_TYPE_NPC)
   --npc 特有属性
   npc.id = 0
 
