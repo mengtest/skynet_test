@@ -37,7 +37,7 @@ function REQUEST.moveto (args)
     end
   end
 	user.character:setpos(newpos)
-  local ok, pos = skynet.call(user.map,"lua","moveto",skynet.self(),user.character:getaoiobj())
+  local ok, pos = skynet.call(user.map,"lua","moveto",user.character:getaoiobj())
   if not ok then
     pos = oldpos
   end

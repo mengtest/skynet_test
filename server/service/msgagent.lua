@@ -73,7 +73,7 @@ local function logout(type)
 		local map = user.map
 		user.map = nil
 		if map then
-			skynet.call(map, "lua", "characterleave", skynet.self(),user.character:getaoiobj())
+			skynet.call(map, "lua", "characterleave", user.character:getaoiobj())
 			CMD.delaoiobj(nil,user.character:gettempid())
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release

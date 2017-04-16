@@ -24,8 +24,8 @@ function CMD.characterenter(uuid,aoiobj)
 end
 
 --角色离开地图
-function CMD.characterleave(agent, aoiobj)
-  local uuid = onlinecharacter[agent] or pendingcharacter[agent]
+function CMD.characterleave(aoiobj)
+  local uuid = onlinecharacter[aoiobj.agent] or pendingcharacter[aoiobj.agent]
   if uuid ~=nil then
     log.debug("uuid(%d) leave map(%s)",uuid,config.name)
     skynet.call(aoi,"lua","characterleave",aoiobj)
@@ -33,8 +33,8 @@ function CMD.characterleave(agent, aoiobj)
     log.debug("uuid(%d) leave map(%s) BUT cannot find !",uuid,config.name)
   end
   idmgr:releaseid(aoiobj.tempid)
-  onlinecharacter[agent] = nil
-  pendingcharacter[agent] = nil
+  onlinecharacter[aoiobj.agent] = nil
+  pendingcharacter[aoiobj.agent] = nil
 end
 
 --角色加载地图完成，正式进入地图
@@ -52,8 +52,8 @@ function CMD.characterready(uuid,aoiobj)
 end
 
 --角色移动
-function CMD.moveto(agent,aoiobj)
-  if onlinecharacter[agent] == nil then
+function CMD.moveto(aoiobj)
+  if onlinecharacter[aoiobj.agent] == nil then
     log.debug("user(%d) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
     return false
   end
