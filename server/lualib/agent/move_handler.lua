@@ -42,9 +42,27 @@ function REQUEST.moveto (args)
     pos = oldpos
   end
 	user.character:setpos(pos)
-	assert(user.characterwriter)
-	user.characterwriter:commit()
-	CMD.updateinfo()
+
+	--通知其他对象自己坐标改变
+	skynet.fork(function ()
+		_G.instance.aoi.updateagentlist()
+		local agentlist = user.character:getaoilist()
+		if not table.empty(agentlist) then
+			local info = {
+				name = user.character:getname(),
+				tempid = user.character:gettempid(),
+				job = user.character:getjob(),
+				sex = user.character:getsex(),
+				level = user.character:getlevel(),
+				pos = user.character:getpos(),
+			}
+			for _,v in pairs(agentlist) do
+				if v.cansend then
+					skynet.call(v.agent, "lua", "updatepos", info);
+				end
+			end
+		end
+	end)
   return { pos = pos }
 end
 

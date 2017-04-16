@@ -1,55 +1,29 @@
 local skynet = require "skynet"
-local sharemap = require "sharemap"
 local handler = require "agent.handler"
 local log = require "base.syslog"
 
+if not _G.instance then
+	_G.instance = {}
+end
+
+if not _G.instance.aoi then
+	_G.instance.aoi = {}
+end
+
 local CMD = {}
-
 local _handler = handler.new (nil,nil,CMD)
-
-local AOI_RADIS2 = 200 * 200
-local LEAVE_AOI_RADIS2 = 200 * 200 * 4
 local user
-local agentlist
-local readerlist
 
 _handler:init (function (u)
 	user = u
-	user.characterwriter = sharemap.writer ("charactermovement", user.character:getmovement())
-	agentlist = {}
-	readerlist = {}
 end)
 
 _handler:release (function ()
-	user.characterwriter = nil
 	user = nil
 end)
 
-local function DIST2(p1,p2)
-	return ((p1.x - p2.x) * (p1.x  - p2.x) + (p1.y  - p2.y) * (p1.y  - p2.y) + (p1.z  - p2.z) * (p1.z  - p2.z))
-end
-
-local function updateagentlist()
-	local leavelist = {}
-	local enterlist = {}
-	for k,v in pairs(readerlist) do
-		v:update()
-		assert(v.pos)
-		local nDist = DIST2(user.character:getpos(),v.pos)
-		if nDist <= AOI_RADIS2 then
-			if agentlist[k].cansend == false then
-				enterlist[k] = agentlist[k]
-			end
-			agentlist[k].cansend = true
-		elseif nDist > AOI_RADIS2 and nDist <= LEAVE_AOI_RADIS2 then
-			agentlist[k].cansend = false
-			leavelist[k] = agentlist[k]
-		else
-			leavelist[k] = agentlist[k]
-			readerlist[k] = nil
-			agentlist[k] = nil
-		end
-	end
+function _G.instance.aoi.updateagentlist()
+	local leavelist ,enterlist = user.character:updateaoilist()
 	--移除对象
 	skynet.fork( function ()
 		--离开视野
@@ -74,42 +48,43 @@ local function updateagentlist()
 	end)
 end
 
+--更新aoilist中对象的pos
+function CMD.updatepos(_,info)
+	user.character:setaoilistpos(info.tempid,info.pos)
+	user.send_request("characterupdate",{info = info})
+	_G.instance.aoi.updateagentlist()
+end
+
+--[[创建reader
 function CMD.createreader()
 	--log.debug ("user(%s) create_reader",user.uid)
 	assert(user.characterwriter)
 	return user.characterwriter:copy()
-end
+end]]
 
 --离开地图的时候调用
 --通知其他玩家移除自己
 function CMD.delaoiobj(_,tempid)
-	updateagentlist()
+	_G.instance.aoi.updateagentlist()
+	local agentlist = user.character:getaoilist()
 	if not table.empty(agentlist) then
 		for _,v in pairs(agentlist) do
 			skynet.call(v.agent, "lua", "leaveaoiobj", tempid);
 		end
 	end
 	user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() })
-	agentlist = nil
-	readerlist = nil
+	user.character:cleanaoilist()
 end
 
 function CMD.leaveaoiobj(_,tempid)
-	readerlist[tempid] = nil
-	agentlist[tempid] = nil
+	user.character:delfromaoilist(tempid)
 end
 
 function CMD.addaoiobj(_,aoiobj)
 	--log.debug("user(%s) can watch user(%s)",user.character.aoiobj.tempid,aoiobj.tempid)
-	skynet.fork( function ()
-		if readerlist[aoiobj.tempid] == nil then
-			local reader = skynet.call(aoiobj.agent,"lua","createreader")
-			readerlist[aoiobj.tempid] = sharemap.reader ("charactermovement", reader)
-			agentlist[aoiobj.tempid] = aoiobj
-			skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
-			user.CMD.updateinfo()
-		end
-	end)
+	user.character:addtoaoilist(aoiobj)
+	skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
+	user.CMD.updateinfo()
 end
 
 function CMD.boardcast(_, gate, package, list)
@@ -118,7 +93,8 @@ function CMD.boardcast(_, gate, package, list)
 			assert(type(list) == "table","boardcast list is not a table")
 			skynet.call(gate, "lua", "boardrequest", package, list);
 		else
-			updateagentlist()
+			_G.instance.aoi.updateagentlist()
+			local agentlist = user.character:getaoilist()
 			if not table.empty(agentlist) then
 				skynet.call(gate, "lua", "boardrequest", package, agentlist);
 			end

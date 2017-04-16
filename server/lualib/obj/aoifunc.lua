@@ -16,6 +16,7 @@ function _aoifun.expandmethod(obj)
 		assert(self.aoiobj)
 		return self.aoiobj.agent
 	end
+
 	--更新aoilist
 	function obj:updateaoilist()
 		--离开视野的列表
@@ -23,8 +24,8 @@ function _aoifun.expandmethod(obj)
 		--进入视野的列表
 		local enterlist = {}
 		for k,v in pairs(self.aoilist) do
-			assert(v.pos)
-			local distance = DIST2(self:getpos(),v.pos)
+			assert(v.movement.pos)
+			local distance = DIST2(self:getpos(),v.movement.pos)
 			if distance <= AOI_RADIS2 then
 				if v.cansend == false then
 					enterlist[k] = v
@@ -43,14 +44,20 @@ function _aoifun.expandmethod(obj)
 
 	--添加对象到aoilist
 	function obj:addtoaoilist(aoiobj)
-		assert(not self.aoilist[aoiobj.tempid])
+		--assert(not self.aoilist[aoiobj.tempid])
 		self.aoilist[aoiobj.tempid] = aoiobj
 	end
 
 	--从aoilist中移除对象
-	function obj:delfromaoilist(aoiobj)
-		assert(self.aoilist[aoiobj.tempid])
-		self.aoilist[aoiobj.tempid] = nil
+	function obj:delfromaoilist(tempid)
+		assert(self.aoilist[tempid])
+		self.aoilist[tempid] = nil
+	end
+
+	--设置aoilist中对象的pos
+	function obj:setaoilistpos(tempid,pos)
+		assert(self.aoilist[tempid])
+		self.aoilist[tempid].movement.pos = pos
 	end
 
 	--清空aoilist
