@@ -1,3 +1,4 @@
+local sharemap = require "sharemap"
 local math_sqrt = math.sqrt
 
 local _aoifun = {}
@@ -11,6 +12,54 @@ end
 
 --扩展方法表
 function _aoifun.expandmethod(obj)
+
+	--添加reader到list
+	function obj:addtoreaderlist(tempid,reader)
+		assert(self.readerlist[tempid] == nil)
+		assert(self.aoilist[tempid] == nil)
+		self.readerlist[tempid] = reader
+	end
+
+	--从readerlist中移除
+	function obj:delfromreaderlist(tempid)
+		assert(self.readerlist[tempid])
+		self.readerlist[tempid] = nil
+	end
+
+	--获取list中的reader
+	function obj:getreaderfromlist(tempid)
+		return self.readerlist[tempid]
+	end
+
+	--清理readerlist
+	function obj:cleanreaderlist()
+		self.readerlist = {}
+	end
+
+	--提交改变
+	function obj:writercommit()
+		assert(self.characterwriter)
+		self.characterwriter:commit()
+	end
+
+	--创建writer
+	function obj:createwriter()
+		assert(self.characterwriter == nil )
+		self.characterwriter = sharemap.writer ("charactermovement", self:getmovement())
+	end
+
+	--获取reader副本
+	function obj:getwritecopy()
+		assert(self.characterwriter)
+		return self.characterwriter:copy()
+	end
+
+	--创建reader
+	function obj:createreader(writer)
+		assert(writer)
+		return sharemap.reader ("charactermovement", writer)
+	end
+
 	--获取obj的agent
 	function obj:getagentid()
 		assert(self.aoiobj)
@@ -23,19 +72,22 @@ function _aoifun.expandmethod(obj)
 		local leavelist = {}
 		--进入视野的列表
 		local enterlist = {}
-		for k,v in pairs(self.aoilist) do
-			assert(v.movement.pos)
-			local distance = DIST2(self:getpos(),v.movement.pos)
+		for k,v in pairs(self.readerlist) do
+			v:update()
+			assert(v.pos)
+			assert(self.aoilist[k].movement.pos)
+			self.aoilist[k].movement.pos = v.pos
+			local distance = DIST2(self:getpos(),v.pos)
 			if distance <= AOI_RADIS2 then
-				if v.cansend == false then
+				if self.aoilist[k].cansend == false then
 					enterlist[k] = v
 				end
-				v.cansend = true
+				self.aoilist[k].cansend = true
 			elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
-				v.cansend = false
-				leavelist[k] = v
+				self.aoilist[k].cansend = false
+				leavelist[k] = self.aoilist[k]
 			else
-				leavelist[k] = v
+				leavelist[k] = self.aoilist[k]
 				self.aoilist[k] = nil
 			end
 		end
@@ -44,7 +96,8 @@ function _aoifun.expandmethod(obj)
 
 	--添加对象到aoilist
 	function obj:addtoaoilist(aoiobj)
-		--assert(not self.aoilist[aoiobj.tempid])
+		assert(self.readerlist[aoiobj.tempid])
+		assert(self.aoilist[aoiobj.tempid] == nil)
 		self.aoilist[aoiobj.tempid] = aoiobj
 	end
 
@@ -52,12 +105,6 @@ function _aoifun.expandmethod(obj)
 	function obj:delfromaoilist(tempid)
 		assert(self.aoilist[tempid])
 		self.aoilist[tempid] = nil
-	end
-
-	--设置aoilist中对象的pos
-	function obj:setaoilistpos(tempid,pos)
-		assert(self.aoilist[tempid])
-		self.aoilist[tempid].movement.pos = pos
 	end
 
 	--清空aoilist
@@ -92,7 +139,9 @@ function _aoifun.expandmethod(obj)
 	--设置aoi对象
 	function obj:setaoiobj(aoiobj)
 		assert(aoiobj)
-		self.aoiobj = aoiobj
+		for k,v in pairs(aoiobj) do
+			self.aoiobj[k] = v
+		end
 	end
 
 	--获取aoi对象

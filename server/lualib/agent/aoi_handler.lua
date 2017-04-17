@@ -48,19 +48,11 @@ function _G.instance.aoi.updateagentlist()
 	end)
 end
 
---更新aoilist中对象的pos
-function CMD.updatepos(_,info)
-	user.character:setaoilistpos(info.tempid,info.pos)
-	user.send_request("characterupdate",{info = info})
-	_G.instance.aoi.updateagentlist()
-end
-
---[[创建reader
-function CMD.createreader()
+--创建reader
+function CMD.getwritecopy()
 	--log.debug ("user(%s) create_reader",user.uid)
-	assert(user.characterwriter)
-	return user.characterwriter:copy()
-end]]
+	return user.character:getwritecopy()
+end
 
 --离开地图的时候调用
 --通知其他玩家移除自己
@@ -69,34 +61,41 @@ function CMD.delaoiobj(_,tempid)
 	local agentlist = user.character:getaoilist()
 	if not table.empty(agentlist) then
 		for _,v in pairs(agentlist) do
-			skynet.call(v.agent, "lua", "leaveaoiobj", tempid);
+			skynet.send(v.agent, "lua", "leaveaoiobj", tempid);
 		end
 	end
 	user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() })
 	user.character:cleanaoilist()
+	user.character:cleanreaderlist()
 end
 
 function CMD.leaveaoiobj(_,tempid)
 	user.character:delfromaoilist(tempid)
+	user.character:delfromreaderlist(tempid)
 end
 
 function CMD.addaoiobj(_,aoiobj)
 	--log.debug("user(%s) can watch user(%s)",user.character.aoiobj.tempid,aoiobj.tempid)
-	user.character:addtoaoilist(aoiobj)
-	skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
-	user.CMD.updateinfo()
+	local reader = user.character:getreaderfromlist(aoiobj.tempid)
+	if reader == nil then
+		reader = user.character:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy"))
+		user.character:addtoreaderlist(aoiobj.tempid,reader)
+		user.character:addtoaoilist(aoiobj)
+		skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
+		user.CMD.updateinfo()
+	end
 end
 
 function CMD.boardcast(_, gate, package, list)
 	if gate then
 		if list then
 			assert(type(list) == "table","boardcast list is not a table")
-			skynet.call(gate, "lua", "boardrequest", package, list);
+			skynet.send(gate, "lua", "boardrequest", package, list);
 		else
 			_G.instance.aoi.updateagentlist()
 			local agentlist = user.character:getaoilist()
 			if not table.empty(agentlist) then
-				skynet.call(gate, "lua", "boardrequest", package, agentlist);
+				skynet.send(gate, "lua", "boardrequest", package, agentlist);
 			end
 		end
 	end

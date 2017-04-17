@@ -32,7 +32,7 @@ local function send_msg (msg,sessionid)
 	local str = msg..string.pack(">I4", sessionid)
 	local package = string.pack (">s2", str)
 	if gate then
-		skynet.call(gate, "lua", "request", user.uid, user.subid,package);
+		skynet.send(gate, "lua", "request", user.uid, user.subid,package);
 	end
 end
 

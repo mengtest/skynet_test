@@ -1,3 +1,4 @@
+local skynet = require "skynet"
 local aoifun = require "obj.aoifunc"
 local enumtype = require "enumtype"
 
@@ -5,14 +6,34 @@ local _basechar = {}
 
 function _basechar.create(type)
 	local obj = {
+		--初始化函數
+		init_func = {},
+		--释放函数
+		release_func = {},
 		--类型
 		type = enumtype.CHAR_TYPE_UNKNOW,
 		--aoi对象
-		aoiobj = {},
+		aoiobj = {
+			agent = skynet.self(),
+			cansend = true,
+			tempid = 0,
+			movement = {
+				mode = "wm",
+				pos = {
+					x = 0,
+					y = 0,
+					z = 0,
+				},
+			},
+		},
 		--角色信息
 		objinfo = {},
 		--视野内的角色
 		aoilist = {},
+		--视野内角色的reader
+		readerlist = {},
+		--角色writer
+		characterwriter = nil,
 	}
 	assert(type and type > enumtype.CHAR_TYPE_UNKNOW and type < enumtype.CHAR_TYPE_MAX)
 
@@ -78,6 +99,30 @@ function _basechar.expandmethod(obj)
 	function obj:getlevel()
 		assert(self.objinfo)
 		return self.objinfo.level
+	end
+
+	--添加到输出化函数中
+	function obj:addinitfunc(f)
+		table.insert (self.init_func, f)
+	end
+
+	--调用初始化函数
+	function obj:init()
+		for _, f in pairs (self.init_func) do
+			f ()
+		end
+	end
+
+	--添加到输出化函数中
+	function obj:addreleasefunc(f)
+		table.insert (self.release_func, f)
+	end
+
+	--调用初始化函数
+	function obj:release()
+		for _, f in pairs (self.release_func) do
+			f ()
+		end
 	end
 
 	--添加aoifunc

@@ -66,8 +66,10 @@ function _player.create()
   player.data = {}
   --玩家信息
   player.playerinfo = {}
+
   player = setmetatable(player, s_method)
 
+	player:createwriter()
   return player
 end
 
