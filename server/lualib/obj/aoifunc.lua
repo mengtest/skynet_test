@@ -80,7 +80,7 @@ function _aoifun.expandmethod(obj)
 			local distance = DIST2(self:getpos(),v.pos)
 			if distance <= AOI_RADIS2 then
 				if self.aoilist[k].cansend == false then
-					enterlist[k] = v
+					enterlist[k] = self.aoilist[k]
 				end
 				self.aoilist[k].cansend = true
 			elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
@@ -89,6 +89,7 @@ function _aoifun.expandmethod(obj)
 			else
 				leavelist[k] = self.aoilist[k]
 				self.aoilist[k] = nil
+				self.readerlist[k] = nil
 			end
 		end
 		return leavelist,enterlist
