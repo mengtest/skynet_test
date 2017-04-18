@@ -19,7 +19,7 @@ function CMD.characterenter(uuid,aoiobj)
   aoiobj.tempid = idmgr:createid()
   pendingcharacter[aoiobj.agent] = uuid
   skynet.send (aoiobj.agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
-  skynet.call(aoi,"lua","characterenter",aoiobj)
+  skynet.send(aoi,"lua","characterenter",aoiobj)
   return true
 end
 
@@ -46,7 +46,7 @@ function CMD.characterready(uuid,aoiobj)
   onlinecharacter[aoiobj.agent] = pendingcharacter[aoiobj.agent]
   pendingcharacter[aoiobj.agent] = nil
   log.debug("uuid(%d) load map ready",uuid)
-  skynet.call(aoi,"lua","characterenter",aoiobj)
+  skynet.send(aoi,"lua","characterenter",aoiobj)
   --skynet.call(agent,"lua","updateinfo")
   return true
 end
@@ -58,13 +58,13 @@ function CMD.moveto(aoiobj)
     return false
   end
   --TODO 这边应该检查pos的合法性
-  skynet.call(aoi,"lua","characterenter",aoiobj)
+  skynet.send(aoi,"lua","characterenter",aoiobj)
   return true, aoiobj.movement.pos
 end
 
 function CMD.open(conf)
   config = conf
-  idmgr:setmaxid(65535)
+  idmgr:setmaxid(config.maxtempid)
   aoi = skynet.newservice("aoi")
   skynet.call(aoi,"lua","open",config.name)
   mapfun.init(conf,aoi)

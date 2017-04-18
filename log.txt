@@ -14,6 +14,9 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 
 warning:
 
+msgagent这边，能用send的地方需要使用send，如果send的操作中有对后面有影响的话，只能用call
+service启动、关闭相关可以都用call，确保顺序执行
+
 上下线的时候，出现过报错，在 _G.instance.aoi.updateagentlist() 提示user为nil，应该不容易出现
 
 aoi这边，近距离移动的时候，也会发生callback，检查是否正确
