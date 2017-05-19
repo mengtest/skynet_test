@@ -5,6 +5,7 @@ local sharedata = require "sharedata"
 local CMD = {}
 local mapinstance = {}
 local onlinecharacter = {}
+local gate
 
 function CMD.kick (uuid)
 	local a = onlinecharacter[uuid]
@@ -42,13 +43,14 @@ function CMD.characterleave(agent,uuid)
   onlinecharacter[uuid] = nil
 end
 
-function CMD.open()
+function CMD.open(source)
+	gate = source
   local obj = sharedata.query "gdd"
   local mapdata = obj["map"]
   for _, conf in pairs (mapdata) do
 		local name = conf.name
 		local m = skynet.newservice ("map", skynet.self (),name)
-		skynet.call (m, "lua", "open", conf)
+		skynet.call (m, "lua", "open", conf,gate)
 		mapinstance[name] = m
 	end
 end

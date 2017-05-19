@@ -1,6 +1,7 @@
 local skynet = require "skynet"
 local handler = require "agent.handler"
 local log = require "base.syslog"
+local enumtype = require "enumtype"
 
 if not _G.instance then
 	_G.instance = {}
@@ -35,14 +36,16 @@ function _G.instance.aoi.updateagentlist()
 			--通知其他对象移除自己
 			local templist = table.copy(leavelist)
 			for _,vv in pairs(templist) do
-				vv.cansend = true
+				if vv.type == enumtype.CHAR_TYPE_PLAYER then
+					vv.cansend = true
+				end
 			end
 			user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() },templist)
 		end
 		--进入视野
 		if not table.empty(enterlist) then
 			for _,vv in pairs(enterlist) do
-				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
+				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() },vv.tempid)
 			end
 		end
 	end)
@@ -74,14 +77,16 @@ function CMD.leaveaoiobj(_,tempid)
 	user.character:delfromreaderlist(tempid)
 end
 
+--添加一个新的对象到自己的aoilist中
 function CMD.addaoiobj(_,aoiobj)
 	--log.debug("user(%s) can watch user(%s)",user.character.aoiobj.tempid,aoiobj.tempid)
 	local reader = user.character:getreaderfromlist(aoiobj.tempid)
 	if reader == nil then
-		reader = user.character:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy"))
+		reader = user.character:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy",aoiobj.tempid))
 		user.character:addtoreaderlist(aoiobj.tempid,reader)
 		user.character:addtoaoilist(aoiobj)
-		skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() })
+		--通知对方发送aoi信息给自己
+		skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() },aoiobj.tempid)
 		user.CMD.updateinfo()
 	end
 end

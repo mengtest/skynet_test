@@ -10,13 +10,12 @@ function _basechar.create(type)
 		init_func = {},
 		--释放函数
 		release_func = {},
-		--类型
-		type = enumtype.CHAR_TYPE_UNKNOW,
 		--aoi对象
 		aoiobj = {
 			agent = skynet.self(),
 			cansend = true,
 			tempid = 0,
+			type = enumtype.CHAR_TYPE_UNKNOW,
 			movement = {
 				mode = "wm",
 				pos = {
@@ -37,7 +36,7 @@ function _basechar.create(type)
 	}
 	assert(type and type > enumtype.CHAR_TYPE_UNKNOW and type < enumtype.CHAR_TYPE_MAX)
 
-	obj.type = type
+	obj.aoiobj.type = type
 	return obj
 end
 
@@ -46,22 +45,22 @@ function _basechar.expandmethod(obj)
 
 	--获取角色类型
 	function obj:gettype()
-		return self.type
+		return self.aoiobj.type
 	end
 
 	--是否玩家
 	function obj:isplayer()
-		return self.type == enumtype.CHAR_TYPE_PLAYER
+		return self.aoiobj.type == enumtype.CHAR_TYPE_PLAYER
 	end
 
 	--是否玩家
 	function obj:isnpc()
-		return self.type == enumtype.CHAR_TYPE_NPC
+		return self.aoiobj.type == enumtype.CHAR_TYPE_NPC
 	end
 
 	--是否玩家
 	function obj:ismonster()
-		return self.type == enumtype.CHAR_TYPE_MONSTER
+		return self.aoiobj.type == enumtype.CHAR_TYPE_MONSTER
 	end
 
 	--设置角色信息

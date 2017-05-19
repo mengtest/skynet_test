@@ -108,8 +108,8 @@ function server.register_handler(conf)
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
 	skynet.uniqueservice ("gdd")
 	world = skynet.uniqueservice ("world")
-	skynet.call(world, "lua", "open")
 	sharemap.register("./common/sharemap/sharemap.sp")
+	skynet.call(world, "lua", "open")
 
 	local n = assert(conf.agentpool) or 0
 	for _ = 1, n do
@@ -131,11 +131,13 @@ end
 --发送同一条消息给多个user
 function server.send_board_request_handler(msg,userlist)
 	for _,v in pairs(userlist) do
-		local u = users[v.info.uid]
-		if u and v.cansend then
-			local username = msgserver.username(v.info.uid, v.info.subid, servername)
-			assert(u.username == username)
-			msgserver.request(u.username,msg)
+		if v.cansend then
+			local u = users[v.info.uid]
+			if u then
+				local username = msgserver.username(v.info.uid, v.info.subid, servername)
+				assert(u.username == username)
+				msgserver.request(u.username,msg)
+			end
 		end
 	end
 end

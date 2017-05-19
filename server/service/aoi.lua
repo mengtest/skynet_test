@@ -17,18 +17,18 @@ skynet.register_protocol {
 
 --aoi回调
 function CMD.aoicallback(w,m)
-  assert(OBJ[w])
-  assert(OBJ[m])
+  assert(OBJ[w],w)
+  assert(OBJ[m],m)
   --log.debug("AOI CALLBACK:%d(%d,%d) => %d(%d,%d)",w,OBJ[w].movement.pos.x,OBJ[w].movement.pos.y,m,OBJ[m].movement.pos.x,OBJ[m].movement.pos.y)
   --将视野内的玩家通知agent
   assert(OBJ[w].agent)
-  skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m])
+  skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m],OBJ[w].tempid)
 end
 
 --添加到aoi
 function CMD.characterenter(obj)
   assert(obj)
-	 assert(obj.agent)
+	assert(obj.agent)
   assert(obj.movement)
 	assert(obj.movement.mode)
 	assert(obj.movement.pos.x)

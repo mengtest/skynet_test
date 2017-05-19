@@ -1,4 +1,5 @@
 local sharemap = require "sharemap"
+local enumtype = require "enumtype"
 local math_sqrt = math.sqrt
 
 local _aoifun = {}
@@ -82,11 +83,18 @@ function _aoifun.expandmethod(obj)
 				if self.aoilist[k].cansend == false then
 					enterlist[k] = self.aoilist[k]
 				end
-				self.aoilist[k].cansend = true
+				if self.aoilist[k].type == enumtype.CHAR_TYPE_PLAYER then
+					self.aoilist[k].cansend = true
+				else
+					self.aoilist[k].cansend = false
+				end
 			elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
 				self.aoilist[k].cansend = false
 				leavelist[k] = self.aoilist[k]
 			else
+				if self.aoilist[k].type ~= enumtype.CHAR_TYPE_PLAYER then
+					self.aoilist[k].cansend = false
+				end
 				leavelist[k] = self.aoilist[k]
 				self.aoilist[k] = nil
 				self.readerlist[k] = nil
@@ -190,6 +198,7 @@ function _aoifun.expandmethod(obj)
 		assert(self.aoiobj)
 		return self.aoiobj.cansend
 	end
+
 end
 
 return _aoifun
