@@ -23,6 +23,7 @@ _handler:release (function ()
 	user = nil
 end)
 
+--更新视野内的对象，并对需要通知结果的进行通知
 function _G.instance.aoi.updateagentlist()
 	local leavelist ,enterlist = user.character:updateaoilist()
 	--移除对象

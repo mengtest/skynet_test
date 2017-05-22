@@ -1,5 +1,6 @@
 local skynet = require "skynet"
-local sprotoloader = require "sprotoloader"
+local msgsender = require "msgsender"
+
 local log = require "syslog"
 local basemap = require "map.basemap"
 local aoi_handle = require "map.aoi_handler"
@@ -13,41 +14,6 @@ local map_info
 local world = ...
 world = tonumber(world)
 local config
-
-local host
-local request
-local session
-local session_id
-local gate
-
-local function send_msg (msg,sessionid)
-	local str = msg..string.pack(">I4", sessionid)
-	local package = string.pack (">s2", str)
-	if gate then
-		skynet.send(gate, "lua", "request", user.uid, user.subid,package);
-	end
-end
-
-local function send_boardmsg (msg, sessionid, agentlist)
-	local str = msg..string.pack(">I4", sessionid)
-	local package = string.pack (">s2", str)
-	assert(CMD.boardcast)
-	CMD.boardcast(nil, gate, package, agentlist)
-end
-
-local function send_request (name, args)
-	session_id = session_id + 1
-	local str = request (name, args, session_id)
-	send_msg (str,session_id)
-	session[session_id] = { name = name, args = args }
-end
-
-function CMD.send_boardrequest (name, args, agentlist)
-	--session_id = session_id + 1
-	local str = request (name, args, 0)
-	send_boardmsg (str, 0, agentlist)
-	--session[session_id] = { name = name, args = args }
-end
 
 --角色请求进入地图
 function CMD.characterenter(uuid,aoiobj)
@@ -99,14 +65,15 @@ function CMD.moveto(aoiobj)
   return true, aoiobj.movement.pos
 end
 
-function CMD.open(conf,_gate)
+function CMD.open(conf,gate)
   config = conf
-  gate = _gate
+	msgsender = msgsender.create(gate)
   aoi = skynet.newservice("aoi")
   skynet.call(aoi,"lua","open",config.name)
   map_info = basemap.create(conf.id,conf.type,conf,aoi)
   map_info:load_map_info()
   map_info.CMD = CMD
+	map_info.msgsender = msgsender
   aoi_handle.init(map_info)
 end
 
@@ -130,12 +97,6 @@ skynet.init(function()
 end)
 
 skynet.start (function ()
-  local protoloader = skynet.uniqueservice "protoloader"
-  local slot = skynet.call(protoloader, "lua", "index", "clientproto")
-  host = sprotoloader.load(slot):host "package"
-  slot = skynet.call(protoloader, "lua", "index", "serverproto")
-  request = host:attach(sprotoloader.load(slot))
-
 	skynet.dispatch ("lua", function (_, _, command, ...)
 		local f = assert (CMD[command],command)
 		skynet.retpack (f (...))

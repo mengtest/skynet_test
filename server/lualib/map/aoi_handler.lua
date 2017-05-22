@@ -3,26 +3,16 @@ local skynet = require "skynet"
 
 local CMD = {}
 local map_info
+local msgsender
 local _handle = { CMD = CMD,}
 
 function _handle.init(info)
   map_info = info
+  msgsender = map_info.msgsender
 end
 
 function CMD.boardcast(_, gate, package, list,tempid)
-	if gate then
-		if list then
-			assert(type(list) == "table","boardcast list is not a table")
-			skynet.send(gate, "lua", "boardrequest", package, list);
-		else
-      --local monster = map_info:get_monster(tempid)
-			--_G.instance.aoi.updateagentlist()
-			--local agentlist = user.character:getaoilist()
-			--if not table.empty(agentlist) then
-			--	skynet.send(gate, "lua", "boardrequest", package, agentlist);
-			--end
-		end
-	end
+  msgsender:boardcast(package, list,tempid)
 end
 
 function CMD.addaoiobj(aoiobj,tempid)
@@ -54,7 +44,7 @@ function CMD.updateinfo(aoiobj,tempid)
     level = monster:getlevel(),
     pos = monster:getpos(),
   }
-  map_info.CMD.send_boardrequest("characterupdate",{ info = info },aoiobj)
+  msgsender:send_boardrequest("characterupdate",{ info = info },aoiobj)
 end
 
 return _handle

@@ -149,7 +149,12 @@ function _aoifun.expandmethod(obj)
 	function obj:setaoiobj(aoiobj)
 		assert(aoiobj)
 		for k,v in pairs(aoiobj) do
-			self.aoiobj[k] = v
+			for kk,vv in pairs(v) do
+				if self.aoiobj[k] == nil then
+					self.aoiobj[k] = { kk }
+				end
+				self.aoiobj[k][kk] = vv
+			end
 		end
 	end
 
