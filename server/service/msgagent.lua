@@ -2,6 +2,7 @@ local skynet = require "skynet"
 local queue = require "skynet.queue"
 local sprotoloader = require "sprotoloader"
 local log = require "syslog"
+local msgsender = require "msgsender"
 
 local testhandler = require "agent.testhandler"
 local character_handler = require "agent.character_handler"
@@ -9,15 +10,12 @@ local map_handler = require "agent.map_handler"
 local aoi_handler = require "agent.aoi_handler"
 local move_handler = require "agent.move_handler"
 
+local gate = tonumber(...)
 local requestqueue = queue()
 local responsequeue = queue()
 local luaqueue = queue()
-local host
-local request
-local session
-local session_id
-local gate
 local CMD = {}
+local sender = {}
 
 local agentstatus = {
 	AGENT_INIT = 1,
@@ -27,35 +25,7 @@ local agentstatus = {
 
 local running = agentstatus.AGENT_INIT
 local user
-
-local function send_msg (msg,sessionid)
-	local str = msg..string.pack(">I4", sessionid)
-	local package = string.pack (">s2", str)
-	if gate then
-		skynet.send(gate, "lua", "request", user.uid, user.subid,package);
-	end
-end
-
-local function send_boardmsg (msg, sessionid, agentlist)
-	local str = msg..string.pack(">I4", sessionid)
-	local package = string.pack (">s2", str)
-	assert(CMD.boardcast)
-	CMD.boardcast(nil, gate, package, agentlist)
-end
-
-local function send_request (name, args)
-	session_id = session_id + 1
-	local str = request (name, args, session_id)
-	send_msg (str,session_id)
-	session[session_id] = { name = name, args = args }
-end
-
-local function send_boardrequest (name, args, agentlist)
-	--session_id = session_id + 1
-	local str = request (name, args, 0)
-	send_boardmsg (str, 0, agentlist)
-	--session[session_id] = { name = name, args = args }
-end
+local host
 
 --当请求退出和被T出的时候
 --因为请求消息在requestqueue，而被T的消息在luaqueue中
@@ -65,9 +35,7 @@ local function logout(type)
 	running = agentstatus.AGENT_QUIT
 	log.notice("logout, agent(:%08X) type(%d) subid(%d)",skynet.self(),type,user.subid)
 
-	if gate then
-		skynet.send(gate, "lua", "logout", user.uid, user.subid)
-	end
+	skynet.send(gate, "lua", "logout", user.uid, user.subid)
 
 	if user.map then
 		local map = user.map
@@ -93,12 +61,7 @@ local function logout(type)
 	testhandler:unregister(user)
 	character_handler:unregister (user)
 	user = nil
-	session = nil
-	session_id = nil
-	if gate then
-		skynet.send(gate, "lua", "addtoagentpool", skynet.self())
-	end
-	gate = nil
+	skynet.send(gate, "lua", "addtoagentpool", skynet.self())
 	running = agentstatus.AGENT_INIT
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
@@ -213,7 +176,6 @@ end
 function CMD.login(source, uid, sid, secret)
 	-- you may use secret to make a encrypted data stream
 	log.notice("%s is login",uid)
-	gate = source
 
 	user = {
 		uid = uid,
@@ -221,14 +183,13 @@ function CMD.login(source, uid, sid, secret)
 		REQUEST = {},
 		RESPONSE = {},
 		CMD = CMD,
-		send_request = send_request,
-		send_boardrequest = send_boardrequest,
+		send_request = sender.send_request,
+		send_boardrequest = sender.send_boardrequest,
 	}
 
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
-	session = {}
-	session_id = 0
+	msgsender:init()
 	-- you may load user data from database
 	testhandler:register(user)
 	character_handler:register(user)
@@ -257,14 +218,19 @@ end
 
 skynet.memlimit(1 * 1024 * 1024)
 
+function sender.send_request(name, args)
+	msgsender:send_request(name, args,user)
+end
+
+function sender.send_boardrequest(name, args, agentlist)
+	msgsender:send_boardrequest(name, args, agentlist, user)
+end
+
 skynet.start(function()
 	-- If you want to fork a work thread , you MUST do it in CMD.login
 	--加载proto
-	local protoloader = skynet.uniqueservice "protoloader"
-	local slot = skynet.call(protoloader, "lua", "index", "clientproto")
-	host = sprotoloader.load(slot):host "package"
-	slot = skynet.call(protoloader, "lua", "index", "serverproto")
-	request = host:attach(sprotoloader.load(slot))
+	msgsender = msgsender.create(gate)
+	host = msgsender:get_host()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
 		local f = assert(CMD[command],command)

@@ -13,7 +13,7 @@ local function init_method(map)
 
   --获取一个怪物
   function map:get_monster(tempid)
-    assert(self.monster_list[tempid])
+    assert(self.monster_list[tempid],tempid)
     return self.monster_list[tempid]
   end
   --创建一个临时id

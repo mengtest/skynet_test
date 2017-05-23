@@ -27,7 +27,7 @@ function server.login_handler(uid, secret)
 	-- agent pool
 	local agent
 	if #agentpool == 0 then
-		agent = skynet.newservice "msgagent"
+		agent = skynet.newservice ("msgagent",skynet.self())
 		log.debug("pool is empty, new agent(:%08X) created", agent)
 	else
 		agent = table.remove(agentpool,1)
@@ -113,7 +113,7 @@ function server.register_handler(conf)
 
 	local n = assert(conf.agentpool) or 0
 	for _ = 1, n do
-		table.insert(agentpool,skynet.newservice("msgagent"))
+		table.insert(agentpool,skynet.newservice("msgagent",skynet.self()))
 	end
 	log.notice("create %d agent",n)
 end
@@ -132,6 +132,7 @@ end
 function server.send_board_request_handler(msg,userlist)
 	for _,v in pairs(userlist) do
 		if v.cansend then
+			assert(v.info)
 			local u = users[v.info.uid]
 			if u then
 				local username = msgserver.username(v.info.uid, v.info.subid, servername)

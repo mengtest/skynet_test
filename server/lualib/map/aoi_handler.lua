@@ -47,4 +47,11 @@ function CMD.updateinfo(aoiobj,tempid)
   msgsender:send_boardrequest("characterupdate",{ info = info },aoiobj)
 end
 
+function CMD.leaveaoiobj(objtempid, tempid)
+  assert(objtempid)
+  local monster = map_info:get_monster(tempid)
+	monster:delfromaoilist(objtempid)
+	monster:delfromreaderlist(objtempid)
+end
+
 return _handle

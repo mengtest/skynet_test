@@ -15,6 +15,7 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 发消息统一一下，现在agent有发消息，map也有发消息，看能不能并在一起 --2017.5.19
 
 player和monster等obj的aoi消息整理一下  --2017.5.20
+--初步统一了一下，接下来还要继续调整结构
 
 warning:
 

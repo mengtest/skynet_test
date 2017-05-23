@@ -28,6 +28,7 @@ function _G.instance.aoi.updateagentlist()
 	local leavelist ,enterlist = user.character:updateaoilist()
 	--移除对象
 	skynet.fork( function ()
+		if not user then return end
 		--离开视野
 		if not table.empty(leavelist) then
 			--移除自己视野内的对象
@@ -65,7 +66,7 @@ function CMD.delaoiobj(_,tempid)
 	local agentlist = user.character:getaoilist()
 	if not table.empty(agentlist) then
 		for _,v in pairs(agentlist) do
-			skynet.send(v.agent, "lua", "leaveaoiobj", tempid);
+			skynet.send(v.agent, "lua", "leaveaoiobj", tempid, v.tempid);
 		end
 	end
 	user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() })
@@ -89,21 +90,6 @@ function CMD.addaoiobj(_,aoiobj)
 		--通知对方发送aoi信息给自己
 		skynet.send(aoiobj.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() },aoiobj.tempid)
 		user.CMD.updateinfo()
-	end
-end
-
-function CMD.boardcast(_, gate, package, list)
-	if gate then
-		if list then
-			assert(type(list) == "table","boardcast list is not a table")
-			skynet.send(gate, "lua", "boardrequest", package, list);
-		else
-			_G.instance.aoi.updateagentlist()
-			local agentlist = user.character:getaoilist()
-			if not table.empty(agentlist) then
-				skynet.send(gate, "lua", "boardrequest", package, agentlist);
-			end
-		end
 	end
 end
 
