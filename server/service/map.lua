@@ -50,7 +50,6 @@ function CMD.characterready(uuid,aoiobj)
   pendingcharacter[aoiobj.agent] = nil
   log.debug("uuid(%d) load map ready",uuid)
   skynet.send(aoi,"lua","characterenter",aoiobj)
-  --skynet.call(agent,"lua","updateinfo")
   return true
 end
 

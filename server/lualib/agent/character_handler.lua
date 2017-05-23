@@ -153,6 +153,7 @@ function _handler.init (dbdata)
 	}
 	user.character:setobjinfo(playerinfo)
 	user.character:setdata(dbdata.data)
+	user.character:set_msgsender(user.msgsender)
 end
 
 --保存角色信息

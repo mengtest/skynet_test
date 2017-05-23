@@ -8,19 +8,12 @@ local s_method = {__index = {}}
 
 local function init_method(func)
 
-  function func:boardcast(package, list, tempid, user)
-  	assert(self.gate)
+  function func:boardcast(package, list, tempid, obj)
+    assert(self.gate)
 		if list then
 			assert(type(list) == "table","boardcast list is not a table")
 			skynet.send(self.gate, "lua", "boardrequest", package, list);
 		else
-      local obj
-      if tempid == nil then
-        obj = user.character
-  			_G.instance.aoi.updateagentlist()
-      else
-        obj = map_info:get_monster(tempid)
-      end
       assert(obj)
 			local agentlist = obj:getaoilist()
 			if not table.empty(agentlist) then
@@ -34,7 +27,7 @@ local function init_method(func)
     assert(name)
     assert(args)
     assert(self.gate)
-  	self.session_id = self.session_id + 1
+    self.session_id = self.session_id + 1
 
   	local str = request (name, args, self.session_id)
     str = str..string.pack(">I4", self.session_id)

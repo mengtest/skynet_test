@@ -1,3 +1,4 @@
+local skynet = require "skynet"
 local sharemap = require "sharemap"
 local enumtype = require "enumtype"
 local math_sqrt = math.sqrt
@@ -100,7 +101,32 @@ function _aoifun.expandmethod(obj)
 				self.readerlist[k] = nil
 			end
 		end
-		return leavelist,enterlist
+		--离开视野
+		if not table.empty(leavelist) then
+			--玩家才需要通知
+			if self:isplayer() then
+				--通知client移除自己视野内的对象
+				for kk,_ in pairs(leavelist) do
+					self:send_boardrequest("characterleave",{ tempid = kk },{ templist = self:getaoiobj() })
+				end
+			end
+
+			--通知其他Client对象移除自己
+			local templist = table.copy(leavelist)
+			for _,vv in pairs(templist) do
+				if vv.type == enumtype.CHAR_TYPE_PLAYER then
+					vv.cansend = true
+				end
+			end
+			self:send_boardrequest("characterleave",{ tempid = self:gettempid() },templist)
+		end
+		--进入视野
+		if not table.empty(enterlist) then
+			for _,vv in pairs(enterlist) do
+				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = self:getaoiobj() },vv.tempid)
+			end
+		end
+		--return leavelist,enterlist
 	end
 
 	--添加对象到aoilist
@@ -123,6 +149,8 @@ function _aoifun.expandmethod(obj)
 
 	--获取aoilist
 	function obj:getaoilist()
+		--获取视野内的aoilist之前先update一下
+		self:updateaoilist()
 		return self.aoilist
 	end
 

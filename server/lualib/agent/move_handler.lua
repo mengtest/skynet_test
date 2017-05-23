@@ -25,7 +25,8 @@ function CMD.updateinfo(_,aoiobj)
 		level = user.character:getlevel(),
 		pos = user.character:getpos(),
 	}
-	user.send_boardrequest("characterupdate",{ info = info },aoiobj)
+	--这边如果不排除自己，前端会卡，具体有时间查一下
+	user.send_request("characterupdate", { info = info }, true, true, aoiobj)
 end
 
 function REQUEST.moveto (args)

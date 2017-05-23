@@ -1,6 +1,5 @@
 local skynet = require "skynet"
 local queue = require "skynet.queue"
-local sprotoloader = require "sprotoloader"
 local log = require "syslog"
 local msgsender = require "msgsender"
 
@@ -109,6 +108,7 @@ end
 --接受到的回应
 local RESPONSE = {}
 local function handle_response (id, args)
+	local session = msgsender.session
 	local s = session[id]
 	if not s then
 		log.warning ("session %d not found", id)
@@ -184,7 +184,7 @@ function CMD.login(source, uid, sid, secret)
 		RESPONSE = {},
 		CMD = CMD,
 		send_request = sender.send_request,
-		send_boardrequest = sender.send_boardrequest,
+		msgsender = msgsender,
 	}
 
 	REQUEST = user.REQUEST
@@ -218,12 +218,26 @@ end
 
 skynet.memlimit(1 * 1024 * 1024)
 
-function sender.send_request(name, args)
-	msgsender:send_request(name, args,user)
-end
-
-function sender.send_boardrequest(name, args, agentlist)
-	msgsender:send_boardrequest(name, args, agentlist, user)
+--发送广播消息给client
+--消息名，参数列表，是否发送给指定对象，是否广播，广播时是否排除自己
+function sender.send_request(name, args, ref, not_send_to_me, aoilist)
+	if aoilist then
+		user.character:send_boardrequest(name, args, aoilist)
+	else
+		if ref then
+			if not_send_to_me then
+				--广播消息不发送给自己
+				user.character:send_boardrequest(name, args, user.character:getaoilist())
+			else
+				--广播消息发送给自己
+				aoilist = user.character:getaoilist()
+				table.insert(aoilist,user.character:getaoiobj())
+				user.character:send_boardrequest(name, args, aoilist)
+			end
+		else
+			user.character:send_request(name, args)
+		end
+	end
 end
 
 skynet.start(function()

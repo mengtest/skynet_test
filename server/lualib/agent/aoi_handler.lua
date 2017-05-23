@@ -23,36 +23,6 @@ _handler:release (function ()
 	user = nil
 end)
 
---更新视野内的对象，并对需要通知结果的进行通知
-function _G.instance.aoi.updateagentlist()
-	local leavelist ,enterlist = user.character:updateaoilist()
-	--移除对象
-	skynet.fork( function ()
-		if not user then return end
-		--离开视野
-		if not table.empty(leavelist) then
-			--移除自己视野内的对象
-			for kk,_ in pairs(leavelist) do
-				user.send_request("characterleave",{ tempid = kk })
-			end
-			--通知其他对象移除自己
-			local templist = table.copy(leavelist)
-			for _,vv in pairs(templist) do
-				if vv.type == enumtype.CHAR_TYPE_PLAYER then
-					vv.cansend = true
-				end
-			end
-			user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() },templist)
-		end
-		--进入视野
-		if not table.empty(enterlist) then
-			for _,vv in pairs(enterlist) do
-				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = user.character:getaoiobj() },vv.tempid)
-			end
-		end
-	end)
-end
-
 --创建reader
 function CMD.getwritecopy()
 	--log.debug ("user(%s) create_reader",user.uid)
@@ -62,14 +32,13 @@ end
 --离开地图的时候调用
 --通知其他玩家移除自己
 function CMD.delaoiobj(_,tempid)
-	_G.instance.aoi.updateagentlist()
 	local agentlist = user.character:getaoilist()
 	if not table.empty(agentlist) then
 		for _,v in pairs(agentlist) do
 			skynet.send(v.agent, "lua", "leaveaoiobj", tempid, v.tempid);
 		end
 	end
-	user.send_boardrequest("characterleave",{ tempid = user.character:gettempid() })
+	user.send_request("characterleave",{ tempid = user.character:gettempid() }, true)
 	user.character:cleanaoilist()
 	user.character:cleanreaderlist()
 end

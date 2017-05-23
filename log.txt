@@ -19,6 +19,10 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+session_id这个东西搞清楚，看是怎么用，要不要用。
+
+characterleave这个消息中的tempid也许可以写成数组形式的
+
 msgagent这边，能用send的地方需要使用send，如果send的操作中有对后面有影响的话，只能用call
 service启动、关闭相关可以都用call，确保顺序执行
 
