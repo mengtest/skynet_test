@@ -126,7 +126,6 @@ function _aoifun.expandmethod(obj)
 				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = self:getaoiobj() },vv.tempid)
 			end
 		end
-		--return leavelist,enterlist
 	end
 
 	--添加对象到aoilist

@@ -11,7 +11,7 @@ local function init_method(monster)
   end
 
   function monster:run()
-    
+
   end
 
   basechar.expandmethod(monster)
@@ -26,7 +26,6 @@ function _monster.create(id,tempid,conf)
 
   monster = setmetatable(monster, s_method)
 
-  monster:createwriter()
   --设置为不发送消息
   monster:setcansend(false)
   assert(id > 0)
@@ -47,6 +46,8 @@ function _monster.create(id,tempid,conf)
 	}
   monster:setaoiobj(aoiobj)
   monster:settempid(tempid)
+
+  monster:createwriter()
   --设置怪物信息
   local monsterinfo = {
 		name = conf.name,

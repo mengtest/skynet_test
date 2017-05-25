@@ -66,7 +66,7 @@ function CMD.addaoiobj(aoiobj,tempid)
   local monster = map_info:get_monster(tempid)
 	local reader = monster:getreaderfromlist(aoiobj.tempid)
 	if reader == nil then
-		reader = monster:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy"))
+		reader = monster:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy",aoiobj.tempid))
 		monster:addtoreaderlist(aoiobj.tempid,reader)
 		monster:addtoaoilist(aoiobj)
 	end

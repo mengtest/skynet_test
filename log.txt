@@ -19,6 +19,8 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+monster那边如果先createwriter再setaoiobj会出错，但是player那边不会，需要查一下为原因
+
 session_id这个东西搞清楚，看是怎么用，要不要用。
 
 characterleave这个消息中的tempid也许可以写成数组形式的

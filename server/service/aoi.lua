@@ -7,6 +7,7 @@ local CMD = {}
 local OBJ = {}
 local aoi
 local update_thread
+local need_update
 
 skynet.register_protocol {
 	name = "text",
@@ -37,6 +38,7 @@ function CMD.characterenter(obj)
   --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
   OBJ[obj.tempid] = obj
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." "..obj.movement.mode.." "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
+	need_update = true
 end
 
 --从aoi中移除
@@ -45,11 +47,15 @@ function CMD.characterleave(obj)
   log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
   OBJ[obj.tempid] = nil
+	need_update = true
 end
 
 --0.1秒更新一次
 local function message_update ()
-	assert(pcall(skynet.send,aoi, "text", "message "))
+	if need_update then
+		need_update = false
+		assert(pcall(skynet.send,aoi, "text", "message "))
+	end
 	update_thread = set_timeout (10, message_update)
 end
 
