@@ -41,8 +41,9 @@ function REQUEST.moveto (args)
   local ok, pos = skynet.call(user.map,"lua","moveto",user.character:getaoiobj())
   if not ok then
     pos = oldpos
+		user.character:setpos(pos)
   end
-	user.character:setpos(pos)
+
 	--更新writer
 	user.character:writercommit()
 	--通知其他对象自己坐标改变

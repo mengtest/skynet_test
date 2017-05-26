@@ -32,7 +32,7 @@ function CMD.updateinfo(aoiobj,tempid)
     level = monster:getlevel(),
     pos = monster:getpos(),
   }
-  msgsender:send_boardrequest("characterupdate", { info = info }, aoiobj)
+  msgsender:send_boardrequest("characterupdate", { info = info }, aoiobj, monster)
 end
 
 --离开地图的时候

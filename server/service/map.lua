@@ -70,10 +70,13 @@ function CMD.open(conf,gate)
   aoi = skynet.newservice("aoi")
   skynet.call(aoi,"lua","open",config.name)
   map_info = basemap.create(conf.id,conf.type,conf,aoi)
-  map_info:load_map_info()
   map_info.CMD = CMD
 	map_info.msgsender = msgsender
+  map_info:load_map_info()
   aoi_handle.init(map_info)
+  skynet.fork(function ()
+    map_info:monster_run()
+  end)
 end
 
 function CMD.close()

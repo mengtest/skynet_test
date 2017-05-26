@@ -19,7 +19,13 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+这边表现目前看起来没问，实际obj中aoilist是的对象正不正确还有待检查
+obj移动的时候，广播过了pos，所以client这边应该没问题
+如果aoilist这边出问题，可能会影响到战斗这一块，选择对象的时候，是否可选取的判断
+
 monster那边如果先createwriter再setaoiobj会出错，但是player那边不会，需要查一下为原因
+--这边看了一下，如果后期setpos之后，会是正确的
+--也就是setaoiobj的时候，pos值没有起到作用？
 
 session_id这个东西搞清楚，看是怎么用，要不要用。
 

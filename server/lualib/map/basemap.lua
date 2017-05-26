@@ -11,6 +11,17 @@ local s_method = {__index = {}}
 
 local function init_method(map)
 
+  --怪物run
+  function map:monster_run()
+    while true do
+      for k,v in pairs(self.monster_list) do
+        v:run(aoisvr)
+        self.CMD.updateinfo(nil,v:gettempid())
+      end
+      skynet.sleep(10)
+    end
+  end
+
   --获取一个怪物
   function map:get_monster(tempid)
     assert(self.monster_list[tempid],tempid)
@@ -37,6 +48,7 @@ local function init_method(map)
       tempid = self:create_tempid()
       obj = monster.create(v.id,tempid,v)
       assert(self.monster_list[tempid] == nil)
+      obj:set_msgsender(self.msgsender)
       self.monster_list[tempid] = obj
       skynet.send(aoisvr,"lua","characterenter",obj:getaoiobj())
     end
