@@ -19,6 +19,40 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+client发给server的消息带的session和server发给client的session貌似不能独立，需要整合
+不然的话，会出现session冲突。
+--在断线重连中，例如有版本1的时候，有session为5的response，
+--如果在版本2中，server给client发送了session为5的request，那么在client回复的时候，会将之前的response回复过去
+--在玩家挤下线的时候，必出
+
+aoi中，广播的时候，有判断cansend，这边看能不能直接将不能send的aoi对象不添加到list中，避免不必要的call
+
+send的msg中，在session前面带了一个无符号的char类型数值，
+这边用于调试用的，前端可以不用发过来的，但是后端也需要对应的修改一下。
+
+msgserver那边handler.disconnect把fd设置为nil了，并没有调用server.logout中的gateserver.closeclient(u.fd)，除非是别人挤下去的。
+
+会出现Unknown session:5的错误，初步判断，是session的问题导致server这边resend response了。
+
+monster:delfromaoilist(objtempid) essert failed
+
+sproto消息可以带回应参数，看一下如果带了该参数，但是前端不回应会怎么样
+--残留下来，客户端下线后应该把整个 host 对象扔掉
+--这边处理了一下，需要检查是否被丢弃了
+
+发消息的地方需要区分是否需要回应吗？
+这边如果不区分的话，全部给session，那么sproto那边的__session一直会给复制为true，
+不断增加，这样应该不正确吧...看一下怎么处理一下
+和上面一条一样，但是map这边不能丢...client能丢...
+
+client中dispatch_message那边获取的id和sessionid有时候不一样，要看一下为什么，是不是有问题
+--现在没有了，注意观察
+
+client的延迟检测那边，如果连续发送三次request会出现session冲突
+--可能是gate那边需要加队列
+
+agent handler那边，local变量再二次登陆的时候，貌似有问题，delay_run中的alreadytestnum成了全局变量了
+
 这边表现目前看起来没问，实际obj中aoilist是的对象正不正确还有待检查
 obj移动的时候，广播过了pos，所以client这边应该没问题
 如果aoilist这边出问题，可能会影响到战斗这一块，选择对象的时候，是否可选取的判断
@@ -112,3 +146,11 @@ service_aoi里面，callback那里返回的字符串的结尾有很多空格..�
 --事先计算好实际需要申请的内存大小
 
 msgagent那边有一个task，是sharedata
+
+
+client那边，unpack_package中text:sub(3,2+s - 4)这里-4了，是去掉了session，这边看能不能这里不减，
+在后面的地方拆除session来，用recv_response拆
+--已处理
+
+发送消息的时候，额外增加了session id，应该是可以去掉的，这样可以避免每次消息多4个字节
+--msgserver那边需要这个session做处理，所以不能去掉

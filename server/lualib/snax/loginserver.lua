@@ -46,7 +46,7 @@ local function assert_socket(service, v, fd)
 end
 
 local function write(service, fd, text,session)
-	local str = text..string.pack(">I4", session)
+	local str = text..string.pack(">BI4", 1, session)
 	local package = string.pack (">s2", str)
 	assert_socket(service, socket.write(fd, package), fd)
 end
@@ -59,8 +59,8 @@ local function read_msg(fd)
 	local s = read (fd, 2)
 	local size = s:byte(1) * 256 + s:byte(2)
 	local msg = read (fd, size)
-	local session = string.unpack(">I4", msg, -4)
-	msg = msg:sub(1,-5)
+	local id, session = string.unpack("B>I4", msg, -5)
+	msg = msg:sub(1,-6)
 	return session,host:dispatch(msg)
 end
 

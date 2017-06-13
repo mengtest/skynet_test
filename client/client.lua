@@ -70,13 +70,14 @@ end
 --与loginserver建立连接
 local fd = assert(socket.connect("127.0.0.1", 8101))
 
+local nIndex = 0
 --发送proto协议封装的消息
 local function send_request(name, args)
-	print("==send :"..name)
 	session_id = session_id + 1
+	nIndex = nIndex + 1
 	local str = request(name, args, session_id)
-	local size = #str + 4
-	local package = string.pack(">I2", size)..str..string.pack(">I4", session_id)
+	local size = #str + 5
+	local package = string.pack(">I2", size)..str..string.pack(">BI4", nIndex,session_id)
 	socket.send(fd, package)
 	session[session_id] = {name = name ,args = args}
 	--print( session_id,"REQUEST",name)
@@ -273,11 +274,20 @@ end
 
 function REQUEST.characterupdate(args)
 	print("characterupdate:")
-	print(args)
 end
 
 function REQUEST.characterleave(args)
 	print("characterleave:")
+end
+
+function REQUEST.delaytest(args)
+	print("delaytest")
+	--print(args)
+	return {time = args.time}
+end
+
+function REQUEST.delayresult(args)
+	print("delayresult:"..args.time)
 end
 
 ----- connect to game server
@@ -325,15 +335,23 @@ local function unpack_package(text)
 	if size < s+2 then
 		return nil, text
 	end
-	return text:sub(3,2+s - 4), text:sub(3+s)
+	return text:sub(3,2+s), text:sub(3+s)
 end
 
 local readpackage = unpack_f(unpack_package)
 
+local function recv_response(v)
+	local size = #v - 5
+	local content, ok, session = string.unpack("c"..tostring(size).."B>I4", v)
+	return ok ~=0 , content, session
+end
+
 local function dispatch_message()
-	local type, id, args, response = host:dispatch(readpackage())
-	--print("<===",type, id, args, response)
+	local ok , content, sessionid = recv_response(readpackage())
+	assert(ok)
+	local type, id, args, response = host:dispatch(content)
 	if type == "RESPONSE" then
+		assert(id == sessionid,"session err! id:"..id.." session:"..sessionid)
 		local s = assert(session[id])
 		session[id] = nil
 		local f = RESPONSE[s.name]
@@ -345,7 +363,14 @@ local function dispatch_message()
 	elseif type == "REQUEST" then
 		local f = REQUEST[id]
 		if f then
-			f(args)
+			local r = f(args)
+			if r and response then
+				local str = response(r)
+				local size = #str + 5
+				nIndex = nIndex + 1
+				local package = string.pack(">I2", size)..str..string.pack(">BI4", nIndex,sessionid)
+				socket.send(fd, package)
+			end
 		else
 			print "response"
 		end

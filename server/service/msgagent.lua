@@ -2,6 +2,7 @@ local skynet = require "skynet"
 local queue = require "skynet.queue"
 local log = require "syslog"
 local msgsender = require "msgsender"
+local timer = require "timer"
 
 local testhandler = require "agent.testhandler"
 local character_handler = require "agent.character_handler"
@@ -25,6 +26,22 @@ local agentstatus = {
 local running = agentstatus.AGENT_INIT
 local user
 local host
+
+local lastruntimepersecond = 0
+local function player_run()
+	while (true) do
+		if running == agentstatus.AGENT_RUNNING then
+			local nowtime = timer.get_time()
+			if nowtime - lastruntimepersecond >= 1 then
+				--玩家延迟检测
+				CMD.delay_run(nowtime)
+			end
+			skynet.sleep(1)
+		else
+			break
+		end
+	end
+end
 
 --当请求退出和被T出的时候
 --因为请求消息在requestqueue，而被T的消息在luaqueue中
@@ -171,6 +188,9 @@ function CMD.mapenter(_,map,tempid)
 	map_handler:register(user)
 	aoi_handler:register(user)
 	move_handler:register(user)
+	running = agentstatus.AGENT_RUNNING
+	heartbeat_check ()
+	skynet.fork(player_run)
 end
 
 function CMD.login(source, uid, sid, secret)
@@ -190,13 +210,12 @@ function CMD.login(source, uid, sid, secret)
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
 	msgsender:init()
+	host = msgsender:get_host()
 	-- you may load user data from database
 	testhandler:register(user)
 	character_handler:register(user)
-	running = agentstatus.AGENT_RUNNING
 	--心跳检测
 	last_heartbeat_time = skynet.now ()
-	heartbeat_check ()
 end
 
 function CMD.logout(_)
@@ -222,6 +241,7 @@ skynet.memlimit(1 * 1024 * 1024)
 --消息名，参数列表，是否发送给指定对象，是否广播，广播时是否排除自己
 function sender.send_request(name, args, ref, not_send_to_me, aoilist)
 	if aoilist then
+		--广播给指定列表中的对象
 		user.character:send_boardrequest(name, args, aoilist)
 	else
 		if ref then
@@ -235,6 +255,7 @@ function sender.send_request(name, args, ref, not_send_to_me, aoilist)
 				user.character:send_boardrequest(name, args, aoilist)
 			end
 		else
+			--发送消息给自己
 			user.character:send_request(name, args)
 		end
 	end
@@ -244,7 +265,6 @@ skynet.start(function()
 	-- If you want to fork a work thread , you MUST do it in CMD.login
 	--加载proto
 	msgsender = msgsender.create(gate)
-	host = msgsender:get_host()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
 		local f = assert(CMD[command],command)

@@ -3,14 +3,6 @@ local handler = require "agent.handler"
 local log = require "base.syslog"
 local enumtype = require "enumtype"
 
-if not _G.instance then
-	_G.instance = {}
-end
-
-if not _G.instance.aoi then
-	_G.instance.aoi = {}
-end
-
 local CMD = {}
 local _handler = handler.new (nil,nil,CMD)
 local user

@@ -67,6 +67,7 @@ end
 function CMD.open(conf,gate)
   config = conf
 	msgsender = msgsender.create(gate)
+  msgsender:init()
   aoi = skynet.newservice("aoi")
   skynet.call(aoi,"lua","open",config.name)
   map_info = basemap.create(conf.id,conf.type,conf,aoi)

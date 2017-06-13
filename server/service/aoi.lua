@@ -1,7 +1,8 @@
 local skynet = require "skynet"
 local log = require "syslog"
+local util = require "util"
 require "skynet.manager"
-local set_timeout = _G.instance.util.set_timeout
+local set_timeout = util.set_timeout
 
 local CMD = {}
 local OBJ = {}

@@ -208,7 +208,7 @@ function server.start(conf)
 		if v ~= hmac then
 			return "401 Unauthorized"
 		end
-
+		
 		u.version = idx
 		u.fd = fd
 		u.ip = addr
@@ -217,8 +217,8 @@ function server.start(conf)
 
 	local function auth(fd, addr, msg, sz)
 		local message = netpack.tostring(msg, sz)
-		local session = string.unpack(">I4", message, -4)
-		message = message:sub(1,-5)
+		local id, session = string.unpack("B>I4", message, -5)
+		message = message:sub(1,-6)
 		local type, name, args, response = host:dispatch (message)
 		assert (type == "REQUEST")
 		if name == "login" then
@@ -239,7 +239,7 @@ function server.start(conf)
 		local package = response {
 			result = result
 		}
-		socketdriver.send(fd, netpack.pack(package..string.pack(">I4", session)))
+		socketdriver.send(fd, netpack.pack(package..string.pack(">BI4", 1, session)))
 
 		if close then
 			gateserver.closeclient(fd)
@@ -270,10 +270,11 @@ function server.start(conf)
 		end
 	end
 
+--这边会把response全部存起来，只有再完全重新登录才会清理掉，重新连接不会清理，只会有版本号的改变
 	local function do_request(fd, message)
 		local u = assert(connection[fd], "invalid fd")
-		local session = string.unpack(">I4", message, -4)
-		message = message:sub(1,-5)
+		local id, session = string.unpack("B>I4", message, -5)
+		message = message:sub(1,-6)
 		local p = u.response[session]
 		if p then
 			-- session can be reuse in the same connection

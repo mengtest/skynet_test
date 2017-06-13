@@ -38,3 +38,18 @@ characterleave 4 {
 		tempid 0 : integer
 	}
 }
+
+delaytest 5{
+	request {
+		time 0 : integer
+	}
+	response {
+		time 0 : integer
+	}
+}
+
+delayresult 6{
+	request {
+		time 0 : integer
+	}
+}
