@@ -95,6 +95,8 @@ local function merge (dest, t)
 	end
 end
 
+skynet.memlimit(1 * 1024 * 1024)
+
 skynet.init(function()
   merge(CMD,aoi_handle.CMD)
 end)

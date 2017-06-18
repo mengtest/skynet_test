@@ -19,6 +19,11 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+学习使用MemoryHook来检查内存，先检查一下内存问题吧。
+
+msgsender中保留了发送的session信息，如果消息过多，内存会溢出的，这边看是怎么处理一下，应该需要把老、旧的消息移除。
+server那边开着不懂，monster_run的时候，内存会涨，导致map内存溢出，应该也是这个问题，需要解决。
+
 client发给server的消息带的session和server发给client的session貌似不能独立，需要整合
 不然的话，会出现session冲突。
 --在断线重连中，例如有版本1的时候，有session为5的response，

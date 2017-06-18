@@ -127,6 +127,7 @@ local RESPONSE = {}
 local function handle_response (id, args)
 	local session = msgsender.session
 	local s = session[id]
+	session[id] = nil
 	if not s then
 		log.warning ("session %d not found", id)
 		logout(4)
