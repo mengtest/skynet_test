@@ -19,6 +19,10 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+client退出重新登录的时候，run里面的delaytest没有继续跑
+
+sharedata改掉，使用最新的datasheet
+
 学习使用MemoryHook来检查内存，先检查一下内存问题吧。
 
 msgsender中保留了发送的session信息，如果消息过多，内存会溢出的，这边看是怎么处理一下，应该需要把老、旧的消息移除。
@@ -40,6 +44,8 @@ msgserver那边handler.disconnect把fd设置为nil了，并没有调用server.lo
 会出现Unknown session:5的错误，初步判断，是session的问题导致server这边resend response了。
 
 monster:delfromaoilist(objtempid) essert failed
+./server/lualib/obj/aoifunc.lua:140: in method 'delfromaoilist'
+./server/lualib/map/aoi_handler.lua:60: in local 'f
 
 sproto消息可以带回应参数，看一下如果带了该参数，但是前端不回应会怎么样
 --残留下来，客户端下线后应该把整个 host 对象扔掉

@@ -1,6 +1,6 @@
 local skynet = require "skynet"
 local log = require "syslog"
-local sharedata = require "sharedata"
+local sharedata = require "skynet.sharedata"
 
 local CMD = {}
 local mapinstance = {}

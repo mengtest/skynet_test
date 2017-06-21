@@ -1,5 +1,5 @@
 local skynet = require "skynet"
-local profile = require "profile"
+local profile = require "skynet.profile"
 
 local config = require "config.system"
 

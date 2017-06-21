@@ -1,7 +1,7 @@
 local skynet = require "skynet"
 local config = require "config.system"
 local protopatch = require "config.protopatch"
-local profile = require "profile"
+local profile = require "skynet.profile"
 local log = require "syslog"
 
 skynet.start(function()

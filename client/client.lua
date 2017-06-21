@@ -5,8 +5,8 @@ package.path = skynet_root.."lualib/?.lua;"..common.."?.lua"
 
 local account ,name = ...
 
-local socket = require "clientsocket"
-local crypt = require "crypt"
+local socket = require "client.socket"
+local crypt = require "client.crypt"
 local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
 require "luaext"

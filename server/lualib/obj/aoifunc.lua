@@ -1,5 +1,5 @@
 local skynet = require "skynet"
-local sharemap = require "sharemap"
+local sharemap = require "skynet.sharemap"
 local enumtype = require "enumtype"
 local math_sqrt = math.sqrt
 
@@ -137,7 +137,7 @@ function _aoifun.expandmethod(obj)
 
 	--从aoilist中移除对象
 	function obj:delfromaoilist(tempid)
-		assert(self.aoilist[tempid])
+		assert(self.aoilist[tempid],tempid)
 		self.aoilist[tempid] = nil
 	end
 

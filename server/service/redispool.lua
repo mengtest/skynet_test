@@ -1,5 +1,5 @@
 local service = require "service"
-local redis = require "redis"
+local redis = require "skynet.db.redis"
 local config = require "config.redisconf"
 local log = require "syslog"
 

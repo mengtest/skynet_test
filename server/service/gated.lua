@@ -1,6 +1,6 @@
 local msgserver = require "snax.msgserver"
 local skynet = require "skynet"
-local sharemap = require "sharemap"
+local sharemap = require "skynet.sharemap"
 local log = require "syslog"
 
 local loginservice = tonumber(...)

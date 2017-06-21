@@ -1,8 +1,8 @@
 local skynet = require "skynet"
 local gateserver = require "snax.gateserver"
-local netpack = require "netpack"
-local crypt = require "crypt"
-local socketdriver = require "socketdriver"
+local netpack = require "skynet.netpack"
+local crypt = require "skynet.crypt"
+local socketdriver = require "skynet.socketdriver"
 local sprotoloader = require "sprotoloader"
 local assert = assert
 local b64encode = crypt.base64encode
@@ -278,7 +278,7 @@ function server.start(conf)
 		local p = u.response[session]
 		if p then
 			-- session can be reuse in the same connection
-			--if p[3] == u.version then
+			if p[3] == u.version then
 				local last = u.response[session]
 				u.response[session] = nil
 				p = nil
@@ -287,7 +287,7 @@ function server.start(conf)
 					skynet.error(error_msg)
 					error(error_msg)
 				end
-			--end
+			end
 		end
 
 		if p == nil then

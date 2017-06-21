@@ -1,5 +1,5 @@
 local service = require "service"
-local mysql = require "mysql"
+local mysql = require "skynet.db.mysql"
 local config = require "config.mysqlconf"
 local log = require "syslog"
 

@@ -2,7 +2,7 @@ local skynet = require "skynet"
 local handler = require "agent.handler"
 local log = require "base.syslog"
 local uuid = require "uuid"
-local sharedata = require "sharedata"
+local sharedata = require "skynet.sharedata"
 local packer = require "db.packer"
 local player = require "obj.player"
 
