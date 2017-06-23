@@ -33,10 +33,11 @@ local delayvalue = {
 }
 
 --测试次数
-local alreadytestnum = -1,
+local alreadytestnum = -1
 
 _handler:init (function (u)
 	user = u
+	alreadytestnum = -1
 end)
 
 _handler:release (function ()

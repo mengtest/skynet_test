@@ -19,8 +19,6 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
-client退出重新登录的时候，run里面的delaytest没有继续跑
-
 sharedata改掉，使用最新的datasheet
 
 学习使用MemoryHook来检查内存，先检查一下内存问题吧。
@@ -165,3 +163,6 @@ client那边，unpack_package中text:sub(3,2+s - 4)这里-4了，是去掉了ses
 
 发送消息的时候，额外增加了session id，应该是可以去掉的，这样可以避免每次消息多4个字节
 --msgserver那边需要这个session做处理，所以不能去掉
+
+client退出重新登录的时候，run里面的delaytest没有继续跑
+--alreadytestnum的bug

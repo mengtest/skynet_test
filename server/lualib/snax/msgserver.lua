@@ -278,7 +278,7 @@ function server.start(conf)
 		local p = u.response[session]
 		if p then
 			-- session can be reuse in the same connection
-			if p[3] == u.version then
+			--if p[3] == u.version then
 				local last = u.response[session]
 				u.response[session] = nil
 				p = nil
@@ -287,7 +287,7 @@ function server.start(conf)
 					skynet.error(error_msg)
 					error(error_msg)
 				end
-			end
+			--end
 		end
 
 		if p == nil then
