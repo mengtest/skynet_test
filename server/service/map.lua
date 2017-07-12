@@ -68,7 +68,7 @@ function CMD.open(conf,gate)
   config = conf
 	msgsender = msgsender.create(gate)
   msgsender:init()
-  aoi = skynet.newservice("aoi")
+  aoi = skynet.newservice("aoi",config.name)
   skynet.call(aoi,"lua","open",config.name)
   map_info = basemap.create(conf.id,conf.type,conf,aoi)
   map_info.CMD = CMD
@@ -95,7 +95,7 @@ local function merge (dest, t)
 	end
 end
 
-skynet.memlimit(1 * 1024 * 1024)
+--skynet.memlimit(10 * 1024 * 1024)
 
 skynet.init(function()
   merge(CMD,aoi_handle.CMD)

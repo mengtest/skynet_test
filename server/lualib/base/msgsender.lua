@@ -1,10 +1,12 @@
 --与客户端的消息通讯
 local skynet = require "skynet"
 local sprotoloader = require "sprotoloader"
+local log = require "syslog"
 local request
 
 local _msgsender = {}
 local s_method = {__index = {}}
+local _sessionlen = 1024
 
 local function init_method(func)
 
@@ -35,6 +37,12 @@ local function init_method(func)
     skynet.send(self.gate, "lua", "request", user.uid, user.subid,package);
 
     if resp then
+      if table.size(self.session) > _sessionlen then
+        log.debug("session overload!")
+        for k,_ in pairs(self.session) do
+          self.session[k] = nil
+        end
+      end
     	self.session[self.session_id] = { name = name, args = args }
     end
   end
@@ -51,7 +59,13 @@ local function init_method(func)
     self:boardcast(package, agentlist, nil, user)
 
     if resp then
-	   self.session[self.session_id] = { name = name, args = args }
+      if table.size(self.session) > _sessionlen then
+        log.debug("session overload!")
+        for k,_ in pairs(self.session) do
+          self.session[k] = nil
+        end
+      end
+      self.session[self.session_id] = { name = name, args = args }
     end
   end
 

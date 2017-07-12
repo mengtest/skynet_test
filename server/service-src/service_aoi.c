@@ -5,21 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int addr = 0;
-
 struct alloc_cookie {
 	int count;
 	int max;
 	int current;
 };
 
-struct alloc_cookie cookie = { 0,0,0 };
+struct aoi_space_plus {
+	struct alloc_cookie* cookie;
+	struct aoi_space * space;
+};
 
 static void *
 my_alloc(void * ud, void *ptr, size_t sz) {
 	struct alloc_cookie * cookie = ud;
 	if (ptr == NULL) {
-		void *p = malloc(sz);
+		void *p = skynet_malloc(sz);
 		++ cookie->count;
 		cookie->current += sz;
 		if (cookie->max < cookie->current) {
@@ -31,7 +32,7 @@ my_alloc(void * ud, void *ptr, size_t sz) {
 	-- cookie->count;
 	cookie->current -= sz;
 //	printf("%p - %u \n",ptr, sz);
-	free(ptr);
+	skynet_free(ptr);
 	return NULL;
 }
 
@@ -53,7 +54,9 @@ callbackmessage(void *ud, uint32_t watcher, uint32_t marker) {
 	char * msg = skynet_malloc(sz);
 	memset(msg,0,sz);
 	sprintf(msg,"aoicallback %d %d",watcher,marker);
-	skynet_send(ctx,0,addr,PTYPE_TEXT|PTYPE_TAG_DONTCOPY,0,(void *)msg,sz);
+	//caoi server的启动在laoi启动之后，handle理论是caoi = laoi + 1
+	//如果失败,就需要换方式了
+	skynet_send(ctx,0,skynet_current_handle() - 1,PTYPE_TEXT|PTYPE_TAG_DONTCOPY,0,(void *)msg,sz);
 }
 
 static void
@@ -111,7 +114,6 @@ _ctrl(struct skynet_context * ctx, struct aoi_space * space, const void * msg, i
 		pos[2] = strtof(posstr , NULL);
 		//printf("id:%d,mode:%s,pos:%f-%f-%f\n",id,mode,pos[0],pos[1],pos[2]);
 		aoi_update(space, id, mode, pos);
-		//aoi_message(space, callbackmessage, ctx);
 		return;
 	}
 	if (memcmp(command,"message",i)==0) {
@@ -121,16 +123,24 @@ _ctrl(struct skynet_context * ctx, struct aoi_space * space, const void * msg, i
 	skynet_error(ctx, "[aoi] Unkown command : %s", command);
 }
 
-struct aoi_space *
+struct aoi_space_plus *
 caoi_create(void) {
-	struct aoi_space * space = aoi_create(my_alloc , &cookie);
-	return space;
+	struct aoi_space_plus * space_plus = skynet_malloc(sizeof(struct aoi_space_plus));
+	memset(space_plus, 0, sizeof(*space_plus));
+
+	space_plus->cookie = skynet_malloc(sizeof(struct alloc_cookie));
+	memset(space_plus->cookie, 0, sizeof(*(space_plus->cookie)));
+
+	space_plus->space = aoi_create(my_alloc , space_plus->cookie);
+	return space_plus;
 }
 
 void
-caoi_release(struct aoi_space * space) {
+caoi_release(struct aoi_space_plus * space_plus) {
 	printf("caoi_release");
-	aoi_release(space);
+	aoi_release(space_plus->space);
+	skynet_free(space_plus->cookie);
+	skynet_free(space_plus);
 }
 
 static int
@@ -146,12 +156,7 @@ caoi_cb(struct skynet_context * context, void *ud, int type, int session, uint32
 }
 
 int
-caoi_init(struct aoi_space * space, struct skynet_context *ctx, const char * parm) {
-	int n = sscanf(parm, "%d",&addr);
-	if (n<1){
-		skynet_error(ctx, "Invalid gate parm %s",parm);
-		return 1;
-	}
-	skynet_callback(ctx, space, caoi_cb);
+caoi_init(struct aoi_space_plus * space_plus, struct skynet_context *ctx/*, const char * parm*/) {
+	skynet_callback(ctx, space_plus->space, caoi_cb);
 	return 0;
 }

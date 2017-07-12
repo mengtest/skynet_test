@@ -44,13 +44,17 @@ local function init_method(map)
     local obj
     local tempid
     assert(aoisvr)
-    for _,v in pairs(monster_list) do
-      tempid = self:create_tempid()
-      obj = monster.create(v.id,tempid,v)
-      assert(self.monster_list[tempid] == nil)
-      obj:set_msgsender(self.msgsender)
-      self.monster_list[tempid] = obj
-      skynet.send(aoisvr,"lua","characterenter",obj:getaoiobj())
+    local n = 100
+    while n > 0 do
+      for _,v in pairs(monster_list) do
+        tempid = self:create_tempid()
+        obj = monster.create(v.id,tempid,v)
+        assert(self.monster_list[tempid] == nil)
+        obj:set_msgsender(self.msgsender)
+        self.monster_list[tempid] = obj
+        skynet.send(aoisvr,"lua","characterenter",obj:getaoiobj())
+      end
+      n = n - 1
     end
   end
 

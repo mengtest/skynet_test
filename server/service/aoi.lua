@@ -9,6 +9,7 @@ local OBJ = {}
 local aoi
 local update_thread
 local need_update
+local map_name = ...
 
 skynet.register_protocol {
 	name = "text",
@@ -61,7 +62,8 @@ local function message_update ()
 end
 
 function CMD.open()
-  aoi = assert(skynet.launch("caoi", skynet.self()))
+  aoi = assert(skynet.launch("caoi", map_name))
+	assert(aoi == (skynet.self() + 1))
 	message_update()
 end
 

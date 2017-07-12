@@ -112,18 +112,24 @@ function _aoifun.expandmethod(obj)
 			end
 
 			--通知其他Client对象移除自己
-			local templist = table.copy(leavelist)
-			for _,vv in pairs(templist) do
-				if vv.type == enumtype.CHAR_TYPE_PLAYER then
-					vv.cansend = true
+			--只通知client
+			local templist = {}
+			--这边浅拷贝就行了吧...
+			for k,v in pairs(leavelist) do
+				if v.type == enumtype.CHAR_TYPE_PLAYER then
+					templist[k] = v
+					templist[k].cansend = true
 				end
 			end
 			self:send_boardrequest("characterleave",{ tempid = self:gettempid() },templist)
 		end
 		--进入视野
 		if not table.empty(enterlist) then
-			for _,vv in pairs(enterlist) do
-				skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = self:getaoiobj() },vv.tempid)
+			--玩家才需要
+			if self:isplayer() then
+				for _,vv in pairs(enterlist) do
+					skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = self:getaoiobj() },vv.tempid)
+				end
 			end
 		end
 	end
@@ -151,6 +157,19 @@ function _aoifun.expandmethod(obj)
 		--获取视野内的aoilist之前先update一下
 		self:updateaoilist()
 		return self.aoilist
+	end
+
+	--获取可以发送信息的给前段的aoilist
+	function obj:getsend2clientaoilist()
+		--获取视野内的aoilist之前先update一下
+		self:updateaoilist()
+		local aoilist = {}
+		for _,v in pairs(self.aoilist) do
+			if v.cansend then
+				table.insert(aoilist,v)
+			end
+		end
+		return aoilist
 	end
 
 	--设置aoi mode

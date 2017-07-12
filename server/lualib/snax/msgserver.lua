@@ -282,11 +282,11 @@ function server.start(conf)
 				local last = u.response[session]
 				u.response[session] = nil
 				p = nil
-				if last[2] == nil then
+				--[[if last[2] == nil then
 					local error_msg = string.format("Conflict session %s", crypt.hexencode(session))
 					skynet.error(error_msg)
 					error(error_msg)
-				end
+				end]]
 			--end
 		end
 
