@@ -39,9 +39,9 @@ local function init_method(monster)
     elseif  pos.y < -300 then
         pos.y = -300
     end
-    self:setpos(pos);
+    self:setpos(pos)
     skynet.send(aoisvr,"lua","characterenter",self:getaoiobj())
-    self:writercommit();
+    self:writercommit()
   end
 
   basechar.expandmethod(monster)
@@ -49,7 +49,7 @@ end
 init_method(s_method.__index)
 
 --创建monster
-function _monster.create(id,tempid,conf)
+function _monster.create(id,tempid,conf,mapobj)
   local monster = basechar.create(enumtype.CHAR_TYPE_MONSTER)
   --monster特有属性
   monster.id = 0
@@ -73,6 +73,8 @@ function _monster.create(id,tempid,conf)
 				y = conf.y,
 				z = conf.z,
 			},
+      map = mapobj:get_map_id(),
+      del = false,
 		}
 	}
   monster:setaoiobj(aoiobj)

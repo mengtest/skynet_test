@@ -136,7 +136,7 @@ function server.send_board_request_handler(msg,userlist)
 			local u = users[v.info.uid]
 			if u then
 				local username = msgserver.username(v.info.uid, v.info.subid, servername)
-				assert(u.username == username)
+				assert(u.username == username,"u.username:"..tostring(u.username).." username:"..tostring(username))
 				msgserver.request(u.username,msg)
 			end
 		end

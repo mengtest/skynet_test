@@ -135,6 +135,8 @@ function _handler.init (dbdata)
 				y = dbdata.y,
 				z = dbdata.z,
 			},
+			map = dbdata.mapid,
+			del = false,
 		},
 		info = {
 			uid = user.uid,

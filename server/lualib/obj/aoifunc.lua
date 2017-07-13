@@ -17,14 +17,14 @@ function _aoifun.expandmethod(obj)
 
 	--添加reader到list
 	function obj:addtoreaderlist(tempid,reader)
-		assert(self.readerlist[tempid] == nil)
-		assert(self.aoilist[tempid] == nil)
+		assert(self.readerlist[tempid] == nil, tempid)
+		assert(self.aoilist[tempid] == nil, tempid)
 		self.readerlist[tempid] = reader
 	end
 
 	--从readerlist中移除
 	function obj:delfromreaderlist(tempid)
-		assert(self.readerlist[tempid])
+		assert(self.readerlist[tempid], tempid)
 		self.readerlist[tempid] = nil
 	end
 
@@ -78,33 +78,37 @@ function _aoifun.expandmethod(obj)
 			v:update()
 			assert(v.pos)
 			assert(self.aoilist[k].movement.pos)
+
 			self.aoilist[k].movement.pos = v.pos
 			local distance = DIST2(self:getpos(),v.pos)
-			if distance <= AOI_RADIS2 then
-				if self.aoilist[k].cansend == false then
-					enterlist[k] = self.aoilist[k]
-				end
-				if self.aoilist[k].type == enumtype.CHAR_TYPE_PLAYER then
-					self.aoilist[k].cansend = true
-				else
-					self.aoilist[k].cansend = false
-				end
-			elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
-				self.aoilist[k].cansend = false
-				leavelist[k] = self.aoilist[k]
-			else
-				if self.aoilist[k].type ~= enumtype.CHAR_TYPE_PLAYER then
-					self.aoilist[k].cansend = false
-				end
-				leavelist[k] = self.aoilist[k]
+			--下线或者地图不相等的时候
+			if v.del or v.map ~= self.aoilist[k].movement.map then
 				self.aoilist[k] = nil
 				self.readerlist[k] = nil
+			else
+				if distance <= AOI_RADIS2 then
+					if self.aoilist[k].cansend == false then
+						enterlist[k] = self.aoilist[k]
+					end
+					if self.aoilist[k].type == enumtype.CHAR_TYPE_PLAYER then
+						self.aoilist[k].cansend = true
+					else
+						self.aoilist[k].cansend = false
+					end
+				elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
+					self.aoilist[k].cansend = false
+					leavelist[k] = self.aoilist[k]
+				else
+					self.aoilist[k] = nil
+					self.readerlist[k] = nil
+				end
 			end
 		end
 		--离开视野
 		if not table.empty(leavelist) then
 			--玩家才需要通知
-			if self:isplayer() then
+			if self:isplayer() and
+			not self:get_aoi_del() then
 				--通知client移除自己视野内的对象
 				for kk,_ in pairs(leavelist) do
 					self:send_boardrequest("characterleave",{ tempid = kk },{ templist = self:getaoiobj() })
@@ -126,7 +130,8 @@ function _aoifun.expandmethod(obj)
 		--进入视野
 		if not table.empty(enterlist) then
 			--玩家才需要
-			if self:isplayer() then
+			if self:isplayer() and
+			not self:get_aoi_del() then
 				for _,vv in pairs(enterlist) do
 					skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = self:getaoiobj() },vv.tempid)
 				end
@@ -136,8 +141,8 @@ function _aoifun.expandmethod(obj)
 
 	--添加对象到aoilist
 	function obj:addtoaoilist(aoiobj)
-		assert(self.readerlist[aoiobj.tempid])
-		assert(self.aoilist[aoiobj.tempid] == nil)
+		assert(self.readerlist[aoiobj.tempid], aoiobj.tempid)
+		assert(self.aoilist[aoiobj.tempid] == nil, aoiobj.tempid)
 		self.aoilist[aoiobj.tempid] = aoiobj
 	end
 
@@ -250,6 +255,17 @@ function _aoifun.expandmethod(obj)
 		return self.aoiobj.cansend
 	end
 
+	--设置对象删除信息
+	function obj:set_aoi_del(del)
+		assert(self.aoiobj)
+		self.aoiobj.movement.del = del
+	end
+
+	--获取对象是否已经被删除
+	function obj:get_aoi_del()
+		assert(self.aoiobj)
+		return self.aoiobj.movement.del
+	end
 end
 
 return _aoifun

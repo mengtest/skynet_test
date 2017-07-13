@@ -1,7 +1,5 @@
 local skynet = require "skynet"
 local handler = require "agent.handler"
-local log = require "base.syslog"
-local enumtype = require "enumtype"
 
 local CMD = {}
 local _handler = handler.new (nil,nil,CMD)
@@ -23,21 +21,12 @@ end
 
 --离开地图的时候调用
 --通知其他玩家移除自己
-function CMD.delaoiobj(_,tempid)
-	local agentlist = user.character:getaoilist()
-	if not table.empty(agentlist) then
-		for _,v in pairs(agentlist) do
-			skynet.send(v.agent, "lua", "leaveaoiobj", tempid, v.tempid);
-		end
-	end
+function CMD.delaoiobj(_)
+	user.character:set_aoi_del(true)
+  user.character:writercommit()
 	user.send_request("characterleave",{ tempid = user.character:gettempid() }, true)
 	user.character:cleanaoilist()
 	user.character:cleanreaderlist()
-end
-
-function CMD.leaveaoiobj(_,tempid)
-	user.character:delfromaoilist(tempid)
-	user.character:delfromreaderlist(tempid)
 end
 
 --添加一个新的对象到自己的aoilist中

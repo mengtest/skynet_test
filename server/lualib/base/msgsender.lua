@@ -10,14 +10,14 @@ local _sessionlen = 1024
 
 local function init_method(func)
 
-  function func:boardcast(package, list, tempid, obj)
+  function func:boardcast(package, list, obj)
     assert(self.gate)
 		if list then
 			assert(type(list) == "table","boardcast list is not a table")
 			skynet.send(self.gate, "lua", "boardrequest", package, list);
 		else
       assert(obj)
-			local agentlist = obj:getaoilist()
+			local agentlist = obj:getsend2clientaoilist()
 			if not table.empty(agentlist) then
 				skynet.send(self.gate, "lua", "boardrequest", package, agentlist);
 			end
@@ -31,7 +31,7 @@ local function init_method(func)
     assert(self.gate)
     self.session_id = self.session_id + 1
 
-  	local str, resp = request (name, args, self.session_id)
+    local str, resp = request (name, args, self.session_id)
     str = str..string.pack(">BI4", 1, self.session_id)
     local package = string.pack (">s2", str)
     skynet.send(self.gate, "lua", "request", user.uid, user.subid,package);
@@ -43,7 +43,7 @@ local function init_method(func)
           self.session[k] = nil
         end
       end
-    	self.session[self.session_id] = { name = name, args = args }
+      self.session[self.session_id] = { name = name, args = args }
     end
   end
 
@@ -53,10 +53,10 @@ local function init_method(func)
     assert(args)
     self.session_id = self.session_id + 1
 
-  	local str, resp = request (name, args, self.session_id)
+    local str, resp = request (name, args, self.session_id)
     str = str..string.pack(">BI4", 1, self.session_id)
     local package = string.pack (">s2", str)
-    self:boardcast(package, agentlist, nil, user)
+    self:boardcast(package, agentlist, user)
 
     if resp then
       if table.size(self.session) > _sessionlen then
@@ -75,7 +75,7 @@ local function init_method(func)
 
   function func:init()
     self.session = {}
-  	self.session_id = 0
+    self.session_id = 0
 
     local protoloader = skynet.uniqueservice "protoloader"
     local slot = skynet.call(protoloader, "lua", "index", "clientproto")

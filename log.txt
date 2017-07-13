@@ -19,6 +19,8 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+function obj:updateaoilist()这个理清一下
+
 200个怪物就map就overload了........
 
 cserver那边，虽然launch了2个cserver，但是传入参数的时候，居然会覆盖上一次的，这边要看看为什么，

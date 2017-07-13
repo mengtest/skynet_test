@@ -7,4 +7,6 @@
 .charactermovement{
 	mode 0 : string
 	pos 1 : characterpos
+	map 2 : integer
+	del 3 : boolean
 }

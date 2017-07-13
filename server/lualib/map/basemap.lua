@@ -1,5 +1,3 @@
-local log = require "syslog"
-local npc = require "obj.npc"
 local monster = require "obj.monster"
 local idmgr = require "idmgr"
 local skynet = require "skynet"
@@ -14,11 +12,11 @@ local function init_method(map)
   --怪物run
   function map:monster_run()
     while true do
-      for k,v in pairs(self.monster_list) do
+      for _,v in pairs(self.monster_list) do
         v:run(aoisvr)
         self.CMD.updateinfo(nil,v:gettempid())
       end
-      skynet.sleep(10)
+      skynet.sleep(100)
     end
   end
 
@@ -44,11 +42,11 @@ local function init_method(map)
     local obj
     local tempid
     assert(aoisvr)
-    local n = 100
+    local n = 10
     while n > 0 do
       for _,v in pairs(monster_list) do
         tempid = self:create_tempid()
-        obj = monster.create(v.id,tempid,v)
+        obj = monster.create(v.id,tempid,v,self)
         assert(self.monster_list[tempid] == nil)
         obj:set_msgsender(self.msgsender)
         self.monster_list[tempid] = obj
@@ -58,6 +56,9 @@ local function init_method(map)
     end
   end
 
+  function map:get_map_id()
+    return self.id
+  end
   --获取副本id
   function map:get_dungon_id()
     return self.dungeon_id

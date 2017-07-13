@@ -1,4 +1,3 @@
-local handler = require "agent.handler"
 local skynet = require "skynet"
 
 local CMD = {}
@@ -9,10 +8,6 @@ local _handle = { CMD = CMD,}
 function _handle.init(info)
   map_info = info
   msgsender = map_info.msgsender
-end
-
-function CMD.boardcast(_, gate, package, list,tempid)
-  msgsender:boardcast(package, list,tempid)
 end
 
 function CMD.getwritecopy(tempid)
@@ -38,27 +33,14 @@ end
 --离开地图的时候
 --通知视野内对象
 function CMD.delaoiobj(tempid)
-  assert(objtempid)
+  assert(tempid)
   local monster = map_info:get_monster(tempid)
-	local agentlist = monster:getaoilist()
-  --通知视野内的对象删除自己
-	if not table.empty(agentlist) then
-		for _,v in pairs(agentlist) do
-			skynet.send(v.agent, "lua", "leaveaoiobj", tempid, v.tempid);
-		end
-	end
+  local agentlist = monster:getaoilist()
+  monster:set_aoi_del(true)
+  monster:writercommit()
   msgsender:send_boardrequest("characterleave", { tempid = monster:gettempid() }, agentlist)
 	monster:cleanaoilist()
 	monster:cleanreaderlist()
-end
-
---某个对象离开视野
---objtempid离开tempid的视野
-function CMD.leaveaoiobj(objtempid, tempid)
-  assert(objtempid)
-  local monster = map_info:get_monster(tempid)
-	monster:delfromaoilist(objtempid)
-	monster:delfromreaderlist(objtempid)
 end
 
 function CMD.addaoiobj(aoiobj,tempid)

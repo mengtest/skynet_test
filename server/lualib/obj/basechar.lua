@@ -23,6 +23,8 @@ function _basechar.create(type)
 					y = 0,
 					z = 0,
 				},
+				map = 0,
+				del = false,
 			},
 		},
 		--角色信息
