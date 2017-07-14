@@ -11,7 +11,7 @@ local _handler = handler.new (REQUEST,RESPONSE,CMD)
 
 local user
 --间隔多久重新测试下网络延时
-local enum_delay_test_time = (1) --5秒重新测试下延时
+local enum_delay_test_time = (5) --5秒重新测试下延时
 
 --最大网络延时 单位：毫秒
 local enum_max_delay_time = 1000

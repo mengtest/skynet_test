@@ -16,7 +16,7 @@ local function init_method(map)
         v:run(aoisvr)
         self.CMD.updateinfo(nil,v:gettempid())
       end
-      skynet.sleep(100)
+      skynet.sleep(10)
     end
   end
 
@@ -42,7 +42,7 @@ local function init_method(map)
     local obj
     local tempid
     assert(aoisvr)
-    local n = 10
+    local n = 1
     while n > 0 do
       for _,v in pairs(monster_list) do
         tempid = self:create_tempid()

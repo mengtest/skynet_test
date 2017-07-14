@@ -36,7 +36,7 @@ local function player_run()
 				--玩家延迟检测
 				CMD.delay_run(nowtime)
 			end
-			skynet.sleep(1)
+			skynet.sleep(10)
 		else
 			break
 		end

@@ -14,7 +14,6 @@ local map_info
 local world = ...
 world = tonumber(world)
 local config
-
 --角色请求进入地图
 function CMD.characterenter(uuid,aoiobj)
   log.debug("uuid(%d) enter map(%s)",uuid,config.name)

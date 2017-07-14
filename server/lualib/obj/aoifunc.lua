@@ -99,6 +99,10 @@ function _aoifun.expandmethod(obj)
 					self.aoilist[k].cansend = false
 					leavelist[k] = self.aoilist[k]
 				else
+					if self.aoilist[k].type ~= enumtype.CHAR_TYPE_PLAYER then
+						self.aoilist[k].cansend = false
+					end
+					leavelist[k] = self.aoilist[k]
 					self.aoilist[k] = nil
 					self.readerlist[k] = nil
 				end
@@ -117,12 +121,12 @@ function _aoifun.expandmethod(obj)
 
 			--通知其他Client对象移除自己
 			--只通知client
-			local templist = {}
-			--这边浅拷贝就行了吧...
-			for k,v in pairs(leavelist) do
+			local templist = table.copy(leavelist)
+			for k,v in pairs(templist) do
 				if v.type == enumtype.CHAR_TYPE_PLAYER then
-					templist[k] = v
-					templist[k].cansend = true
+					v.cansend = true
+				else
+					templist[k] = nil
 				end
 			end
 			self:send_boardrequest("characterleave",{ tempid = self:gettempid() },templist)
