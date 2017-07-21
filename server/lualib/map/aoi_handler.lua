@@ -17,19 +17,6 @@ function CMD.getwritecopy(tempid)
 	return monster:getwritecopy()
 end
 
---通知自己的aoi信息给aoiobj
-function CMD.updateinfo(aoiobj,tempid)
-  assert(tempid)
-  local monster = map_info:get_monster(tempid)
-  local info = {
-    name = monster:getname(),
-    tempid = monster:gettempid(),
-    level = monster:getlevel(),
-    pos = monster:getpos(),
-  }
-  msgsender:send_boardrequest("characterupdate", { info = info }, aoiobj, monster)
-end
-
 --离开地图的时候
 --通知视野内对象
 function CMD.delaoiobj(tempid)
@@ -50,6 +37,7 @@ function CMD.addaoiobj(aoiobj,tempid)
 	if reader == nil then
 		reader = monster:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy",aoiobj.tempid))
 		monster:addtoreaderlist(aoiobj.tempid,reader)
+    aoiobj.cansend = false
 		monster:addtoaoilist(aoiobj)
 	end
 end

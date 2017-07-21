@@ -55,20 +55,6 @@ function CMD.delay_run(nowtime)
 	end
 end
 
---发送个人信息
-function CMD.updateinfo(_,aoiobj)
-	local info = {
-		name = user.character:getname(),
-		tempid = user.character:gettempid(),
-		job = user.character:getjob(),
-		sex = user.character:getsex(),
-		level = user.character:getlevel(),
-		pos = user.character:getpos(),
-	}
-	--这边如果不排除自己，前端会卡，具体有时间查一下
-	user.send_request("characterupdate", { info = info }, true, true, aoiobj)
-end
-
 --client回应的延迟检测
 function RESPONSE.delaytest(args)
 	if alreadytestnum < 0 or
@@ -117,8 +103,6 @@ function REQUEST.moveto (args)
 
 	--更新writer
 	user.character:writercommit()
-	--通知其他对象自己坐标改变
-	CMD.updateinfo()
   return { pos = pos }
 end
 

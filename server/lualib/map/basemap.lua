@@ -14,9 +14,8 @@ local function init_method(map)
     while true do
       for _,v in pairs(self.monster_list) do
         v:run(aoisvr)
-        self.CMD.updateinfo(nil,v:gettempid())
       end
-      skynet.sleep(10)
+      skynet.sleep(50)
     end
   end
 

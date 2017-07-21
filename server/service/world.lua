@@ -47,11 +47,15 @@ function CMD.open(source)
 	gate = source
   local obj = sharedata.query "gdd"
   local mapdata = obj["map"]
-  for _, conf in pairs (mapdata) do
-		local name = conf.name
-		local m = skynet.newservice ("map", skynet.self (),name)
-		skynet.call (m, "lua", "open", conf,gate)
-		mapinstance[name] = m
+	local n = 1
+	while n > 0 do
+	  for _, conf in pairs (mapdata) do
+			local name = conf.name
+			local m = skynet.newservice ("map", skynet.self (),name)
+			skynet.call (m, "lua", "open", conf,gate)
+			mapinstance[name] = m
+		end
+		n = n - 1
 	end
 end
 

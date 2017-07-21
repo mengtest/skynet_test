@@ -58,6 +58,14 @@ monster:delfromaoilist(objtempid) essert failed
 ./server/lualib/obj/aoifunc.lua:140: in method 'delfromaoilist'
 ./server/lualib/map/aoi_handler.lua:60: in local 'f
 
+./server/lualib/obj/aoifunc.lua:20: in method 'addtoreaderlist'
+./server/lualib/map/aoi_handler.lua:52: in local 'f'
+./server/service/map.lua:106: in upvalue 'f'
+./3rd/skynet/lualib/skynet.lua:111: in function <./3rd/skynet/lualib/skynet.lua:105>
+stack traceback:
+[C]: in function 'assert'
+./3rd/skynet/lualib/skynet.lua:533: in function 'skynet.dispatch_message'
+
 sproto消息可以带回应参数，看一下如果带了该参数，但是前端不回应会怎么样
 --残留下来，客户端下线后应该把整个 host 对象扔掉
 --这边处理了一下，需要检查是否被丢弃了

@@ -19,6 +19,11 @@
 	pos 5 : character_pos
 }
 
+.character_move{
+	tempid 0 : integer
+	pos 1 : character_pos
+}
+
 heartbeat 1 {}
 
 subid 2 {
@@ -35,7 +40,7 @@ characterupdate 3 {
 
 characterleave 4 {
 	request {
-		tempid 0 : integer
+		tempid 0 : *integer
 	}
 }
 
@@ -51,5 +56,11 @@ delaytest 5{
 delayresult 6{
 	request {
 		time 0 : integer
+	}
+}
+
+moveto 7{
+	request {
+		move 0 : *character_move
 	}
 }

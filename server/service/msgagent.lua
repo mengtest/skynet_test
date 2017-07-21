@@ -36,6 +36,7 @@ local function player_run()
 				--玩家延迟检测
 				CMD.delay_run(nowtime)
 			end
+			user.character:updateaoilist()
 			skynet.sleep(10)
 		else
 			break

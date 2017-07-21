@@ -42,6 +42,7 @@ local function init_method(monster)
     self:setpos(pos)
     skynet.send(aoisvr,"lua","characterenter",self:getaoiobj())
     self:writercommit()
+    self:updateaoilist()
   end
 
   basechar.expandmethod(monster)

@@ -12,6 +12,10 @@ local function DIST2(p1,p2)
 	return ((p1.x - p2.x) * (p1.x  - p2.x) + (p1.y  - p2.y) * (p1.y  - p2.y) + (p1.z  - p2.z) * (p1.z  - p2.z))
 end
 
+local function POSCHECK(p1,p2)
+	return ((p1.x == p2.x) and (p1.y == p2.y) and (p1.z == p2.z))
+end
+
 --扩展方法表
 function _aoifun.expandmethod(obj)
 
@@ -74,9 +78,13 @@ function _aoifun.expandmethod(obj)
 		local leavelist = {}
 		--进入视野的列表
 		local enterlist = {}
+		--视野内移动的对象
+		local movelist = {}
 		for k,v in pairs(self.readerlist) do
+			local oldpos = v.pos
 			v:update()
 			assert(v.pos)
+			assert(oldpos)
 			assert(self.aoilist[k].movement.pos)
 
 			self.aoilist[k].movement.pos = v.pos
@@ -90,6 +98,10 @@ function _aoifun.expandmethod(obj)
 					if self.aoilist[k].cansend == false then
 						enterlist[k] = self.aoilist[k]
 					end
+					if not POSCHECK(oldpos,v.pos) then
+						local character_move = { tempid = k, pos = v.pos }
+						table.insert(movelist,character_move)
+					end
 					if self.aoilist[k].type == enumtype.CHAR_TYPE_PLAYER then
 						self.aoilist[k].cansend = true
 					else
@@ -97,12 +109,12 @@ function _aoifun.expandmethod(obj)
 					end
 				elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
 					self.aoilist[k].cansend = false
-					leavelist[k] = self.aoilist[k]
+					table.insert(leavelist,k)
 				else
 					if self.aoilist[k].type ~= enumtype.CHAR_TYPE_PLAYER then
 						self.aoilist[k].cansend = false
 					end
-					leavelist[k] = self.aoilist[k]
+					table.insert(leavelist,k)
 					self.aoilist[k] = nil
 					self.readerlist[k] = nil
 				end
@@ -114,31 +126,37 @@ function _aoifun.expandmethod(obj)
 			if self:isplayer() and
 			not self:get_aoi_del() then
 				--通知client移除自己视野内的对象
-				for kk,_ in pairs(leavelist) do
-					self:send_boardrequest("characterleave",{ tempid = kk },{ templist = self:getaoiobj() })
-				end
+				self:send_boardrequest("characterleave",{ tempid = leavelist },{ templist = self:getaoiobj() })
 			end
-
-			--通知其他Client对象移除自己
-			--只通知client
-			local templist = table.copy(leavelist)
-			for k,v in pairs(templist) do
+		end
+		--重新进入视野，发送我的信息给对方
+		if not table.empty(enterlist) then
+			print(enterlist)
+			local temp = table.copy(enterlist)
+			for k,v in pairs(temp) do
 				if v.type == enumtype.CHAR_TYPE_PLAYER then
 					v.cansend = true
 				else
-					templist[k] = nil
+					temp[k] = nil
 				end
 			end
-			self:send_boardrequest("characterleave",{ tempid = self:gettempid() },templist)
-		end
-		--进入视野
-		if not table.empty(enterlist) then
 			--玩家才需要
+				local info = {
+					name = self:getname(),
+					tempid = self:gettempid(),
+					--job = self:getjob(),
+					--sex = self:getsex(),
+					--level = self:getlevel(),
+					pos = self:getpos(),
+				}
+				self:send_boardrequest("characterupdate",{ info = info },temp)
+		end
+
+		--视野范围内的对象移动了
+		if not table.empty(movelist) then
 			if self:isplayer() and
 			not self:get_aoi_del() then
-				for _,vv in pairs(enterlist) do
-					skynet.send(vv.agent, "lua", "updateinfo", { aoiobj = self:getaoiobj() },vv.tempid)
-				end
+				self:send_boardrequest("moveto",{ move = movelist },{ templist = self:getaoiobj() })
 			end
 		end
 	end
@@ -164,14 +182,14 @@ function _aoifun.expandmethod(obj)
 	--获取aoilist
 	function obj:getaoilist()
 		--获取视野内的aoilist之前先update一下
-		self:updateaoilist()
+		--self:updateaoilist()
 		return self.aoilist
 	end
 
 	--获取可以发送信息的给前段的aoilist
 	function obj:getsend2clientaoilist()
 		--获取视野内的aoilist之前先update一下
-		self:updateaoilist()
+		--self:updateaoilist()
 		local aoilist = {}
 		for _,v in pairs(self.aoilist) do
 			if v.cansend then
