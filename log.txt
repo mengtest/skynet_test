@@ -22,12 +22,13 @@ warning:
 function obj:updateaoilist()这个理清一下
 
 200个怪物就map就overload了........
+--怪物作为观察者加到aoi中去了，如果以m模式，单个地图可以承载1W个怪物
 
 cserver那边，虽然launch了2个cserver，但是传入参数的时候，居然会覆盖上一次的，这边要看看为什么，
 这边导致了caoi中，返回的消息都去call最后一个map了
 --service_aoi中的变量addr和cookie指向同一个地址了
 --cookie这边create的时候new了一个，在release的时候释放一下内存应该就可以了
---addr这个用的是skynet_context中的handle-1
+--addr这个用的是skynet_context中的handle - 1
 
 sharedata改掉，使用最新的datasheet
 

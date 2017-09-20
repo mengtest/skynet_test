@@ -131,7 +131,6 @@ function _aoifun.expandmethod(obj)
 		end
 		--重新进入视野，发送我的信息给对方
 		if not table.empty(enterlist) then
-			print(enterlist)
 			local temp = table.copy(enterlist)
 			for k,v in pairs(temp) do
 				if v.type == enumtype.CHAR_TYPE_PLAYER then
