@@ -13,7 +13,6 @@ function _basechar.create(type)
 		--aoi对象
 		aoiobj = {
 			agent = skynet.self(),
-			cansend = true,
 			tempid = 0,
 			type = enumtype.CHAR_TYPE_UNKNOW,
 			movement = {
@@ -31,10 +30,6 @@ function _basechar.create(type)
 		objinfo = {},
 		--视野内的角色
 		aoilist = {},
-		--视野内角色的reader
-		readerlist = {},
-		--角色writer
-		characterwriter = nil,
 		--msgsender
 		msgsender = nil,
 	}

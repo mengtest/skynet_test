@@ -36,7 +36,6 @@ local function player_run()
 				--玩家延迟检测
 				CMD.delay_run(nowtime)
 			end
-			user.character:updateaoilist()
 			skynet.sleep(10)
 		else
 			break
@@ -59,7 +58,6 @@ local function logout(type)
 		user.map = nil
 		if map then
 			skynet.call(map, "lua", "characterleave", user.character:getaoiobj())
-			CMD.delaoiobj(nil,user.character:gettempid())
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)

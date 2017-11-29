@@ -1,4 +1,4 @@
-local skynet = require "skynet"
+local enumtype = require "enumtype"
 local handler = require "agent.handler"
 
 local CMD = {}
@@ -13,32 +13,62 @@ _handler:release (function ()
 	user = nil
 end)
 
---创建reader
-function CMD.getwritecopy()
-	--log.debug ("user(%s) create_reader",user.uid)
-	return user.character:getwritecopy()
-end
-
---离开地图的时候调用
---通知其他玩家移除自己
-function CMD.delaoiobj(_)
-	user.character:set_aoi_del(true)
-  user.character:writercommit()
-	user.send_request("characterleave",{ tempid = {user.character:gettempid()} }, true)
-	user.character:cleanaoilist()
-	user.character:cleanreaderlist()
-end
-
---添加一个新的对象到自己的aoilist中
+--添加对象到aoilist中
 function CMD.addaoiobj(_,aoiobj)
-	--log.debug("user(%s) can watch user(%s)",user.character.aoiobj.tempid,aoiobj.tempid)
-	local reader = user.character:getreaderfromlist(aoiobj.tempid)
-	if reader == nil then
-		reader = user.character:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy",aoiobj.tempid))
-		user.character:addtoreaderlist(aoiobj.tempid,reader)
-		aoiobj.cansend = false
+	if not user.character:getfromaoilist(aoiobj.tempid) then
 		user.character:addtoaoilist(aoiobj)
+		if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
+			local info = {
+				name = user.character:getname(),
+				tempid = user.character:gettempid(),
+				pos = user.character:getpos(),
+			}
+			--将我的信息发送给对方
+			user.send_request("characterupdate",{info = info},nil,nil,{aoiobj})
+		end
 	end
+end
+
+--更新对象的aoiobj信息
+function CMD.updateaoiobj(_,aoiobj)
+	user.character:updateaoiobj(aoiobj)
+	local character_move = {
+		tempid = aoiobj.tempid, 
+		pos = aoiobj.movement.pos,
+	}
+	user.send_request("moveto",{move = {character_move}})
+end
+
+--从自己的aoilist中移除对象
+function CMD.delaoiobj(_,tempid)
+	user.character:delfromaoilist(tempid)
+	user.send_request("characterleave",{tempid = {tempid}})
+end
+
+--进入和离开我视野的列表
+function CMD.updateaoilist(_,enterlist,leavelist)
+	for _,v in pairs(enterlist) do
+		for __,vv in pairs(v) do
+			user.character:addtoaoilist(vv)
+			if vv.type == enumtype.CHAR_TYPE_PLAYER then
+				local info = {
+					name = user.character:getname(),
+					tempid = user.character:gettempid(),
+					pos = user.character:getpos(),
+				}
+				--将我的信息发送给对方
+				user.send_request("characterupdate",{info = info},nil,nil,{vv})
+			end
+		end
+	end
+	local leaveid = {}
+	for _,v in pairs(leavelist) do
+		for __,vv in pairs(v) do
+			user.character:delfromaoilist(vv.tempid)
+			table.insert( leaveid, vv.tempid )
+		end
+	end
+	user.send_request("characterleave",{tempid = leaveid})
 end
 
 return _handler

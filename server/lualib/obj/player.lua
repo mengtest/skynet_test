@@ -75,7 +75,6 @@ function _player.create()
 
   player = setmetatable(player, s_method)
 
-	player:createwriter()
   return player
 end
 

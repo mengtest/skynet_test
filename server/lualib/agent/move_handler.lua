@@ -100,9 +100,6 @@ function REQUEST.moveto (args)
     pos = oldpos
 		user.character:setpos(pos)
   end
-
-	--更新writer
-	user.character:writercommit()
   return { pos = pos }
 end
 

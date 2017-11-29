@@ -1,5 +1,4 @@
-local skynet = require "skynet"
-
+local enumtype = require "enumtype"
 local CMD = {}
 local map_info
 local msgsender
@@ -10,36 +9,101 @@ function _handle.init(info)
   msgsender = map_info.msgsender
 end
 
-function CMD.getwritecopy(tempid)
+
+--添加对象到aoilist中
+function CMD.addaoiobj(monstertempid,aoiobj)
   assert(map_info)
-  assert(tempid)
-  local monster = map_info:get_monster(tempid)
-	return monster:getwritecopy()
+  assert(monstertempid)
+  assert(aoiobj)
+  local monster = map_info:get_monster(monstertempid)
+  if monster:getfromaoilist(aoiobj.tempid) == nil then
+    monster:addtoaoilist(aoiobj)
+    if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
+      local info = {
+        name = monster:getname(),
+        tempid = monster:gettempid(),
+        pos = monster:getpos(),
+      }
+      --将我的信息发送给对方
+      msgsender:send_request("characterupdate",{info = info},aoiobj.info)
+    end
+  end
+end
+--[[
+--更新对象的aoiobj信息
+function CMD.updateaoiobj(monsterlist,aoiobj)
+  assert(map_info)
+  assert(monsterlist)
+  assert(aoiobj)
+  for k,v in pairs(monsterlist) do
+    local monster = map_info:get_monster(v.tempid)
+    monster:updateaoiobj(aoiobj)
+  end
 end
 
---离开地图的时候
---通知视野内对象
-function CMD.delaoiobj(tempid)
-  assert(tempid)
-  local monster = map_info:get_monster(tempid)
-  local agentlist = monster:getaoilist()
-  monster:set_aoi_del(true)
-  monster:writercommit()
-  msgsender:send_boardrequest("characterleave", { tempid = monster:gettempid() }, agentlist)
-	monster:cleanaoilist()
-	monster:cleanreaderlist()
+--从aoilist中移除对象
+function CMD.delaoiobj(monsterlist,objtempid)
+  assert(map_info)
+  assert(monsterlist)
+  assert(objtempid)
+  for k,v in pairs(monsterlist) do
+    local monster = map_info:get_monster(v.tempid)
+    monster:delfromaoilist(objtempid)
+  end
+end]]
+
+function CMD.updateaoiinfo(enterlist,leavelist,movelist)
+  local monster
+  for _,v in pairs(enterlist.monsterlist) do
+    monster = map_info:get_monster(v.tempid)
+    if monster:getfromaoilist(enterlist.obj.tempid) == nil then
+      monster:addtoaoilist(enterlist.obj)
+      if enterlist.obj.type == enumtype.CHAR_TYPE_PLAYER then
+        local info = {
+          name = monster:getname(),
+          tempid = monster:gettempid(),
+          pos = monster:getpos(),
+        }
+        --将我的信息发送给对方
+        msgsender:send_request("characterupdate",{info = info},enterlist.obj.info)
+      end
+    end
+  end
+  for _,v in pairs(leavelist.monsterlist) do
+    monster = map_info:get_monster(v.tempid)
+    monster:delfromaoilist(leavelist.tempid)
+  end
+  for _,v in pairs(movelist.monsterlist) do
+    monster = map_info:get_monster(v.tempid)
+    monster:updateaoiobj(movelist.obj)
+  end
 end
 
-function CMD.addaoiobj(aoiobj,tempid)
+function CMD.updateaoilist(monstertempid,enterlist,leavelist)
   assert(map_info)
-  local monster = map_info:get_monster(tempid)
-	local reader = monster:getreaderfromlist(aoiobj.tempid)
-	if reader == nil then
-		reader = monster:createreader(skynet.call(aoiobj.agent,"lua","getwritecopy",aoiobj.tempid))
-		monster:addtoreaderlist(aoiobj.tempid,reader)
-    aoiobj.cansend = false
-		monster:addtoaoilist(aoiobj)
-	end
+  assert(monstertempid)
+  assert(enterlist)
+  assert(leavelist)
+  local monster = map_info:get_monster(monstertempid)
+  for _,v in pairs(enterlist) do
+    for __,vv in pairs(v) do
+      monster:addtoaoilist(vv)
+      if vv.type == enumtype.CHAR_TYPE_PLAYER then
+        local info = {
+          name = monster:getname(),
+          tempid = monster:gettempid(),
+          pos = monster:getpos(),
+        }
+        --将我的信息发送给对方
+        msgsender:send_request("characterupdate",{info = info},vv.info)
+      end
+    end
+  end
+  for _,v in pairs(leavelist) do
+    for __,vv in pairs(v) do
+      monster:delfromaoilist(vv.tempid)
+    end
+  end
 end
 
 return _handle

@@ -1,6 +1,5 @@
 local msgserver = require "snax.msgserver"
 local skynet = require "skynet"
-local sharemap = require "skynet.sharemap"
 local log = require "syslog"
 
 local loginservice = tonumber(...)
@@ -108,7 +107,6 @@ function server.register_handler(conf)
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
 	skynet.uniqueservice ("gdd")
 	world = skynet.uniqueservice ("world")
-	sharemap.register("./common/sharemap/sharemap.sp")
 	skynet.call(world, "lua", "open")
 
 	local n = assert(conf.agentpool) or 0
@@ -131,14 +129,12 @@ end
 --发送同一条消息给多个user
 function server.send_board_request_handler(msg,userlist)
 	for _,v in pairs(userlist) do
-		if v.cansend then
-			assert(v.info)
-			local u = users[v.info.uid]
-			if u then
-				local username = msgserver.username(v.info.uid, v.info.subid, servername)
-				assert(u.username == username,"u.username:"..tostring(u.username).." username:"..tostring(username))
-				msgserver.request(u.username,msg)
-			end
+		assert(v.info)
+		local u = users[v.info.uid]
+		if u then
+			local username = msgserver.username(v.info.uid, v.info.subid, servername)
+			assert(u.username == username,"u.username:"..tostring(u.username).." username:"..tostring(username))
+			msgserver.request(u.username,msg)
 		end
 	end
 end

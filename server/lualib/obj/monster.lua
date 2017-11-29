@@ -41,8 +41,6 @@ local function init_method(monster)
     end
     self:setpos(pos)
     skynet.send(aoisvr,"lua","characterenter",self:getaoiobj())
-    self:writercommit()
-    self:updateaoilist()
   end
 
   basechar.expandmethod(monster)
@@ -57,14 +55,11 @@ function _monster.create(id,tempid,conf,mapobj)
 
   monster = setmetatable(monster, s_method)
 
-  --设置为不发送消息
-  monster:setcansend(false)
   assert(id > 0)
   assert(tempid > 0)
   --设置怪物的id
   monster.id = id
 
-    monster:createwriter()
   --设置怪物的aoi对象
   local aoiobj = {
 		movement = {
@@ -80,8 +75,6 @@ function _monster.create(id,tempid,conf,mapobj)
 	}
   monster:setaoiobj(aoiobj)
   monster:settempid(tempid)
-
-  --monster:createwriter()
   --设置怪物信息
   local monsterinfo = {
 		name = conf.name,
