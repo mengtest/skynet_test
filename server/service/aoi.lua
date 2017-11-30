@@ -10,6 +10,7 @@ local luaqueue = queue()
 local CMD = {}
 local OBJ = {}
 local OBJVIEWE = {}
+local monsterobjview = {}
 local aoi
 local update_thread
 local need_update
@@ -38,9 +39,75 @@ local function inserttotablebytype(t,v,type)
 	end
 end
 
+--怪物移动的时候通知玩家信息
+local function updateviewmonster(monstertempid)
+	if monsterobjview[monstertempid] == nil then return end
+	local myobj = OBJ[monstertempid]
+	local mypos = myobj.movement.pos
+	--离开他人视野
+	local leavelist = {}
+	--进入他人视野
+	local enterlist = {}
+	--通知他人自己移动
+	local movelist = {}
+
+	local othertempid
+	local otherpos
+	local otheragent
+	local otherobj
+	for k,v in pairs(monsterobjview[monstertempid]) do
+		othertempid = OBJ[k].tempid
+		otherpos = OBJ[k].movement.pos
+		otheragent = OBJ[k].agent
+		otherobj = {
+			tempid = othertempid,
+			agent = OBJ[k].agent,
+		}
+		local distance = DIST2(mypos,otherpos)
+		if distance <= AOI_RADIS2 then
+			if not v then
+				monsterobjview[monstertempid][k] = true
+				OBJVIEWE[k][monstertempid] = true
+				table.insert(enterlist,OBJ[k])
+			else
+				table.insert(movelist,otheragent)
+			end
+		elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
+			if v then
+				monsterobjview[monstertempid][k] = false
+				OBJVIEWE[k][monstertempid] = false
+				table.insert(leavelist,otherobj)
+			end
+		else
+			if v then
+				table.insert(leavelist,otherobj)
+			end
+			monsterobjview[monstertempid][k] = nil
+			OBJVIEWE[k][monstertempid] = nil
+		end
+	end
+	
+	--离开他人视野
+	for _,v in pairs(leavelist) do
+		skynet.send(v.agent,"lua","delaoiobj",myobj.tempid)
+	end
+
+	--重新进入视野
+	for _,v in pairs(enterlist) do
+		skynet.send(v.agent,"lua","addaoiobj",myobj)
+	end
+
+	--视野范围内移动
+	for _,v in pairs(movelist) do
+		skynet.send(v,"lua","updateaoiobj",myobj)
+	end
+
+	skynet.send(myobj.agent,"lua","updateaoilist",myobj.tempid,enterlist,leavelist)	
+end
+
 --观看者坐标更新的时候
 --根据距离情况通知他人自己的信息
-local function updateview(viewertempid)
+local function updateviewplayer(viewertempid)
 	if OBJVIEWE[viewertempid] == nil then return end
 	local myobj = OBJ[viewertempid]
 	local mypos = myobj.movement.pos
@@ -66,11 +133,6 @@ local function updateview(viewertempid)
 	local othertype
 	local otherobj
 	for k,v in pairs(OBJVIEWE[viewertempid]) do
-		if OBJ[k] == nil then
-			--print(OBJVIEWE[viewertempid])
-			--print(OBJ)
-			--print("========:"..k)
-		end
 		othertempid = OBJ[k].tempid
 		otherpos = OBJ[k].movement.pos
 		othertype = OBJ[k].type
@@ -82,23 +144,37 @@ local function updateview(viewertempid)
 		if distance <= AOI_RADIS2 then
 			if not v then
 				OBJVIEWE[viewertempid][k] = true
-				OBJVIEWE[k][viewertempid] = true
-				inserttotablebytype(enterlist,OBJ[k],othertype)
+				if type ~= enumtype.CHAR_TYPE_PLAYER then
+					monsterobjview[k][viewertempid] = true
+					table.insert(enterlist.monsterlist,OBJ[k])
+				else
+					OBJVIEWE[k][viewertempid] = true
+					table.insert(enterlist.playerlist,OBJ[k])
+				end
 			else
 				inserttotablebytype(movelist,otherobj,othertype)
 			end
 		elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
 			if v then
 				OBJVIEWE[viewertempid][k] = false
-				OBJVIEWE[k][viewertempid] = false
-				inserttotablebytype(leavelist,otherobj,othertype)
+				if type ~= enumtype.CHAR_TYPE_PLAYER then
+					monsterobjview[k][viewertempid] = false
+					table.insert(leavelist.monsterlist,otherobj)
+				else
+					OBJVIEWE[k][viewertempid] = false
+					table.insert(leavelist.playerlist,otherobj)
+				end
 			end
 		else
 			if v then
 				inserttotablebytype(leavelist,otherobj,othertype)
 			end
 			OBJVIEWE[viewertempid][k] = nil
-			OBJVIEWE[k][viewertempid] = nil
+			if type ~= enumtype.CHAR_TYPE_PLAYER then
+				monsterobjview[k][viewertempid] = nil
+			else
+				OBJVIEWE[k][viewertempid] = nil
+			end
 		end
 	end
 	local mapagent = skynet.self() - 1
@@ -137,11 +213,7 @@ local function updateview(viewertempid)
 	end
 
 	--通知自己
-	if myobj.type ~= enumtype.CHAR_TYPE_PLAYER then
-		skynet.send(myobj.agent,"lua","updateaoilist",myobj.tempid,enterlist,leavelist)
-	else
-		skynet.send(myobj.agent,"lua","updateaoilist",enterlist,leavelist)
-	end
+	skynet.send(myobj.agent,"lua","updateaoilist",enterlist,leavelist)
 end
 
 --aoi回调
@@ -154,11 +226,18 @@ function CMD.aoicallback(w,m)
 	end
 	OBJVIEWE[OBJ[w].tempid][OBJ[m].tempid] = true
 
+	--怪物视野内的玩家
+	if OBJ[m].type ~=  enumtype.CHAR_TYPE_PLAYER then
+		if monsterobjview[OBJ[m].tempid] == nil then
+			monsterobjview[OBJ[m].tempid] = {}
+		end
+		monsterobjview[OBJ[m].tempid][OBJ[w].tempid] = true
+	end
+
 	--通知agent
-	if OBJ[w].type ~= enumtype.CHAR_TYPE_PLAYER then
-		skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[w].tempid,OBJ[m])
-	else
-		skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m])
+	skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m])
+	if OBJ[m].type ~= enumtype.CHAR_TYPE_PLAYER then
+		skynet.send(OBJ[m].agent,"lua","addaoiobj",OBJ[m].tempid,OBJ[w])
 	end
 end
 
@@ -173,7 +252,11 @@ function CMD.characterenter(obj)
 	assert(obj.movement.pos.z)
   --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
 	OBJ[obj.tempid] = obj
-	updateview(obj.tempid)
+	if obj.type ~= enumtype.CHAR_TYPE_PLAYER then
+		updateviewmonster(obj.tempid)
+	else
+		updateviewplayer(obj.tempid)
+	end
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." "..obj.movement.mode.." "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
 	need_update = true
 end

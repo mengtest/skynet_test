@@ -15,7 +15,7 @@ local function init_method(map)
       for _,v in pairs(self.monster_list) do
         v:run(aoisvr)
       end
-      skynet.sleep(50)
+      skynet.sleep(10)
     end
   end
 
@@ -41,7 +41,7 @@ local function init_method(map)
     local obj
     local tempid
     assert(aoisvr)
-    local n = 1
+    local n = 100
     while n > 0 do
       for _,v in pairs(monster_list) do
         tempid = self:create_tempid()

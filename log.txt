@@ -23,6 +23,8 @@ player和monster等obj的aoi消息整理一下  --2017.5.20
 
 warning:
 
+npc需要作为被观察者加入到aoi，否则会有太多的aoicallback消息，让玩家看到怪物，怪物不需要看到玩家（被动怪），在战斗部分让怪物看到玩家即可
+
 aoiserver中，两者距离很近的时候，出现了回调（addtoaoilist），理论上不应该的，要查一下aoi
 
 function obj:updateaoilist()这个理清一下

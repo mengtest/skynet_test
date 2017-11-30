@@ -86,24 +86,18 @@ function CMD.updateaoilist(monstertempid,enterlist,leavelist)
   assert(leavelist)
   local monster = map_info:get_monster(monstertempid)
   for _,v in pairs(enterlist) do
-    for __,vv in pairs(v) do
-      monster:addtoaoilist(vv)
-      if vv.type == enumtype.CHAR_TYPE_PLAYER then
-        local info = {
-          name = monster:getname(),
-          tempid = monster:gettempid(),
-          pos = monster:getpos(),
-        }
-        --将我的信息发送给对方
-        msgsender:send_request("characterupdate",{info = info},vv.info)
-      end
-    end
+      monster:addtoaoilist(v)
+      local info = {
+        name = monster:getname(),
+        tempid = monster:gettempid(),
+        pos = monster:getpos(),
+      }
+      --将我的信息发送给对方
+      msgsender:send_request("characterupdate",{info = info},v.info)
   end
   for _,v in pairs(leavelist) do
-    for __,vv in pairs(v) do
-      monster:delfromaoilist(vv.tempid)
+      monster:delfromaoilist(v.tempid)
     end
-  end
 end
 
 return _handle

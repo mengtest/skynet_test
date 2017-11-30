@@ -63,7 +63,7 @@ function _monster.create(id,tempid,conf,mapobj)
   --设置怪物的aoi对象
   local aoiobj = {
 		movement = {
-			mode = "wm",
+			mode = "m",
 			pos = {
 				x = conf.x,
 				y = conf.y,
