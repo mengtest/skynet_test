@@ -173,7 +173,6 @@ skynet.register_protocol {
 function CMD.worldenter(_,world)
 	character_handler.init(user.dbdata)
 	user.dbdata = nil
-	--print(user)
 	user.world = world
 	character_handler:unregister (user)
 	user.character:setaoimode("w")
@@ -193,10 +192,9 @@ function CMD.mapenter(_,map,tempid)
 	skynet.fork(player_run)
 end
 
-function CMD.login(source, uid, sid, secret)
+function CMD.login(source, uid, sid, secret, fd)
 	-- you may use secret to make a encrypted data stream
 	log.notice("%s is login",uid)
-
 	user = {
 		uid = uid,
 		subid = sid,
@@ -207,6 +205,11 @@ function CMD.login(source, uid, sid, secret)
 		msgsender = msgsender,
 	}
 
+end
+
+function CMD.auth(source, fd)
+	user.fd = fd
+	
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
 	msgsender:init()
@@ -239,10 +242,10 @@ skynet.memlimit(1 * 1024 * 1024)
 
 --发送广播消息给client
 --消息名，参数列表，是否发送给指定对象，是否广播，广播时是否排除自己
-function sender.send_request(name, args, ref, not_send_to_me, aoilist)
-	if aoilist then
+function sender.send_request(name, args, ref, not_send_to_me, fdlist)
+	if fdlist then
 		--广播给指定列表中的对象
-		user.character:send_boardrequest(name, args, aoilist)
+		user.character:send_boardrequest(name, args, fdlist)
 	else
 		if ref then
 			if not_send_to_me then
@@ -250,9 +253,9 @@ function sender.send_request(name, args, ref, not_send_to_me, aoilist)
 				user.character:send_boardrequest(name, args, user.character:getaoilist())
 			else
 				--广播消息发送给自己
-				aoilist = user.character:getaoilist()
-				table.insert(aoilist,user.character:getaoiobj())
-				user.character:send_boardrequest(name, args, aoilist)
+				fdlist = user.character:getaoilist()
+				table.insert(fdlist,user.character:getaoiobj())
+				user.character:send_boardrequest(name, args, fdlist)
 			end
 		else
 			--发送消息给自己
@@ -264,7 +267,7 @@ end
 skynet.start(function()
 	-- If you want to fork a work thread , you MUST do it in CMD.login
 	--加载proto
-	msgsender = msgsender.create(gate)
+	msgsender = msgsender.create()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
 		local f = assert(CMD[command],command)

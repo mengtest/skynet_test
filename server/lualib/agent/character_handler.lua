@@ -136,12 +136,9 @@ function _handler.init (dbdata)
 				z = dbdata.z,
 			},
 			map = dbdata.mapid,
-			del = false,
 		},
 		info = {
-			uid = user.uid,
-			subid = user.subid,
-			uuid = dbdata.uuid,
+			fd = user.fd,
 		},
 	}
 	user.character:setaoiobj(aoiobj)

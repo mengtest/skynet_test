@@ -51,13 +51,13 @@ function _aoifun.expandmethod(obj)
 
 	--获取可以发送信息的给前段的aoilist
 	function obj:getsend2clientaoilist()
-		local aoilist = {}
+		local fdlist = {}
 		for _,v in pairs(self.aoilist) do
 			if v.type == enumtype.CHAR_TYPE_PLAYER then
-				table.insert(aoilist,v)
+				table.insert(fdlist,v.info)
 			end
 		end
-		return aoilist
+		return fdlist
 	end
 
 	--设置aoi mode

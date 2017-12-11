@@ -17,13 +17,23 @@ json打包数据，敏感词检查，aoi_handler这边需要通过sharemap来同
 搭建map、player相关的框架，需要对现有的一些框架进行修改，理清条理，弄一个清晰、易于扩展的结构 --2017.4.7
 
 发消息统一一下，现在agent有发消息，map也有发消息，看能不能并在一起 --2017.5.19
+--弄到msgsender里面去了
 
 player和monster等obj的aoi消息整理一下  --2017.5.20
 --初步统一了一下，接下来还要继续调整结构
 
+aoi这一块应该告一段落了，改弄弄其他的了，先调整一下框架把热更新和cluster弄好，然后测试健壮性。 --2017.12.1
+
 warning:
 
+sendmsg这边修改了一下，直接使用socket发送消息，不给gate发消息了
+
+这边aoi的结果是，怪物不主动看到别人，只有在别人看到怪物的时候，怪物才能看到别人。
+
+aoi这边，给怪物所在map发送消息的时候，使用的是aoi的agent-1值，最好还是传送值比较好。
+
 npc需要作为被观察者加入到aoi，否则会有太多的aoicallback消息，让玩家看到怪物，怪物不需要看到玩家（被动怪），在战斗部分让怪物看到玩家即可
+--已完成
 
 aoiserver中，两者距离很近的时候，出现了回调（addtoaoilist），理论上不应该的，要查一下aoi
 
@@ -40,6 +50,7 @@ cserver那边，虽然launch了2个cserver，但是传入参数的时候，居�
 --addr这个用的是skynet_context中的handle - 1
 
 sharedata改掉，使用最新的datasheet
+--都没用了
 
 学习使用MemoryHook来检查内存，先检查一下内存问题吧。
 
@@ -56,6 +67,7 @@ client发给server的消息带的session和server发给client的session貌似不
 --这边将msgserver中do_request这里每次都清理掉了response，等于是没有被记录..这个看以后怎么搞
 
 aoi中，广播的时候，有判断cansend，这边看能不能直接将不能send的aoi对象不添加到list中，避免不必要的call
+--修改后的aoi中，aoilist中只有可以发送消息的对象
 
 send的msg中，在session前面带了一个无符号的char类型数值，
 这边用于调试用的，前端可以不用发过来的，但是后端也需要对应的修改一下。
@@ -129,6 +141,7 @@ addaoiobj那边进入过两次..可能发了两次updateinfo()？有空看看
 
 delaoiobj那边可能需要设置一下玩家为下线状态，然后characterwriter:commit()一下。
 然后在updateagentlist中判断玩家的在线状态
+--现在没有用characterwriter:commit()l 
 
 aoi的cservice里面写的多线程触发message_update失败，使用的是lua那边call cservice。
 这边可能需要看一下，能不能不走call，直接在cservice那边使用多线程update

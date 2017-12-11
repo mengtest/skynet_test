@@ -63,9 +63,9 @@ function CMD.moveto(aoiobj)
   return true, aoiobj.movement.pos
 end
 
-function CMD.open(conf,gate)
+function CMD.open(conf)
   config = conf
-	msgsender = msgsender.create(gate)
+	msgsender = msgsender.create()
   msgsender:init()
   aoi = skynet.newservice("aoi",config.name)
   skynet.call(aoi,"lua","open",config.name)

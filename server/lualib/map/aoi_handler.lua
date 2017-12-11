@@ -29,28 +29,6 @@ function CMD.addaoiobj(monstertempid,aoiobj)
     end
   end
 end
---[[
---更新对象的aoiobj信息
-function CMD.updateaoiobj(monsterlist,aoiobj)
-  assert(map_info)
-  assert(monsterlist)
-  assert(aoiobj)
-  for k,v in pairs(monsterlist) do
-    local monster = map_info:get_monster(v.tempid)
-    monster:updateaoiobj(aoiobj)
-  end
-end
-
---从aoilist中移除对象
-function CMD.delaoiobj(monsterlist,objtempid)
-  assert(map_info)
-  assert(monsterlist)
-  assert(objtempid)
-  for k,v in pairs(monsterlist) do
-    local monster = map_info:get_monster(v.tempid)
-    monster:delfromaoilist(objtempid)
-  end
-end]]
 
 function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   local monster

@@ -55,6 +55,13 @@ function server.login_handler(uid, secret)
 	return id
 end
 
+-- call by self
+function server.auth_handler(username, fd)
+	local uid = msgserver.userid(username)
+	
+	skynet.call(users[uid].agent, "lua", "auth", fd)	-- 通知agent认证成功，玩家真正处于登录状态了
+end
+
 -- call by agent
 function server.logout_handler(uid, subid)
 	local u = users[uid]

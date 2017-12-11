@@ -2,11 +2,9 @@ local skynet = require "skynet"
 local log = require "syslog"
 local util = require "util"
 local enumtype = require "enumtype"
-local queue = require "skynet.queue"
 require "skynet.manager"
 local set_timeout = util.set_timeout
 
-local luaqueue = queue()
 local CMD = {}
 local OBJ = {}
 local OBJVIEWE = {}
@@ -86,7 +84,7 @@ local function updateviewmonster(monstertempid)
 			OBJVIEWE[k][monstertempid] = nil
 		end
 	end
-	
+
 	--离开他人视野
 	for _,v in pairs(leavelist) do
 		skynet.send(v.agent,"lua","delaoiobj",myobj.tempid)
@@ -102,7 +100,7 @@ local function updateviewmonster(monstertempid)
 		skynet.send(v,"lua","updateaoiobj",myobj)
 	end
 
-	skynet.send(myobj.agent,"lua","updateaoilist",myobj.tempid,enterlist,leavelist)	
+	skynet.send(myobj.agent,"lua","updateaoilist",myobj.tempid,enterlist,leavelist)
 end
 
 --观看者坐标更新的时候
@@ -144,7 +142,7 @@ local function updateviewplayer(viewertempid)
 		if distance <= AOI_RADIS2 then
 			if not v then
 				OBJVIEWE[viewertempid][k] = true
-				if type ~= enumtype.CHAR_TYPE_PLAYER then
+				if othertype ~= enumtype.CHAR_TYPE_PLAYER then
 					monsterobjview[k][viewertempid] = true
 					table.insert(enterlist.monsterlist,OBJ[k])
 				else
@@ -157,7 +155,7 @@ local function updateviewplayer(viewertempid)
 		elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
 			if v then
 				OBJVIEWE[viewertempid][k] = false
-				if type ~= enumtype.CHAR_TYPE_PLAYER then
+				if othertype ~= enumtype.CHAR_TYPE_PLAYER then
 					monsterobjview[k][viewertempid] = false
 					table.insert(leavelist.monsterlist,otherobj)
 				else
@@ -170,7 +168,7 @@ local function updateviewplayer(viewertempid)
 				inserttotablebytype(leavelist,otherobj,othertype)
 			end
 			OBJVIEWE[viewertempid][k] = nil
-			if type ~= enumtype.CHAR_TYPE_PLAYER then
+			if othertype ~= enumtype.CHAR_TYPE_PLAYER then
 				monsterobjview[k][viewertempid] = nil
 			else
 				OBJVIEWE[k][viewertempid] = nil
@@ -267,8 +265,12 @@ function CMD.characterleave(obj)
 	log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
 	OBJ[obj.tempid] = nil
-	for k,v in pairs(OBJVIEWE[obj.tempid]) do
-		OBJVIEWE[k][obj.tempid] = nil
+	for k,_ in pairs(OBJVIEWE[obj.tempid]) do
+		if OBJVIEWE[k] then
+			OBJVIEWE[k][obj.tempid] = nil
+		elseif monsterobjview[k] then
+			monsterobjview[k][obj.tempid] = nil
+		end
 	end
 	OBJVIEWE[obj.tempid] = nil
 	need_update = true

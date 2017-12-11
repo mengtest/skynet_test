@@ -21,5 +21,6 @@ root.."cservice/?.so;"
 luaservice = skynet_root.."service/?.lua;"..
 root.."service/?.lua;"..
 root.."lualib/db/?.lua;"
+snax = root.."service/?.lua;"..root.."lualib/?.lua"
 
 preload = root.."lualib/global/preload.lua"

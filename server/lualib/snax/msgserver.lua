@@ -155,6 +155,7 @@ function server.start(conf)
 		boardrequest = assert(conf.send_board_request_handler),
 		addtoagentpool = assert(conf.addtoagentpool_handler),
 		close = assert(conf.close_handler),
+		auth_handler = assert(conf.auth_handler),
 	}
 
 	function handler.command(cmd, _, ...)
@@ -213,6 +214,8 @@ function server.start(conf)
 		u.fd = fd
 		u.ip = addr
 		connection[fd] = u
+
+		CMD.auth_handler(username, fd)
 	end
 
 	local function auth(fd, addr, msg, sz)
