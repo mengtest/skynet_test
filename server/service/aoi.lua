@@ -7,12 +7,13 @@ local set_timeout = util.set_timeout
 
 local CMD = {}
 local OBJ = {}
-local OBJVIEWE = {}
-local monsterobjview = {}
+local playerview = {}
+local monsterview = {}
 local aoi
 local update_thread
 local need_update
 local map_name = ...
+local mapagent
 
 local AOI_RADIS = 200
 local AOI_RADIS2 = AOI_RADIS * AOI_RADIS
@@ -39,7 +40,7 @@ end
 
 --怪物移动的时候通知玩家信息
 local function updateviewmonster(monstertempid)
-	if monsterobjview[monstertempid] == nil then return end
+	if monsterview[monstertempid] == nil then return end
 	local myobj = OBJ[monstertempid]
 	local mypos = myobj.movement.pos
 	--离开他人视野
@@ -53,7 +54,7 @@ local function updateviewmonster(monstertempid)
 	local otherpos
 	local otheragent
 	local otherobj
-	for k,v in pairs(monsterobjview[monstertempid]) do
+	for k,v in pairs(monsterview[monstertempid]) do
 		othertempid = OBJ[k].tempid
 		otherpos = OBJ[k].movement.pos
 		otheragent = OBJ[k].agent
@@ -64,24 +65,24 @@ local function updateviewmonster(monstertempid)
 		local distance = DIST2(mypos,otherpos)
 		if distance <= AOI_RADIS2 then
 			if not v then
-				monsterobjview[monstertempid][k] = true
-				OBJVIEWE[k][monstertempid] = true
+				monsterview[monstertempid][k] = true
+				playerview[k][monstertempid] = true
 				table.insert(enterlist,OBJ[k])
 			else
 				table.insert(movelist,otheragent)
 			end
 		elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
 			if v then
-				monsterobjview[monstertempid][k] = false
-				OBJVIEWE[k][monstertempid] = false
+				monsterview[monstertempid][k] = false
+				playerview[k][monstertempid] = false
 				table.insert(leavelist,otherobj)
 			end
 		else
 			if v then
 				table.insert(leavelist,otherobj)
 			end
-			monsterobjview[monstertempid][k] = nil
-			OBJVIEWE[k][monstertempid] = nil
+			monsterview[monstertempid][k] = nil
+			playerview[k][monstertempid] = nil
 		end
 	end
 
@@ -106,7 +107,7 @@ end
 --观看者坐标更新的时候
 --根据距离情况通知他人自己的信息
 local function updateviewplayer(viewertempid)
-	if OBJVIEWE[viewertempid] == nil then return end
+	if playerview[viewertempid] == nil then return end
 	local myobj = OBJ[viewertempid]
 	local mypos = myobj.movement.pos
 
@@ -130,7 +131,7 @@ local function updateviewplayer(viewertempid)
 	local otherpos
 	local othertype
 	local otherobj
-	for k,v in pairs(OBJVIEWE[viewertempid]) do
+	for k,v in pairs(playerview[viewertempid]) do
 		othertempid = OBJ[k].tempid
 		otherpos = OBJ[k].movement.pos
 		othertype = OBJ[k].type
@@ -141,12 +142,12 @@ local function updateviewplayer(viewertempid)
 		local distance = DIST2(mypos,otherpos)
 		if distance <= AOI_RADIS2 then
 			if not v then
-				OBJVIEWE[viewertempid][k] = true
+				playerview[viewertempid][k] = true
 				if othertype ~= enumtype.CHAR_TYPE_PLAYER then
-					monsterobjview[k][viewertempid] = true
+					monsterview[k][viewertempid] = true
 					table.insert(enterlist.monsterlist,OBJ[k])
 				else
-					OBJVIEWE[k][viewertempid] = true
+					playerview[k][viewertempid] = true
 					table.insert(enterlist.playerlist,OBJ[k])
 				end
 			else
@@ -154,12 +155,12 @@ local function updateviewplayer(viewertempid)
 			end
 		elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
 			if v then
-				OBJVIEWE[viewertempid][k] = false
+				playerview[viewertempid][k] = false
 				if othertype ~= enumtype.CHAR_TYPE_PLAYER then
-					monsterobjview[k][viewertempid] = false
+					monsterview[k][viewertempid] = false
 					table.insert(leavelist.monsterlist,otherobj)
 				else
-					OBJVIEWE[k][viewertempid] = false
+					playerview[k][viewertempid] = false
 					table.insert(leavelist.playerlist,otherobj)
 				end
 			end
@@ -167,15 +168,15 @@ local function updateviewplayer(viewertempid)
 			if v then
 				inserttotablebytype(leavelist,otherobj,othertype)
 			end
-			OBJVIEWE[viewertempid][k] = nil
+			playerview[viewertempid][k] = nil
 			if othertype ~= enumtype.CHAR_TYPE_PLAYER then
-				monsterobjview[k][viewertempid] = nil
+				monsterview[k][viewertempid] = nil
 			else
-				OBJVIEWE[k][viewertempid] = nil
+				playerview[k][viewertempid] = nil
 			end
 		end
 	end
-	local mapagent = skynet.self() - 1
+
 	--离开他人视野
 	for _,v in pairs(leavelist.playerlist) do
 		skynet.send(v.agent,"lua","delaoiobj",viewertempid)
@@ -219,17 +220,17 @@ function CMD.aoicallback(w,m)
 	assert(OBJ[w],w)
 	assert(OBJ[m],m)
 
-	if OBJVIEWE[OBJ[w].tempid] == nil then
-		OBJVIEWE[OBJ[w].tempid] = {}
+	if playerview[OBJ[w].tempid] == nil then
+		playerview[OBJ[w].tempid] = {}
 	end
-	OBJVIEWE[OBJ[w].tempid][OBJ[m].tempid] = true
+	playerview[OBJ[w].tempid][OBJ[m].tempid] = true
 
 	--怪物视野内的玩家
 	if OBJ[m].type ~=  enumtype.CHAR_TYPE_PLAYER then
-		if monsterobjview[OBJ[m].tempid] == nil then
-			monsterobjview[OBJ[m].tempid] = {}
+		if monsterview[OBJ[m].tempid] == nil then
+			monsterview[OBJ[m].tempid] = {}
 		end
-		monsterobjview[OBJ[m].tempid][OBJ[w].tempid] = true
+		monsterview[OBJ[m].tempid][OBJ[w].tempid] = true
 	end
 
 	--通知agent
@@ -265,14 +266,29 @@ function CMD.characterleave(obj)
 	log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
 	OBJ[obj.tempid] = nil
-	for k,_ in pairs(OBJVIEWE[obj.tempid]) do
-		if OBJVIEWE[k] then
-			OBJVIEWE[k][obj.tempid] = nil
-		elseif monsterobjview[k] then
-			monsterobjview[k][obj.tempid] = nil
+	local monsterleavelist = {
+		tempid = obj.tempid,
+		monsterlist = {},
+	}
+	for k,_ in pairs(playerview[obj.tempid]) do
+		if playerview[k] then
+			if playerview[k][obj.tempid] then
+				skynet.send(OBJ[k].agent,"lua","delaoiobj",obj.tempid)
+			end
+			playerview[k][obj.tempid] = nil
+		elseif monsterview[k] then
+			if monsterview[k][obj.tempid] then
+				table.insert(monsterleavelist.monsterlist,{tempid = k})
+			end
+			monsterview[k][obj.tempid] = nil
 		end
 	end
-	OBJVIEWE[obj.tempid] = nil
+	
+	if not table.empty(monsterleavelist.monsterlist) then
+		skynet.send(mapagent,"lua","updateaoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
+	end
+
+	playerview[obj.tempid] = nil
 	need_update = true
 end
 
@@ -288,6 +304,7 @@ end
 function CMD.open()
   aoi = assert(skynet.launch("caoi", map_name))
 	assert(aoi == (skynet.self() + 1))
+	mapagent = skynet.self() - 1
 	message_update()
 end
 

@@ -28,6 +28,12 @@ t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t),1)
 
+
+local testip = "127.0.0.1"
+--local testip = "47.52.138.32"
+local loginserverip = testip
+local gameserverip = testip
+
 --[[
 --proto消息解析测试
 local hostclient = sprotoloader.load(1):host "package"
@@ -68,7 +74,7 @@ if _VERSION ~= "Lua 5.3" then
 end
 
 --与loginserver建立连接
-local fd = assert(socket.connect("127.0.0.1", 8101))
+local fd = assert(socket.connect(loginserverip, 8101))
 
 local nIndex = 0
 --发送proto协议封装的消息
@@ -132,7 +138,7 @@ local index = 1
 local function login()
 	--连接到gameserver
 	print("connect index:"..index)
-	fd = assert(socket.connect("127.0.0.1", 8547))
+	fd = assert(socket.connect(gameserverip, 8547))
 	local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , index)
 	local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
 	send_request("login",{handshake = handshake .. ":" .. crypt.base64encode(hmac)})
@@ -273,11 +279,11 @@ function REQUEST.heartbeat()
 end
 
 function REQUEST.characterupdate(args)
-	print("characterupdate:")
+	--print("characterupdate:")
 end
 
 function REQUEST.characterleave(args)
-	print("characterleave:")
+	--print("characterleave:")
 end
 
 function REQUEST.delaytest(args)
@@ -290,6 +296,12 @@ function REQUEST.delayresult(args)
 	print("delayresult:"..args.time)
 end
 
+function REQUEST.moveto(args)
+	local move = args.move
+	--for _,v in pairs(move) do
+	--	print(v)
+	--end
+end
 ----- connect to game server
 --连接至gameserver
 
@@ -358,7 +370,9 @@ local function dispatch_message()
 		if f then
 			f (s.args, args)
 		else
-			print "response"
+			print ("RESPONSE : "..s.name)
+			print(RESPONSE)
+			print("=============")
 		end
 	elseif type == "REQUEST" then
 		local f = REQUEST[id]
@@ -372,7 +386,7 @@ local function dispatch_message()
 				socket.send(fd, package)
 			end
 		else
-			print "response"
+			print ("REQUEST : "..id)
 		end
 	end
 end

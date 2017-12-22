@@ -12,6 +12,8 @@ local function init_method(monster)
   end
 
   function monster:run(aoisvr)
+    --视野范围内没有人的时候，不run
+    if table.size(self:getaoilist()) == 0 then return end
     local pos = self:getpos()
     local n = random(10000)
     local datlex

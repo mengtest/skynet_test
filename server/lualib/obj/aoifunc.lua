@@ -35,7 +35,7 @@ function _aoifun.expandmethod(obj)
 
 	--从aoilist中移除对象
 	function obj:delfromaoilist(tempid)
-		assert(self.aoilist[tempid],tempid)
+		assert(self.aoilist[tempid],self.aoilist)
 		self.aoilist[tempid] = nil
 	end
 
@@ -47,6 +47,11 @@ function _aoifun.expandmethod(obj)
 	--获取aoilist
 	function obj:getaoilist()
 		return self.aoilist
+	end
+
+	--获取aoilist大小
+	function obj:getaoilistsize()
+		return table.size(self.aoilist)
 	end
 
 	--获取可以发送信息的给前段的aoilist

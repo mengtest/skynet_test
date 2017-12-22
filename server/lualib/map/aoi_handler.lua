@@ -11,12 +11,14 @@ end
 
 
 --添加对象到aoilist中
+--aoi callback
 function CMD.addaoiobj(monstertempid,aoiobj)
   assert(map_info)
   assert(monstertempid)
   assert(aoiobj)
   local monster = map_info:get_monster(monstertempid)
   if monster:getfromaoilist(aoiobj.tempid) == nil then
+    map_info:monster_runlist_add(monstertempid)
     monster:addtoaoilist(aoiobj)
     if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
       local info = {
@@ -30,6 +32,7 @@ function CMD.addaoiobj(monstertempid,aoiobj)
   end
 end
 
+--玩家移动的时候，对周围怪物的广播
 function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   local monster
   for _,v in pairs(enterlist.monsterlist) do
@@ -50,6 +53,9 @@ function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   for _,v in pairs(leavelist.monsterlist) do
     monster = map_info:get_monster(v.tempid)
     monster:delfromaoilist(leavelist.tempid)
+    if monster:getaoilistsize() == 0 then
+      map_info:monster_runlist_del(v.tempid)
+    end
   end
   for _,v in pairs(movelist.monsterlist) do
     monster = map_info:get_monster(v.tempid)
@@ -57,6 +63,7 @@ function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   end
 end
 
+--怪物自己移动的时候，aoi更新
 function CMD.updateaoilist(monstertempid,enterlist,leavelist)
   assert(map_info)
   assert(monstertempid)
@@ -75,6 +82,9 @@ function CMD.updateaoilist(monstertempid,enterlist,leavelist)
   end
   for _,v in pairs(leavelist) do
       monster:delfromaoilist(v.tempid)
+      if monster:getaoilistsize() == 0 then
+        map_info:monster_runlist_del(monstertempid)
+      end
     end
 end
 

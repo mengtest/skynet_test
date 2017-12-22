@@ -271,6 +271,11 @@ skynet.start(function()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
 		local f = assert(CMD[command],command)
-		skynet.ret(skynet.pack(luaqueue(f,source, ...)))
+		function docmd(f,source, ...)
+			if running ~= agentstatus.AGENT_QUIT then
+				return f(source, ...)
+			end
+		end
+		skynet.ret(skynet.pack(luaqueue(docmd,f,source, ...)))
 	end)
 end)

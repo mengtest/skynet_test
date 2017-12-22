@@ -27,7 +27,7 @@ function CMD.characterenter(agent, uuid)
 	log.notice ("uuid(%d) enter world ,agent(:%08X)", uuid,agent)
   --获取玩家需要去的地图和坐标
 	local map, aoiobj = skynet.call (agent, "lua", "worldenter", skynet.self ())
-
+	
 	local m = mapinstance[map]
 	if not m then
     log.debug("uuid(%d) error map :"..map,uuid)

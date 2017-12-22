@@ -1,6 +1,7 @@
 local monster = require "obj.monster"
 local idmgr = require "idmgr"
 local skynet = require "skynet"
+local random = math.random
 
 local _map = {}
 local aoisvr
@@ -12,11 +13,21 @@ local function init_method(map)
   --怪物run
   function map:monster_run()
     while true do
-      for _,v in pairs(self.monster_list) do
-        v:run(aoisvr)
+      for k,v in pairs(self.monster_runlist) do
+        self.monster_list[k]:run(aoisvr)
       end
       skynet.sleep(10)
     end
+  end
+
+  function map:monster_runlist_add(tempid)
+    assert(not self.monster_runlist[tempid])
+    self.monster_runlist[tempid] = true
+  end
+
+  function map:monster_runlist_del(tempid)
+    assert(self.monster_runlist[tempid])
+    self.monster_runlist[tempid] = nil
   end
 
   --获取一个怪物
@@ -41,7 +52,7 @@ local function init_method(map)
     local obj
     local tempid
     assert(aoisvr)
-    local n = 1
+    local n = 10
     while n > 0 do
       for _,v in pairs(monster_list) do
         tempid = self:create_tempid()
@@ -106,6 +117,9 @@ function _map.create(id, type, map_info,aoi)
 
     --怪物列表
     monster_list = {},
+
+    --需要run的怪物列表
+    monster_runlist = {},
 
     --npc列表
     npc_list = {},
