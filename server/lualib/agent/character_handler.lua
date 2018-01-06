@@ -101,28 +101,8 @@ function REQUEST.charactercreate (args)
 	return { character = character}
 end
 
---选择角色
-function REQUEST.characterpick (args)
-	if user.characterlist[args.uuid] == nil then
-		log.debug("%s pick character failed!",user.uid)
-		return
-	end
-	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
-	if list.uuid then
-		user.dbdata = list
-		user.characterlist = nil
-
-		log.debug("%s pick character[%s] succ!",user.uid,list.name)
-		local ret = skynet.call (world, "lua", "characterenter", list.uuid)
-		return {ok = ret}
-	else
-		return {ok = false}
-	end
-end
-
 --初始化角色信息
---传入的是DB中playerdate的数据
-function _handler.init (dbdata)
+local function initUserData(dbdata)
 	assert(mapdata[dbdata.mapid])
 	user.character = player.create()
 	user.character:setmapid(mapdata[dbdata.mapid].name)
@@ -153,6 +133,24 @@ function _handler.init (dbdata)
 	user.character:setobjinfo(playerinfo)
 	user.character:setdata(dbdata.data)
 	user.character:set_msgsender(user.msgsender)
+end
+
+--选择角色
+function REQUEST.characterpick (args)
+	if user.characterlist[args.uuid] == nil then
+		log.debug("%s pick character failed!",user.uid)
+		return
+	end
+	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
+	if list.uuid then
+		log.debug("%s pick character[%s] succ!",user.uid,list.name)
+		user.characterlist = nil
+		initUserData(list)
+		local ret = skynet.call (world, "lua", "characterenter", list.uuid, user.character:getmapid(), user.character:getaoiobj())
+		return {ok = ret}
+	else
+		return {ok = false}
+	end
 end
 
 --保存角色信息

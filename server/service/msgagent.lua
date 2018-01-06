@@ -15,6 +15,7 @@ local requestqueue = queue()
 local responsequeue = queue()
 local luaqueue = queue()
 local CMD = {}
+local InitCMD = {}
 local sender = {}
 
 local agentstatus = {
@@ -23,14 +24,17 @@ local agentstatus = {
 	AGENT_QUIT = 3,
 }
 
-local running = agentstatus.AGENT_INIT
 local user
 local host
+
+local running = {
+	status = agentstatus.AGENT_INIT
+}
 
 local lastruntimepersecond = 0
 local function player_run()
 	while (true) do
-		if running == agentstatus.AGENT_RUNNING then
+		if running.status == agentstatus.AGENT_RUNNING then
 			local nowtime = timer.get_time()
 			if nowtime - lastruntimepersecond >= 1 then
 				--玩家延迟检测
@@ -47,8 +51,8 @@ end
 --因为请求消息在requestqueue，而被T的消息在luaqueue中
 --这边可能重入
 local function logout(type)
-	if not user or running ~= agentstatus.AGENT_RUNNING then return end
-	running = agentstatus.AGENT_QUIT
+	if not user or running.status ~= agentstatus.AGENT_RUNNING then return end
+	running.status = agentstatus.AGENT_QUIT
 	log.notice("logout, agent(:%08X) type(%d) subid(%d)",skynet.self(),type,user.subid)
 
 	skynet.send(gate, "lua", "logout", user.uid, user.subid)
@@ -77,7 +81,7 @@ local function logout(type)
 	character_handler:unregister (user)
 	user = nil
 	skynet.send(gate, "lua", "addtoagentpool", skynet.self())
-	running = agentstatus.AGENT_INIT
+	running.status = agentstatus.AGENT_INIT
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
 	--skynet.exit()
@@ -87,7 +91,7 @@ end
 local last_heartbeat_time = 0
 local HEARTBEAT_TIME_MAX = 0 * 100
 local function heartbeat_check ()
-	if HEARTBEAT_TIME_MAX <= 0 or running ~= agentstatus.AGENT_RUNNING then return end
+	if HEARTBEAT_TIME_MAX <= 0 or running.status ~= agentstatus.AGENT_RUNNING then return end
 
 	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
 	if t <= 0 then
@@ -156,12 +160,12 @@ skynet.register_protocol {
 	end,
 	dispatch = function (_, _, type, ...)
 		if type == "REQUEST" then
-			local result = requestqueue(handle_request, ...)
+			local result = luaqueue(handle_request, ...)
 			if result then
 				skynet.ret(result)
 			end
 		elseif type == "RESPONSE" then
-			responsequeue(handle_response, ...)
+			luaqueue(handle_response, ...)
 		else
 			log.warning("invalid message type : %s", type)
 			logout(7)
@@ -170,16 +174,13 @@ skynet.register_protocol {
 	end,
 }
 
-function CMD.worldenter(_,world)
-	character_handler.init(user.dbdata)
-	user.dbdata = nil
+function InitCMD.worldenter(_,world)
 	user.world = world
 	character_handler:unregister (user)
 	user.character:setaoimode("w")
-	return user.character:getmapid(),user.character:getaoiobj()
 end
 
-function CMD.mapenter(_,map,tempid)
+function InitCMD.mapenter(_,map,tempid)
 	user.map = map
 	user.character:settempid(tempid)
 
@@ -187,12 +188,12 @@ function CMD.mapenter(_,map,tempid)
 	map_handler:register(user)
 	aoi_handler:register(user)
 	move_handler:register(user)
-	running = agentstatus.AGENT_RUNNING
+	running.status = agentstatus.AGENT_RUNNING
 	heartbeat_check ()
 	skynet.fork(player_run)
 end
 
-function CMD.login(source, uid, sid, secret, fd)
+function InitCMD.login(source, uid, sid, secret, fd)
 	-- you may use secret to make a encrypted data stream
 	log.notice("%s is login",uid)
 	user = {
@@ -203,11 +204,11 @@ function CMD.login(source, uid, sid, secret, fd)
 		CMD = CMD,
 		send_request = sender.send_request,
 		msgsender = msgsender,
+		running = running,
 	}
-
 end
 
-function CMD.auth(source, fd)
+function InitCMD.auth(source, fd)
 	user.fd = fd
 	
 	REQUEST = user.REQUEST
@@ -227,12 +228,23 @@ function CMD.logout(_)
 	logout(0)
 end
 
+function InitCMD.logout(_)
+	--下线
+	-- NOTICE: The logout MAY be reentry
+	logout(0)
+end
+
 function CMD.afk(_)
 	-- the connection is broken, but the user may back
 	log.notice("%s AFK",user.uid)
 end
 
-function CMD.close()
+function InitCMD.afk(_)
+	-- the connection is broken, but the user may back
+	log.notice("%s AFK",user.uid)
+end
+
+function InitCMD.close()
 	log.notice("close agent(:%08X)",skynet.self())
 	logout(8)
 	skynet.exit()
@@ -270,12 +282,23 @@ skynet.start(function()
 	msgsender = msgsender.create()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
-		local f = assert(CMD[command],command)
-		function docmd(f,source, ...)
-			if running ~= agentstatus.AGENT_QUIT then
-				return f(source, ...)
-			end
+		local docmd
+		if running.status == agentstatus.AGENT_INIT then
+			local f = assert(InitCMD[command],command)
+			docmd =  function (f,source, ...)
+						if running.status == agentstatus.AGENT_INIT then
+							return f(source, ...)
+						end
+					end
+			skynet.ret(skynet.pack(luaqueue(docmd,f,source, ...)))
+		elseif running.status == agentstatus.AGENT_RUNNING then
+			local f = assert(CMD[command],command)
+			docmd =  function (f,source, ...)
+						if running.status == agentstatus.AGENT_RUNNING then
+							return f(source, ...)
+						end
+					end
+			skynet.ret(skynet.pack(luaqueue(docmd,f,source, ...)))
 		end
-		skynet.ret(skynet.pack(luaqueue(docmd,f,source, ...)))
 	end)
 end)

@@ -16,7 +16,7 @@ function CMD.kick (uuid)
 	end
 end
 
-function CMD.characterenter(agent, uuid)
+function CMD.characterenter(agent, uuid, map, aoiobj)
   if onlinecharacter[uuid] ~= nil then
 		log.notice ("multiple login detected, uuid %d", uuid)
 		CMD.kick (uuid)
@@ -25,8 +25,8 @@ function CMD.characterenter(agent, uuid)
 
 	onlinecharacter[uuid] = agent
 	log.notice ("uuid(%d) enter world ,agent(:%08X)", uuid,agent)
-  --获取玩家需要去的地图和坐标
-	local map, aoiobj = skynet.call (agent, "lua", "worldenter", skynet.self ())
+  --通知玩家进入了哪个世界
+	skynet.send (agent, "lua", "worldenter", skynet.self ())
 	
 	local m = mapinstance[map]
 	if not m then

@@ -1,12 +1,15 @@
 local enumtype = require "enumtype"
 local handler = require "agent.handler"
+local skynet = require "skynet"
 
 local CMD = {}
 local _handler = handler.new (nil,nil,CMD)
 local user
+local running
 
 _handler:init (function (u)
 	user = u
+	running = u.running
 end)
 
 _handler:release (function ()
@@ -15,6 +18,7 @@ end)
 
 --添加对象到aoilist中
 function CMD.addaoiobj(_,aoiobj)
+	assert(user,{_,skynet.self(),running,aoiobj})
 	if not user.character:getfromaoilist(aoiobj.tempid) then
 		user.character:addtoaoilist(aoiobj)
 		if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
@@ -31,6 +35,7 @@ end
 
 --更新对象的aoiobj信息
 function CMD.updateaoiobj(_,aoiobj)
+	assert(user,{_,skynet.self(),running,aoiobj})
 	user.character:updateaoiobj(aoiobj)
 	local character_move = {
 		tempid = aoiobj.tempid,

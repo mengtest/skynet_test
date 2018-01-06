@@ -1,4 +1,5 @@
 local skynet = require "skynet"
+local queue = require "skynet.queue"
 local log = require "syslog"
 local util = require "util"
 local enumtype = require "enumtype"
@@ -14,6 +15,7 @@ local update_thread
 local need_update
 local map_name = ...
 local mapagent
+local luaqueue = queue()
 
 local AOI_RADIS = 200
 local AOI_RADIS2 = AOI_RADIS * AOI_RADIS
@@ -266,29 +268,32 @@ function CMD.characterleave(obj)
 	log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
 	OBJ[obj.tempid] = nil
-	local monsterleavelist = {
-		tempid = obj.tempid,
-		monsterlist = {},
-	}
-	for k,_ in pairs(playerview[obj.tempid]) do
-		if playerview[k] then
-			if playerview[k][obj.tempid] then
-				skynet.send(OBJ[k].agent,"lua","delaoiobj",obj.tempid)
+	if playerview[obj.tempid] then
+		local monsterleavelist = {
+			tempid = obj.tempid,
+			monsterlist = {},
+		}
+		for k,_ in pairs(playerview[obj.tempid]) do
+			if playerview[k] then
+				if playerview[k][obj.tempid] then
+					skynet.send(OBJ[k].agent,"lua","delaoiobj",obj.tempid)
+				end
+				playerview[k][obj.tempid] = nil
+			elseif monsterview[k] then
+				if monsterview[k][obj.tempid] then
+					table.insert(monsterleavelist.monsterlist,{tempid = k})
+				end
+				monsterview[k][obj.tempid] = nil
 			end
-			playerview[k][obj.tempid] = nil
-		elseif monsterview[k] then
-			if monsterview[k][obj.tempid] then
-				table.insert(monsterleavelist.monsterlist,{tempid = k})
-			end
-			monsterview[k][obj.tempid] = nil
 		end
+		
+		if not table.empty(monsterleavelist.monsterlist) then
+			skynet.send(mapagent,"lua","updateaoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
+		end
+		playerview[obj.tempid] = nil
+	else
+		print(playerview)
 	end
-	
-	if not table.empty(monsterleavelist.monsterlist) then
-		skynet.send(mapagent,"lua","updateaoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
-	end
-
-	playerview[obj.tempid] = nil
 	need_update = true
 end
 
@@ -327,7 +332,7 @@ skynet.start(function()
 	skynet.dispatch("lua", function (_,_, cmd, ...)
 		local f = CMD[cmd]
 		if f then
-			skynet.ret(skynet.pack(f(...)))
+			skynet.ret(skynet.pack(luaqueue(f, ...)))
 		else
 			log.notice("Unknown command : [%s]", cmd)
 			skynet.response()(false)
