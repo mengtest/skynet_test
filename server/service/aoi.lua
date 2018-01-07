@@ -32,14 +32,6 @@ skynet.register_protocol {
 	unpack = function(buf, sz) return skynet.tostring(buf,sz) end,
 }
 
-local function inserttotablebytype(t,v,type)
-	if type ~= enumtype.CHAR_TYPE_PLAYER then
-		table.insert(t.monsterlist,v)
-	else
-		table.insert(t.playerlist,v)
-	end
-end
-
 --怪物移动的时候通知玩家信息
 local function updateviewmonster(monstertempid)
 	if monsterview[monstertempid] == nil then return end
@@ -104,6 +96,14 @@ local function updateviewmonster(monstertempid)
 	end
 
 	skynet.send(myobj.agent,"lua","updateaoilist",myobj.tempid,enterlist,leavelist)
+end
+
+local function inserttotablebytype(t,v,type)
+	if type ~= enumtype.CHAR_TYPE_PLAYER then
+		table.insert(t.monsterlist,v)
+	else
+		table.insert(t.playerlist,v)
+	end
 end
 
 --观看者坐标更新的时候
@@ -263,6 +263,7 @@ function CMD.characterenter(obj)
 end
 
 --从aoi中移除
+--TODO 怪物的离开
 function CMD.characterleave(obj)
 	assert(obj)
 	log.debug("%d leave aoi",obj.tempid)
@@ -276,23 +277,23 @@ function CMD.characterleave(obj)
 		for k,_ in pairs(playerview[obj.tempid]) do
 			if playerview[k] then
 				if playerview[k][obj.tempid] then
+					--视野内需要通知
 					skynet.send(OBJ[k].agent,"lua","delaoiobj",obj.tempid)
 				end
 				playerview[k][obj.tempid] = nil
 			elseif monsterview[k] then
 				if monsterview[k][obj.tempid] then
+					--视野内需要通知
 					table.insert(monsterleavelist.monsterlist,{tempid = k})
 				end
 				monsterview[k][obj.tempid] = nil
 			end
 		end
-		
+
 		if not table.empty(monsterleavelist.monsterlist) then
 			skynet.send(mapagent,"lua","updateaoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
 		end
 		playerview[obj.tempid] = nil
-	else
-		print(playerview)
 	end
 	need_update = true
 end
@@ -323,7 +324,7 @@ skynet.start(function()
 		local t = cmd:split(" ")
 		local f = CMD[t[1]]
 		if f then
-			f(tonumber(t[2]),tonumber(t[3]))
+			luaqueue(f,tonumber(t[2]),tonumber(t[3]))
 		else
 			log.notice("Unknown command : [%s]", cmd)
 		end

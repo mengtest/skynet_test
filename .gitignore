@@ -2,5 +2,6 @@
 *.a
 *.so
 *.rdb
+*.log
 /cservice
 /luaclib

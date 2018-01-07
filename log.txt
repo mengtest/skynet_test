@@ -27,6 +27,7 @@ aoi这一块应该告一段落了，改弄弄其他的了，先调整一下框�
 user这边有可能会出现nil的情况，应该是用户下线的时候，清除掉了user，然后lua队列中还有消息需要处理导致的问题。
 这边看要不要改一下user这边的逻辑，使用snax服务，agent这边需要有操作的时候，发消息给snax，snax中的user也不移除，这样也可以热更新
 或者全部使用同一个queue
+--要注意client登录流程不完整的问题
 
 warning:
 
@@ -145,7 +146,7 @@ addaoiobj那边进入过两次..可能发了两次updateinfo()？有空看看
 
 delaoiobj那边可能需要设置一下玩家为下线状态，然后characterwriter:commit()一下。
 然后在updateagentlist中判断玩家的在线状态
---现在没有用characterwriter:commit()l 
+--现在没有用characterwriter:commit()
 
 aoi的cservice里面写的多线程触发message_update失败，使用的是lua那边call cservice。
 这边可能需要看一下，能不能不走call，直接在cservice那边使用多线程update
