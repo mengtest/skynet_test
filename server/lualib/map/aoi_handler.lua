@@ -16,10 +16,10 @@ function CMD.addaoiobj(monstertempid,aoiobj)
   assert(map_info)
   assert(monstertempid)
   assert(aoiobj)
-  local monster = map_info:get_monster(monstertempid)
+  local monster = map_info:getmonster(monstertempid)
   if monster:getfromaoilist(aoiobj.tempid) == nil then
     if monster:getifaoilistempty() then
-      map_info:monster_runlist_add(monstertempid)
+      map_info:monsterrunlistadd(monstertempid)
     end
     monster:addtoaoilist(aoiobj)
     if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
@@ -29,7 +29,7 @@ function CMD.addaoiobj(monstertempid,aoiobj)
         pos = monster:getpos(),
       }
       --将我的信息发送给对方
-      msgsender:send_request("characterupdate",{info = info},aoiobj.info)
+      msgsender:sendrequest("characterupdate",{info = info},aoiobj.info)
     end
   end
 end
@@ -38,7 +38,7 @@ end
 function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   local monster
   for _,v in pairs(enterlist.monsterlist) do
-    monster = map_info:get_monster(v.tempid)
+    monster = map_info:getmonster(v.tempid)
     if monster:getfromaoilist(enterlist.obj.tempid) == nil then
       monster:addtoaoilist(enterlist.obj)
       local info = {
@@ -47,18 +47,18 @@ function CMD.updateaoiinfo(enterlist,leavelist,movelist)
         pos = monster:getpos(),
       }
       --将我的信息发送给对方
-      msgsender:send_request("characterupdate",{info = info},enterlist.obj.info)
+      msgsender:sendrequest("characterupdate",{info = info},enterlist.obj.info)
     end
   end
   for _,v in pairs(leavelist.monsterlist) do
-    monster = map_info:get_monster(v.tempid)
+    monster = map_info:getmonster(v.tempid)
     monster:delfromaoilist(leavelist.tempid)
     if monster:getifaoilistempty() then
-      map_info:monster_runlist_del(v.tempid)
+      map_info:monsterrunlistdel(v.tempid)
     end
   end
   for _,v in pairs(movelist.monsterlist) do
-    monster = map_info:get_monster(v.tempid)
+    monster = map_info:getmonster(v.tempid)
     monster:updateaoiobj(movelist.obj)
   end
 end
@@ -69,7 +69,7 @@ function CMD.updateaoilist(monstertempid,enterlist,leavelist)
   assert(monstertempid)
   assert(enterlist)
   assert(leavelist)
-  local monster = map_info:get_monster(monstertempid)
+  local monster = map_info:getmonster(monstertempid)
   for _,v in pairs(enterlist) do
       monster:addtoaoilist(v)
       local info = {
@@ -78,12 +78,12 @@ function CMD.updateaoilist(monstertempid,enterlist,leavelist)
         pos = monster:getpos(),
       }
       --将我的信息发送给对方
-      msgsender:send_request("characterupdate",{info = info},v.info)
+      msgsender:sendrequest("characterupdate",{info = info},v.info)
   end
   for _,v in pairs(leavelist) do
       monster:delfromaoilist(v.tempid)
       if monster:getifaoilistempty() then
-        map_info:monster_runlist_del(monstertempid)
+        map_info:monsterrunlistdel(monstertempid)
       end
     end
 end

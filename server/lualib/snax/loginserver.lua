@@ -67,7 +67,7 @@ end
 local session_id = 0
 --local session = {}
 
-local function send_request (service, fd, name, args)
+local function sendrequest (service, fd, name, args)
 	session_id = session_id + 1
 	local str = request (name, args, session_id)
 	write (service, fd, str, session_id)
@@ -184,14 +184,14 @@ local function accept(conf, s, fd, addr)
 	--根据认证结果
 	if not ok then
 		if ok ~= nil then
-			send_request("response 401",fd,"subid",{result = "401 Unauthorized"})
+			sendrequest("response 401",fd,"subid",{result = "401 Unauthorized"})
 		end
 		error(server)
 	end
 
 	if not conf.multilogin then
 		if user_login[uid] then
-			send_request("response 406",fd,"subid",{result = "406 Not Acceptable"})
+			sendrequest("response 406",fd,"subid",{result = "406 Not Acceptable"})
 			error(string.format("User %s is already login", uid))
 		end
 
@@ -205,9 +205,9 @@ local function accept(conf, s, fd, addr)
 
 	if ok then
 		err = err or ""
-		send_request("response 200",fd,"subid",{result = "200 "..crypt.base64encode(err)})
+		sendrequest("response 200",fd,"subid",{result = "200 "..crypt.base64encode(err)})
 	else
-		send_request("response 403",fd,"subid",{result = "403 Not Forbidden"})
+		sendrequest("response 403",fd,"subid",{result = "403 Not Forbidden"})
 		error(err)
 	end
 end

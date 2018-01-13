@@ -4,7 +4,7 @@ local util = {}
 
 --设置定时器，返回函数
 --调用返回的函数可以取消定时器
-function util.set_timeout(ti, f)
+function util.settimeout(ti, f)
   local function t()
     if f then
       f()

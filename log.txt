@@ -60,7 +60,7 @@ sharedata改掉，使用最新的datasheet
 学习使用MemoryHook来检查内存，先检查一下内存问题吧。
 
 msgsender中保留了发送的session信息，如果消息过多，内存会溢出的，这边看是怎么处理一下，应该需要把老、旧的消息移除。
-server那边开着不懂，monster_run的时候，内存会涨，导致map内存溢出，应该也是这个问题，需要解决。
+server那边开着不懂，monsterrun的时候，内存会涨，导致map内存溢出，应该也是这个问题，需要解决。
 --修改了sproto.lua,判断是否有返回，有返回的时候就存session，当回复之后，清理掉
 --存储的session加了长度验证，超过最大长度的时候，打印提示，并删除session值最小的一条
 

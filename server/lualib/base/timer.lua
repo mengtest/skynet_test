@@ -2,7 +2,7 @@ local skynet = require "skynet"
 
 local _timer = {}
 
-function _timer.get_time()
+function _timer.gettime()
   return skynet.time()
 end
 

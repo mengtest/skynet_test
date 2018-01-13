@@ -139,18 +139,6 @@ function _aoifun.expandmethod(obj)
 	function obj:getdistancesquare(o)
 		return DIST2(self:getpos(),o:getpos())
 	end
-
-	--设置对象删除信息
-	function obj:set_aoi_del(del)
-		assert(self.aoiobj)
-		self.aoiobj.movement.del = del
-	end
-
-	--获取对象是否已经被删除
-	function obj:get_aoi_del()
-		assert(self.aoiobj)
-		return self.aoiobj.movement.del
-	end
 end
 
 return _aoifun

@@ -28,7 +28,7 @@ function CMD.addaoiobj(_,aoiobj)
 				pos = user.character:getpos(),
 			}
 			--将我的信息发送给对方
-			user.send_request("characterupdate",{info = info},nil,nil,{aoiobj.info})
+			user.sendrequest("characterupdate",{info = info},nil,nil,{aoiobj.info})
 		end
 	end
 end
@@ -41,13 +41,13 @@ function CMD.updateaoiobj(_,aoiobj)
 		tempid = aoiobj.tempid,
 		pos = aoiobj.movement.pos,
 	}
-	user.send_request("moveto",{move = {character_move}})
+	user.sendrequest("moveto",{move = {character_move}})
 end
 
 --从自己的aoilist中移除对象
 function CMD.delaoiobj(_,tempid)
 	user.character:delfromaoilist(tempid)
-	user.send_request("characterleave",{tempid = {tempid}})
+	user.sendrequest("characterleave",{tempid = {tempid}})
 end
 
 --进入和离开我视野的列表
@@ -62,7 +62,7 @@ function CMD.updateaoilist(_,enterlist,leavelist)
 					pos = user.character:getpos(),
 				}
 				--将我的信息发送给对方
-				user.send_request("characterupdate",{info = info},nil,nil,{vv.info})
+				user.sendrequest("characterupdate",{info = info},nil,nil,{vv.info})
 			end
 		end
 	end
@@ -73,7 +73,7 @@ function CMD.updateaoilist(_,enterlist,leavelist)
 			table.insert( leaveid, vv.tempid )
 		end
 	end
-	user.send_request("characterleave",{tempid = leaveid})
+	user.sendrequest("characterleave",{tempid = leaveid})
 end
 
 return _handler

@@ -7,8 +7,8 @@ local s_method = {__index = {}}
 local function init_method(player)
 
   --给自己客户端发消息
-  function player:send_request(name, args)
-    self.msgsender:send_request(name, args,self.aoiobj.info)
+  function player:sendrequest(name, args)
+    self.msgsender:sendrequest(name, args,self.aoiobj.info)
   end
 
   --设置玩家所在地图id

@@ -7,6 +7,7 @@ local mapinstance = {}
 local onlinecharacter = {}
 local gate
 
+--踢出玩家
 function CMD.kick (uuid)
 	local a = onlinecharacter[uuid]
 	if a then
@@ -16,6 +17,7 @@ function CMD.kick (uuid)
 	end
 end
 
+--玩家进入
 function CMD.characterenter(agent, uuid, map, aoiobj)
   if onlinecharacter[uuid] ~= nil then
 		log.notice ("multiple login detected, uuid %d", uuid)
@@ -38,6 +40,7 @@ function CMD.characterenter(agent, uuid, map, aoiobj)
 	 return skynet.call (m, "lua", "characterenter", uuid, aoiobj)
 end
 
+--玩家离开
 function CMD.characterleave(agent,uuid)
   log.notice ("uuid(%d) leave world ,agent(:%08X)", uuid,agent)
   onlinecharacter[uuid] = nil

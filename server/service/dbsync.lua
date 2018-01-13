@@ -8,6 +8,7 @@ local mysqlpool
 
 local traceback = debug.traceback
 
+--将queue中的sql语句写入mysql中
 local function sync_impl()
     while true do
         for k, v in pairs(queue) do

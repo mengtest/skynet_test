@@ -63,6 +63,7 @@ function server.auth_handler(username, fd)
 end
 
 -- call by agent
+--agent通知玩家下线
 function server.logout_handler(uid, subid)
 	local u = users[uid]
 	if u then
@@ -77,6 +78,7 @@ function server.logout_handler(uid, subid)
 end
 
 -- call by login server
+--被login踢下线
 function server.kick_handler(uid, subid)
 	local u = users[uid]
 	if u then
@@ -89,6 +91,7 @@ function server.kick_handler(uid, subid)
 end
 
 -- call by self (when socket disconnect)
+--socket断开
 function server.disconnect_handler(username)
 	local u = username_map[username]
 	if u then

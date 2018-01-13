@@ -4,7 +4,7 @@ local log = require "syslog"
 local util = require "util"
 local enumtype = require "enumtype"
 require "skynet.manager"
-local set_timeout = util.set_timeout
+local settimeout = util.settimeout
 
 local CMD = {}
 local OBJ = {}
@@ -98,6 +98,7 @@ local function updateviewmonster(monstertempid)
 	skynet.send(myobj.agent,"lua","updateaoilist",myobj.tempid,enterlist,leavelist)
 end
 
+--根据对象类型插入table
 local function inserttotablebytype(t,v,type)
 	if type ~= enumtype.CHAR_TYPE_PLAYER then
 		table.insert(t.monsterlist,v)
@@ -304,7 +305,7 @@ local function message_update ()
 		need_update = false
 		assert(pcall(skynet.send,aoi, "text", "message "))
 	end
-	update_thread = set_timeout (10, message_update)
+	update_thread = settimeout (10, message_update)
 end
 
 function CMD.open()

@@ -45,12 +45,12 @@ _handler:release (function ()
 end)
 
 --延迟检测
-function CMD.delay_run(nowtime)
+function CMD.delayrun(nowtime)
 	if nowtime - lasttesttime >= enum_delay_test_time then
 		if alreadytestnum == -1 then
 			alreadytestnum = 0
 			reqtime = nowtime
-			user.send_request("delaytest",{time = mfloor(nowtime)})
+			user.sendrequest("delaytest",{time = mfloor(nowtime)})
 		end
 	end
 end
@@ -63,11 +63,11 @@ function RESPONSE.delaytest(args)
 		return
 	end
 
-	local time = timer.get_time()
+	local time = timer.gettime()
 	alreadytestnum = alreadytestnum + 1
 	delayvalue[alreadytestnum] = time - reqtime
 	if alreadytestnum < 3 then
-		user.send_request("delaytest",{time = mfloor(time)})
+		user.sendrequest("delaytest",{time = mfloor(time)})
 		return
 	end
 
@@ -83,7 +83,7 @@ function RESPONSE.delaytest(args)
 	alreadytestnum = -1
 	lasttesttime = time
 
-	user.send_request("delayresult",{time = delaytime})
+	user.sendrequest("delayresult",{time = delaytime})
 end
 
 function REQUEST.moveto (args)

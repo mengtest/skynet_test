@@ -23,7 +23,7 @@ local function init_method(func)
   end
 
   --发送请求
-  function func:send_request (name, args, user)
+  function func:sendrequest (name, args, user)
     assert(name)
     assert(args)
     self.session_id = self.session_id + 1
@@ -46,7 +46,7 @@ local function init_method(func)
   end
 
   --发送广播请求
-  function func:send_boardrequest (name, args, agentlist, user)
+  function func:sendboardrequest (name, args, agentlist, user)
     assert(name)
     assert(args)
     self.session_id = self.session_id + 1
@@ -67,7 +67,7 @@ local function init_method(func)
     end
   end
 
-  function func:get_host()
+  function func:gethost()
     return self.host
   end
 

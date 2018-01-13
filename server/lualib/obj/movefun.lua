@@ -2,7 +2,7 @@ local _moveobj = {}
 local s_method = {__index = {}}
 
 local function init_method(obj)
-  function obj:delay_run(currenttime)
+  function obj:delayrun(currenttime)
 
   end
 end

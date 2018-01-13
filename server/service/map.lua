@@ -18,7 +18,7 @@ local config
 function CMD.characterenter(uuid,aoiobj)
   log.debug("uuid(%d) enter map(%s)",uuid,config.name)
   assert(aoi)
-  aoiobj.tempid = map_info:create_tempid()
+  aoiobj.tempid = map_info:createtempid()
   pendingcharacter[aoiobj.agent] = uuid
   skynet.send (aoiobj.agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
   skynet.send(aoi,"lua","characterenter",aoiobj)
@@ -34,7 +34,7 @@ function CMD.characterleave(aoiobj)
   else
     log.debug("uuid(%d) leave map(%s) BUT cannot find !",uuid,config.name)
   end
-  map_info:release_tempid(aoiobj.tempid)
+  map_info:releasetempid(aoiobj.tempid)
   onlinecharacter[aoiobj.agent] = nil
   pendingcharacter[aoiobj.agent] = nil
 end
@@ -72,10 +72,10 @@ function CMD.open(conf)
   map_info = basemap.create(conf.id,conf.type,conf,aoi)
   map_info.CMD = CMD
 	map_info.msgsender = msgsender
-  map_info:load_map_info()
+  map_info:loadmapinfo()
   aoi_handle.init(map_info)
   skynet.fork(function ()
-    map_info:monster_run()
+    map_info:monsterrun()
   end)
 end
 

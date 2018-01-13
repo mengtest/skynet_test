@@ -11,7 +11,7 @@ local s_method = {__index = {}}
 local function init_method(map)
 
   --怪物run
-  function map:monster_run()
+  function map:monsterrun()
     while true do
       for k,v in pairs(self.monster_runlist) do
         self.monster_list[k]:run(aoisvr)
@@ -20,34 +20,34 @@ local function init_method(map)
     end
   end
 
-  function map:monster_runlist_add(tempid)
+  function map:monsterrunlistadd(tempid)
     assert(not self.monster_runlist[tempid])
     self.monster_runlist[tempid] = true
   end
 
-  function map:monster_runlist_del(tempid)
+  function map:monsterrunlistdel(tempid)
     assert(self.monster_runlist[tempid])
     self.monster_runlist[tempid] = nil
   end
 
   --获取一个怪物
-  function map:get_monster(tempid)
+  function map:getmonster(tempid)
     assert(self.monster_list[tempid],tempid)
     return self.monster_list[tempid]
   end
   --创建一个临时id
-  function map:create_tempid()
+  function map:createtempid()
     return idmgr:createid()
   end
 
   --释放一个临时id
-  function map:release_tempid(tempid)
+  function map:releasetempid(tempid)
     assert(tempid)
     idmgr:releaseid(tempid)
   end
 
   --加载地图信息
-  function map:load_map_info()
+  function map:loadmapinfo()
     local monster_list = self.map_info.monster_list
     local obj
     local tempid
@@ -55,7 +55,7 @@ local function init_method(map)
     local n = 100
     while n > 0 do
       for _,v in pairs(monster_list) do
-        tempid = self:create_tempid()
+        tempid = self:createtempid()
         obj = monster.create(v.id,tempid,v,self)
         assert(self.monster_list[tempid] == nil)
         obj:set_msgsender(self.msgsender)
@@ -66,26 +66,26 @@ local function init_method(map)
     end
   end
 
-  function map:get_map_id()
+  function map:getmapid()
     return self.id
   end
   --获取副本id
-  function map:get_dungon_id()
+  function map:getdungonid()
     return self.dungeon_id
   end
 
   --获取副本实例id
-  function map:get_dungon_instance_id()
+  function map:getdungoninstanceid()
     return self.dungeon_instance_id
   end
 
   --获取地图的宽
-  function map:get_width()
+  function map:getwidth()
     return self.width
   end
 
   --获取地图的高
-  function map:get_height()
+  function map:getheight()
     return self.height
   end
 end

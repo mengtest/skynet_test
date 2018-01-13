@@ -36,7 +36,7 @@ _handler:release (function ()
 	world = nil
 end)
 
-local function load_list ()
+local function loadlist ()
 	local list = skynet.call (dbmgr, "lua", "playerdate", "getlist", user.uid)
 	if not list then
 		list = {}
@@ -46,7 +46,7 @@ end
 
 --获取角色列表
 function REQUEST.getcharacterlist ()
-	local character = load_list()
+	local character = loadlist()
 	user.characterlist = {}
 	for k,_ in pairs(character) do
 		user.characterlist[k] = true
@@ -77,7 +77,7 @@ end
 
 --创建角色
 function REQUEST.charactercreate (args)
-	if table.size(load_list ()) >= 3 then
+	if table.size(loadlist ()) >= 3 then
 		log.debug("%s create character failed, character num >= 3!",user.uid)
 		return
 	end

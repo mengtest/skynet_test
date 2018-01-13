@@ -23,7 +23,6 @@ function _basechar.create(type)
 					z = 0,
 				},
 				map = 0,
-				del = false,
 			},
 		},
 		--角色信息
@@ -42,9 +41,9 @@ end
 --扩展方法表
 function _basechar.expandmethod(obj)
 
-	function obj:send_boardrequest(name, args, agentlist)
+	function obj:sendboardrequest(name, args, agentlist)
 		assert(self.msgsender)
-    self.msgsender:send_boardrequest(name, args, agentlist, self)
+    self.msgsender:sendboardrequest(name, args, agentlist, self)
   end
 
 	--设置msgsender

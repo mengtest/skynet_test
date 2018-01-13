@@ -32,13 +32,15 @@ local running = {
 }
 
 local lastruntimepersecond = 0
-local function player_run()
+
+--玩家的run
+local function playerrun()
 	while (true) do
 		if running.status == agentstatus.AGENT_RUNNING then
-			local nowtime = timer.get_time()
+			local nowtime = timer.gettime()
 			if nowtime - lastruntimepersecond >= 1 then
 				--玩家延迟检测
-				CMD.delay_run(nowtime)
+				CMD.delayrun(nowtime)
 			end
 			skynet.sleep(10)
 		else
@@ -90,7 +92,7 @@ end
 --心跳检测
 local last_heartbeat_time = 0
 local HEARTBEAT_TIME_MAX = 0 * 100
-local function heartbeat_check ()
+local function heartbeatcheck ()
 	if HEARTBEAT_TIME_MAX <= 0 or running.status ~= agentstatus.AGENT_RUNNING then return end
 
 	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
@@ -98,14 +100,14 @@ local function heartbeat_check ()
 		log.warning ("heatbeat check failed")
 		logout(1)
 	else
-		skynet.timeout (t, heartbeat_check)
+		skynet.timeout (t, heartbeatcheck)
 	end
 end
 
 local traceback = debug.traceback
 --接受到的请求
 local REQUEST = {}
-local function handle_request (name, args, response)
+local function handlerequest (name, args, response)
 	--log.warning ("get handle_request from client: %s", name)
 	local f = REQUEST[name]
 	if f then
@@ -160,7 +162,7 @@ skynet.register_protocol {
 	end,
 	dispatch = function (_, _, type, ...)
 		if type == "REQUEST" then
-			local result = luaqueue(handle_request, ...)
+			local result = luaqueue(handlerequest, ...)
 			if result then
 				skynet.ret(result)
 			end
@@ -174,12 +176,14 @@ skynet.register_protocol {
 	end,
 }
 
+--通知agent进入world
 function InitCMD.worldenter(_,world)
 	user.world = world
 	character_handler:unregister (user)
 	user.character:setaoimode("w")
 end
 
+--通知agent进入地图
 function InitCMD.mapenter(_,map,tempid)
 	user.map = map
 	user.character:settempid(tempid)
@@ -189,10 +193,11 @@ function InitCMD.mapenter(_,map,tempid)
 	aoi_handler:register(user)
 	move_handler:register(user)
 	running.status = agentstatus.AGENT_RUNNING
-	heartbeat_check ()
-	skynet.fork(player_run)
+	heartbeatcheck ()
+	skynet.fork(playerrun)
 end
 
+--gate 通知 agent 有玩家正在认证
 function InitCMD.login(source, uid, sid, secret, fd)
 	-- you may use secret to make a encrypted data stream
 	log.notice("%s is login",uid)
@@ -202,19 +207,20 @@ function InitCMD.login(source, uid, sid, secret, fd)
 		REQUEST = {},
 		RESPONSE = {},
 		CMD = CMD,
-		send_request = sender.send_request,
+		sendrequest = sender.sendrequest,
 		msgsender = msgsender,
 		running = running,
 	}
 end
 
+--gate 通知 agent 认证成功
 function InitCMD.auth(source, fd)
 	user.fd = fd
 	
 	REQUEST = user.REQUEST
 	RESPONSE = user.RESPONSE
 	msgsender:init()
-	host = msgsender:get_host()
+	host = msgsender:gethost()
 	-- you may load user data from database
 	testhandler:register(user)
 	character_handler:register(user)
@@ -254,24 +260,24 @@ skynet.memlimit(1 * 1024 * 1024)
 
 --发送广播消息给client
 --消息名，参数列表，是否发送给指定对象，是否广播，广播时是否排除自己
-function sender.send_request(name, args, ref, not_send_to_me, fdlist)
+function sender.sendrequest(name, args, ref, not_send_to_me, fdlist)
 	if fdlist then
 		--广播给指定列表中的对象
-		user.character:send_boardrequest(name, args, fdlist)
+		user.character:sendboardrequest(name, args, fdlist)
 	else
 		if ref then
 			if not_send_to_me then
 				--广播消息不发送给自己
-				user.character:send_boardrequest(name, args, user.character:getaoilist())
+				user.character:sendboardrequest(name, args, user.character:getaoilist())
 			else
 				--广播消息发送给自己
 				fdlist = user.character:getaoilist()
 				table.insert(fdlist,user.character:getaoiobj())
-				user.character:send_boardrequest(name, args, fdlist)
+				user.character:sendboardrequest(name, args, fdlist)
 			end
 		else
 			--发送消息给自己
-			user.character:send_request(name, args)
+			user.character:sendrequest(name, args)
 		end
 	end
 end

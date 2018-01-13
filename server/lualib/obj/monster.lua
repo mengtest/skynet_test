@@ -71,8 +71,7 @@ function _monster.create(id,tempid,conf,mapobj)
 				y = conf.y,
 				z = conf.z,
 			},
-      map = mapobj:get_map_id(),
-      del = false,
+      map = mapobj:getmapid(),
 		}
 	}
   monster:setaoiobj(aoiobj)

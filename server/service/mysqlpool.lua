@@ -9,6 +9,7 @@ local group = {}
 local ngroup
 local index = 1
 
+--获取db
 local function getconn (write)
 	local db
 	if write then
@@ -37,6 +38,7 @@ function CMD.open()
 	end
 end
 
+--执行sql语句
 function CMD.execute(sql, write)
 	local db = getconn(write)
 	return db:query(sql)
