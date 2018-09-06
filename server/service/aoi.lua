@@ -134,6 +134,7 @@ local function updateviewplayer(viewertempid)
 	local otherpos
 	local othertype
 	local otherobj
+	--遍历视野中的对象
 	for k,v in pairs(playerview[viewertempid]) do
 		othertempid = OBJ[k].tempid
 		otherpos = OBJ[k].movement.pos
@@ -142,9 +143,12 @@ local function updateviewplayer(viewertempid)
 			tempid = othertempid,
 			agent = OBJ[k].agent,
 		}
+		--计算对象之间的距离
 		local distance = DIST2(mypos,otherpos)
 		if distance <= AOI_RADIS2 then
+			--在视野范围内的时候
 			if not v then
+				--之前不在视野内，加入进入视野列表
 				playerview[viewertempid][k] = true
 				if othertype ~= enumtype.CHAR_TYPE_PLAYER then
 					monsterview[k][viewertempid] = true
@@ -154,10 +158,13 @@ local function updateviewplayer(viewertempid)
 					table.insert(enterlist.playerlist,OBJ[k])
 				end
 			else
+				--在视野内，更新坐标
 				inserttotablebytype(movelist,otherobj,othertype)
 			end
 		elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
+			--视野范围外，但是还在aoi控制内
 			if v then
+				--之前在视野内的话，加入离开视野列表
 				playerview[viewertempid][k] = false
 				if othertype ~= enumtype.CHAR_TYPE_PLAYER then
 					monsterview[k][viewertempid] = false
@@ -168,10 +175,13 @@ local function updateviewplayer(viewertempid)
 				end
 			end
 		else
+			--aoi控制外
 			if v then
+				--之前在视野内的话，加入离开视野列表
 				inserttotablebytype(leavelist,otherobj,othertype)
 			end
 			playerview[viewertempid][k] = nil
+			--从对方视野中移除自己
 			if othertype ~= enumtype.CHAR_TYPE_PLAYER then
 				monsterview[k][viewertempid] = nil
 			else
@@ -238,6 +248,8 @@ function CMD.aoicallback(w,m)
 
 	--通知agent
 	skynet.send(OBJ[w].agent,"lua","addaoiobj",OBJ[m])
+
+	--被看到的是怪物时，添加player到怪物视野中
 	if OBJ[m].type ~= enumtype.CHAR_TYPE_PLAYER then
 		skynet.send(OBJ[m].agent,"lua","addaoiobj",OBJ[m].tempid,OBJ[w])
 	end
@@ -245,9 +257,9 @@ end
 
 --添加到aoi
 function CMD.characterenter(obj)
-  assert(obj)
+	assert(obj)
 	assert(obj.agent)
-  assert(obj.movement)
+	assert(obj.movement)
 	assert(obj.movement.mode)
 	assert(obj.movement.pos.x)
 	assert(obj.movement.pos.y)
@@ -309,14 +321,14 @@ local function message_update ()
 end
 
 function CMD.open()
-  aoi = assert(skynet.launch("caoi", map_name))
+	aoi = assert(skynet.launch("caoi", map_name))
 	assert(aoi == (skynet.self() + 1))
 	mapagent = skynet.self() - 1
 	message_update()
 end
 
 function CMD.close(name)
-  log.notice("close aoi(%s)...",name)
+	log.notice("close aoi(%s)...",name)
 	update_thread()
 end
 

@@ -10,7 +10,7 @@ function _handle.init(info)
 end
 
 
---添加对象到aoilist中
+--添加对象到怪物的aoilist中
 --aoi callback
 function CMD.addaoiobj(monstertempid,aoiobj)
   assert(map_info)
@@ -18,6 +18,7 @@ function CMD.addaoiobj(monstertempid,aoiobj)
   assert(aoiobj)
   local monster = map_info:getmonster(monstertempid)
   if monster:getfromaoilist(aoiobj.tempid) == nil then
+    --将怪物添加到runlist
     if monster:getifaoilistempty() then
       map_info:monsterrunlistadd(monstertempid)
     end
@@ -37,6 +38,7 @@ end
 --玩家移动的时候，对周围怪物的广播
 function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   local monster
+  --进入怪物视野
   for _,v in pairs(enterlist.monsterlist) do
     monster = map_info:getmonster(v.tempid)
     if monster:getfromaoilist(enterlist.obj.tempid) == nil then
@@ -50,13 +52,16 @@ function CMD.updateaoiinfo(enterlist,leavelist,movelist)
       msgsender:sendrequest("characterupdate",{info = info},enterlist.obj.info)
     end
   end
+  --离开怪物视野
   for _,v in pairs(leavelist.monsterlist) do
     monster = map_info:getmonster(v.tempid)
     monster:delfromaoilist(leavelist.tempid)
+    --当怪物视野内没有对象的时候，停止活动
     if monster:getifaoilistempty() then
       map_info:monsterrunlistdel(v.tempid)
     end
   end
+  --更新怪物视野
   for _,v in pairs(movelist.monsterlist) do
     monster = map_info:getmonster(v.tempid)
     monster:updateaoiobj(movelist.obj)

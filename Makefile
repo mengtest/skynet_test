@@ -1,8 +1,10 @@
-THIRD_LIB_ROOT ?= ./3rd/
+THIRD_LIB_ROOT ?= ./3rd
 
-SKYNET_ROOT ?= $(THIRD_LIB_ROOT)skynet
+SKYNET_ROOT ?= $(THIRD_LIB_ROOT)/skynet
 SKYNET_SRC ?= $(SKYNET_ROOT)/skynet-src
 include $(SKYNET_ROOT)/platform.mk
+
+LUA_INC ?= $(SKYNET_ROOT)/3rd/lua
 
 LUA_CLIB_PATH ?= ./server/luaclib
 LUA_CSRC_PATH ?= ./server/lualib-src
@@ -11,7 +13,7 @@ MYCSERVICE_PATH ?= ./server/cservice
 MYCSERVICE_CSRC_PATH ?= ./server/service-src
 
 SHARED := -fPIC --shared
-CFLAGS = -g -O2 -Wall
+CFLAGS = -g -O2 -Wall -I$(LUA_INC)
 
 #lua
 LUA_CLIB = uuid cutil utf8 crab
@@ -40,9 +42,6 @@ $(LUA_CLIB_PATH)/utf8.so : $(LUA_CSRC_PATH)/lua-utf8.c
 
 $(LUA_CLIB_PATH)/crab.so : $(LUA_CSRC_PATH)/lua-crab.c
 	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
-
-#$(LUA_CLIB_PATH)/aoi.so : $(LUA_CSRC_PATH)/lua-aoi.c $(LUA_CSRC_PATH)/aoi.c
-#	$(CC) $(CFLAGS) $(SHARED) $^  -o $@
 
 $(MYCSERVICE_PATH)/caoi.so : $(MYCSERVICE_CSRC_PATH)/service_aoi.c $(MYCSERVICE_CSRC_PATH)/aoi.c
 	$(CC) $(CFLAGS) $(SHARED) $^  -o $@ -I$(SKYNET_SRC)

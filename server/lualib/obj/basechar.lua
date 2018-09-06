@@ -115,7 +115,7 @@ function _basechar.expandmethod(obj)
 		return self.objinfo.level
 	end
 
-	--添加到输出化函数中
+	--添加到初始化函数中
 	function obj:addinitfunc(f)
 		table.insert (self.init_func, f)
 	end

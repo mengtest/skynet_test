@@ -2,7 +2,7 @@ local conf = {}
 
 local host = "127.0.0.1"
 local port = 3306
-local database = "test"
+local database = "skynet"
 local user = "root"
 local password = "root"
 local max_packet_size = 1024 * 1024
