@@ -1,5 +1,6 @@
 local basechar = require "obj.basechar"
 local enumtype = require "enumtype"
+local delaytest = require "obj.movefun"
 
 local _player = {}
 local s_method = {__index = {}}
@@ -72,6 +73,8 @@ function _player.create()
   player.data = {}
   --玩家信息
   player.playerinfo = {}
+
+  player.moveobj = delaytest.create()
 
   player = setmetatable(player, s_method)
 

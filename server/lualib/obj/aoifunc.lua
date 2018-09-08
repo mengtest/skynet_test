@@ -49,11 +49,6 @@ function _aoifun.expandmethod(obj)
 		return self.aoilist
 	end
 
-	--获取aoilist是否为空
-	function obj:getifaoilistempty()
-		return table.empty(self.aoilist)
-	end
-
 	--获取可以发送信息的给前段的aoilist
 	function obj:getsend2clientaoilist()
 		local fdlist = {}

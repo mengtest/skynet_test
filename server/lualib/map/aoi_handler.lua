@@ -18,10 +18,6 @@ function CMD.addaoiobj(monstertempid,aoiobj)
   assert(aoiobj)
   local monster = map_info:getmonster(monstertempid)
   if monster:getfromaoilist(aoiobj.tempid) == nil then
-    --将怪物添加到runlist
-    if monster:getifaoilistempty() then
-      map_info:monsterrunlistadd(monstertempid)
-    end
     monster:addtoaoilist(aoiobj)
     if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
       local info = {
@@ -56,10 +52,6 @@ function CMD.updateaoiinfo(enterlist,leavelist,movelist)
   for _,v in pairs(leavelist.monsterlist) do
     monster = map_info:getmonster(v.tempid)
     monster:delfromaoilist(leavelist.tempid)
-    --当怪物视野内没有对象的时候，停止活动
-    if monster:getifaoilistempty() then
-      map_info:monsterrunlistdel(v.tempid)
-    end
   end
   --更新怪物视野
   for _,v in pairs(movelist.monsterlist) do
@@ -87,9 +79,6 @@ function CMD.updateaoilist(monstertempid,enterlist,leavelist)
   end
   for _,v in pairs(leavelist) do
       monster:delfromaoilist(v.tempid)
-      if monster:getifaoilistempty() then
-        map_info:monsterrunlistdel(monstertempid)
-      end
     end
 end
 

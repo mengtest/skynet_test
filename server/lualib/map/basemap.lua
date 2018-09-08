@@ -13,21 +13,11 @@ local function init_method(map)
   --怪物run
   function map:monsterrun()
     while true do
-      for k,v in pairs(self.monster_runlist) do
-        self.monster_list[k]:run(aoisvr)
+      for k,v in pairs(self.monster_list) do
+        v:run(aoisvr)
       end
       skynet.sleep(10)
     end
-  end
-
-  function map:monsterrunlistadd(tempid)
-    assert(not self.monster_runlist[tempid])
-    self.monster_runlist[tempid] = true
-  end
-
-  function map:monsterrunlistdel(tempid)
-    assert(self.monster_runlist[tempid])
-    self.monster_runlist[tempid] = nil
   end
 
   --获取一个怪物
@@ -117,9 +107,6 @@ function _map.create(id, type, map_info,aoi)
 
     --怪物列表
     monster_list = {},
-
-    --需要run的怪物列表
-    monster_runlist = {},
 
     --npc列表
     npc_list = {},

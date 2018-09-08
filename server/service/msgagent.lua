@@ -31,17 +31,13 @@ local running = {
 	status = agentstatus.AGENT_INIT
 }
 
-local lastruntimepersecond = 0
-
 --玩家的run
 local function playerrun()
 	while (true) do
 		if running.status == agentstatus.AGENT_RUNNING then
 			local nowtime = timer.gettime()
-			if nowtime - lastruntimepersecond >= 1 then
-				--玩家延迟检测
-				CMD.delayrun(nowtime)
-			end
+			--玩家延迟检测
+			user.character.moveobj:delayrun(nowtime)
 			skynet.sleep(10)
 		else
 			break
