@@ -67,7 +67,13 @@ local function load_schema_to_redis()
 	local sql = "select table_name from information_schema.tables where table_schema='" .. dbname .. "'"
 	local rs = skynet.call(service["mysqlpool"], "lua", "execute", sql)
 	for _, row in pairs(rs) do
-		local tbname =row.table_name
+		local tbname
+		if not row.table_name then
+			tbname =row.TABLE_NAME
+		else
+			tbname =row.table_name
+		end
+		
 		schema[tbname] = {}
 		schema[tbname]["fields"] = {}
 		schema[tbname]["pk"] = get_primary_key(tbname)

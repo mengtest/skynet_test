@@ -2,7 +2,8 @@
 
 export ROOT=$(cd `dirname $0` ; pwd)
 
-../redis/src/redis-server ./tools/redis.conf
+#../redis/src/redis-server ./tools/redis.conf
+redis-server ./tools/redis.conf
 
 #service mysql start
 

@@ -4,7 +4,7 @@ local host = "127.0.0.1"
 local port = 3306
 local database = "skynet"
 local user = "root"
-local password = "root"
+local password = "123456qi"
 local max_packet_size = 1024 * 1024
 
 local function on_connect(db)

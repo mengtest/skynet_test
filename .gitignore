@@ -5,3 +5,7 @@
 *.log
 /cservice
 /luaclib
+
+*.dSYM
+/xcuserdata
+*.DS_Store
