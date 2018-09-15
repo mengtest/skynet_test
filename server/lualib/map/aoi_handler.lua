@@ -32,7 +32,7 @@ function CMD.addaoiobj(monstertempid,aoiobj)
 end
 
 --玩家移动的时候，对周围怪物的广播
-function CMD.updateaoiinfo(enterlist,leavelist,movelist)
+function CMD.updatemonsteraoiinfo(enterlist,leavelist,movelist)
   local monster
   --进入怪物视野
   for _,v in pairs(enterlist.monsterlist) do

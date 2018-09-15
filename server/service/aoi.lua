@@ -33,6 +33,7 @@ skynet.register_protocol {
 }
 
 --怪物移动的时候通知玩家信息
+--怪物视野内只有玩家
 local function updateviewmonster(monstertempid)
 	if monsterview[monstertempid] == nil then return end
 	local myobj = OBJ[monstertempid]
@@ -221,7 +222,7 @@ local function updateviewplayer(viewertempid)
 			obj = myobj,
 			monsterlist = movelist.monsterlist,
 		}
-		skynet.send(mapagent,"lua","updateaoiinfo",monsterenterlist,monsterleavelist,monstermovelist)
+		skynet.send(mapagent,"lua","updatemonsteraoiinfo",monsterenterlist,monsterleavelist,monstermovelist)
 	end
 
 	--通知自己
@@ -276,25 +277,27 @@ function CMD.characterenter(obj)
 end
 
 --从aoi中移除
---TODO 怪物的离开
 function CMD.characterleave(obj)
 	assert(obj)
 	log.debug("%d leave aoi",obj.tempid)
 	assert(pcall(skynet.send,aoi, "text", "update "..obj.tempid.." d "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
 	OBJ[obj.tempid] = nil
 	if playerview[obj.tempid] then
+		--玩家离开地图
 		local monsterleavelist = {
 			tempid = obj.tempid,
 			monsterlist = {},
 		}
 		for k,_ in pairs(playerview[obj.tempid]) do
 			if playerview[k] then
+				--视野内的玩家，一个一个的发送
 				if playerview[k][obj.tempid] then
 					--视野内需要通知
 					skynet.send(OBJ[k].agent,"lua","delaoiobj",obj.tempid)
 				end
 				playerview[k][obj.tempid] = nil
 			elseif monsterview[k] then
+				--视野内的怪物，先插入到table中，后面一起发送
 				if monsterview[k][obj.tempid] then
 					--视野内需要通知
 					table.insert(monsterleavelist.monsterlist,{tempid = k})
@@ -302,12 +305,30 @@ function CMD.characterleave(obj)
 				monsterview[k][obj.tempid] = nil
 			end
 		end
-
+		--通知视野内的怪物移除自己
 		if not table.empty(monsterleavelist.monsterlist) then
-			skynet.send(mapagent,"lua","updateaoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
+			skynet.send(mapagent,"lua","updatemonsteraoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
 		end
 		playerview[obj.tempid] = nil
+	elseif monsterview[obj.tempid] then
+		--怪物离开地图
+		local monsterleavelist = {
+			tempid = obj.tempid,
+			monsterlist = {},
+		}
+		for k,_ in pairs(monsterview[obj.tempid]) do
+			if playerview[k] then
+				--视野内的玩家
+				if playerview[k][obj.tempid] then
+					--视野内需要通知
+					skynet.send(OBJ[k].agent,"lua","delaoiobj",obj.tempid)
+				end
+				playerview[k][obj.tempid] = nil
+			end
+		end
+		monsterview[obj.tempid] = nil
 	end
+	
 	need_update = true
 end
 
