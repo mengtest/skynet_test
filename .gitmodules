@@ -3,4 +3,4 @@
 	url = https://github.com/cloudwu/lua-cjson.git
 [submodule "3rd/skynet"]
 	path = 3rd/skynet
-	url = https://github.com/Ding8222/skynet.git
+	url = https://github.com/cloudwu/skynet.git
