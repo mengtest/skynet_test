@@ -76,14 +76,11 @@ end
 --与loginserver建立连接
 local fd = assert(socket.connect(loginserverip, 8101))
 
-local nIndex = 0
 --发送proto协议封装的消息
 local function send_request(name, args)
 	session_id = session_id + 1
-	nIndex = nIndex + 1
 	local str = request(name, args, session_id)
-	local size = #str + 5
-	local package = string.pack(">I2", size)..str..string.pack(">BI4", nIndex,session_id)
+	local package = string.pack(">s2", str)
 	socket.send(fd, package)
 	session[session_id] = {name = name ,args = args}
 	--print( session_id,"REQUEST",name)
@@ -353,17 +350,15 @@ end
 local readpackage = unpack_f(unpack_package)
 
 local function recv_response(v)
-	local size = #v - 5
-	local content, ok, session = string.unpack("c"..tostring(size).."B>I4", v)
-	return ok ~=0 , content, session
+	local content, ok = string.unpack("c"..tostring(#v), v)
+	return ok ~=0 , content
 end
 
 local function dispatch_message()
-	local ok , content, sessionid = recv_response(readpackage())
+	local ok , content = recv_response(readpackage())
 	assert(ok)
 	local type, id, args, response = host:dispatch(content)
 	if type == "RESPONSE" then
-		assert(id == sessionid,"session err! id:"..id.." session:"..sessionid)
 		local s = assert(session[id])
 		session[id] = nil
 		local f = RESPONSE[s.name]
@@ -371,18 +366,14 @@ local function dispatch_message()
 			f (s.args, args)
 		else
 			print ("RESPONSE : "..s.name)
-			print(RESPONSE)
-			print("=============")
 		end
 	elseif type == "REQUEST" then
 		local f = REQUEST[id]
 		if f then
 			local r = f(args)
-			if r and response then
+			if response then
 				local str = response(r)
-				local size = #str + 5
-				nIndex = nIndex + 1
-				local package = string.pack(">I2", size)..str..string.pack(">BI4", nIndex,sessionid)
+				local package = string.pack(">s2", str)
 				socket.send(fd, package)
 			end
 		else

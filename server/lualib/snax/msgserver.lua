@@ -220,8 +220,6 @@ function server.start(conf)
 
 	local function auth(fd, addr, msg, sz)
 		local message = netpack.tostring(msg, sz)
-		local id, session = string.unpack("B>I4", message, -5)
-		message = message:sub(1,-6)
 		local type, name, args, response = host:dispatch (message)
 		assert (type == "REQUEST")
 		if name == "login" then
@@ -242,7 +240,7 @@ function server.start(conf)
 		local package = response {
 			result = result
 		}
-		socketdriver.send(fd, netpack.pack(package..string.pack(">BI4", 1, session)))
+		socketdriver.send(fd, netpack.pack(package))
 
 		if close then
 			gateserver.closeclient(fd)
@@ -274,52 +272,24 @@ function server.start(conf)
 	end
 
 --这边会把response全部存起来，只有再完全重新登录才会清理掉，重新连接不会清理，只会有版本号的改变
+--暂时不启用
 	local function do_request(fd, message)
 		local u = assert(connection[fd], "invalid fd")
-		local id, session = string.unpack("B>I4", message, -5)
-		message = message:sub(1,-6)
-		local p = u.response[session]
-		if p then
-			-- session can be reuse in the same connection
-			--if p[3] == u.version then
-				local last = u.response[session]
-				u.response[session] = nil
-				p = nil
-				--[[if last[2] == nil then
-					local error_msg = string.format("Conflict session %s", crypt.hexencode(session))
-					skynet.error(error_msg)
-					error(error_msg)
-				end]]
-			--end
-		end
-
-		if p == nil then
-			p = { fd }
-			u.response[session] = p
-			local ok, result = pcall(conf.request_handler, u.username, message)
-			-- NOTICE: YIELD here, socket may close.
-			result = result or ""
-			if not ok then
-				skynet.error(result)
-				result = string.pack(">BI4", 0, session)
-			else
-				result = result .. string.pack(">BI4", 1, session)
-			end
-
-			p[2] = string.pack(">s2",result)
-			p[3] = u.version
-			p[4] = u.index
+		
+		local p = { fd }
+		local ok, result = pcall(conf.request_handler, u.username, message)
+		-- NOTICE: YIELD here, socket may close.
+		result = result or ""
+		if not ok then
+			skynet.error(result)
 		else
-			-- update version/index, change return fd.
-			-- resend response.
-			p[1] = fd
-			p[3] = u.version
-			p[4] = u.index
-			if p[2] == nil then
-				-- already request, but response is not ready
-				return
-			end
+			result = result
 		end
+
+		p[2] = string.pack(">s2",result)
+		p[3] = u.version
+		p[4] = u.index
+			
 		u.index = u.index + 1
 		-- the return fd is p[1] (fd may change by multi request) check connect
 		fd = p[1]
@@ -327,7 +297,7 @@ function server.start(conf)
 			socketdriver.send(fd, p[2])
 		end
 		p[1] = nil
-		retire_response(u)
+		--retire_response(u)
 	end
 
 	local function request(fd, msg, sz)

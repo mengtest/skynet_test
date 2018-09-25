@@ -124,29 +124,10 @@ local function handlerequest (name, args, response)
 end
 
 --接受到的回应
+--现在不应该收到回应
 local RESPONSE = {}
 local function handle_response (id, args)
-	local session = msgsender.session
-	local s = session[id]
-	session[id] = nil
-	if not s then
-		log.warning ("session %d not found", id)
-		logout(4)
-		return
-	end
-
-	local f = RESPONSE[s.name]
-	if not f then
-		log.warning ("unhandled response : %s", s.name)
-		logout(5)
-		return
-	end
-
-	local ok, ret = xpcall (f, traceback, s.args, args)
-	if not ok then
-		log.warning ("handle response(%d-%s) failed : %s", id, s.name, ret)
-		logout(6)
-	end
+	log.warning ("handle_response : %d", id)
 end
 
 --处理client发来的消息

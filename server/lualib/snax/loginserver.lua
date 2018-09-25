@@ -45,9 +45,8 @@ local function assert_socket(service, v, fd)
 	end
 end
 
-local function write(service, fd, text,session)
-	local str = text..string.pack(">BI4", 1, session)
-	local package = string.pack (">s2", str)
+local function write(service, fd, text)
+	local package = string.pack (">s2", text)
 	assert_socket(service, socket.write(fd, package), fd)
 end
 
@@ -59,19 +58,12 @@ local function read_msg(fd)
 	local s = read (fd, 2)
 	local size = s:byte(1) * 256 + s:byte(2)
 	local msg = read (fd, size)
-	local id, session = string.unpack("B>I4", msg, -5)
-	msg = msg:sub(1,-6)
-	return session,host:dispatch(msg)
+	return host:dispatch(msg)
 end
 
-local session_id = 0
---local session = {}
-
 local function sendrequest (service, fd, name, args)
-	session_id = session_id + 1
-	local str = request (name, args, session_id)
-	write (service, fd, str, session_id)
-	--session[session_id] = { name = name, args = args }
+	local str = request (name, args)
+	write (service, fd, str)
 end
 
 local function launch_slave(auth_handler)
@@ -86,9 +78,8 @@ local function launch_slave(auth_handler)
 		local serverkey = crypt.randomkey()
 		local clientkey
 		--获取client的handshake
-		local session, type, name, args, response = read_msg (fd)
+		local type, name, args, response = read_msg (fd)
 		assert (type == "REQUEST")
-
 		if name == "handshake" then
 			assert (args and args.clientkey, "invalid handshake request")
 			clientkey = crypt.base64decode(args.clientkey)
@@ -99,12 +90,12 @@ local function launch_slave(auth_handler)
 				challenge = crypt.base64encode(challenge),
 				serverkey = crypt.base64encode(crypt.dhexchange(serverkey))
 			}
-			write("handshake",fd,msg,session)
+			write("handshake",fd,msg)
 		end
 
 		local secret = crypt.dhsecret(clientkey, serverkey)
 
-		session, type, name, args, response = read_msg (fd)
+		type, name, args, response = read_msg (fd)
 		assert (type == "REQUEST")
 		if name == "challenge" then
 			assert (args and args.hmac, "invalid challenge request")
@@ -120,20 +111,20 @@ local function launch_slave(auth_handler)
 				local msg = response {
 						result = "challenge success"
 					}
-				write("auth",fd,msg,session)
+				write("auth",fd,msg)
 			end
 		end
 		--这里是前端发过来的 token
 		--里面是按照约定的格式生成的账号、密码和需要登录的区服组成的字符串
 		local token
-		session, type, name, args, response = read_msg (fd)
+		type, name, args, response = read_msg (fd)
 		assert (type == "REQUEST")
 		if name == "auth" then
 			assert (args and args.etokens, "invalid auth request")
 			--利用 secret 解密
 			token = crypt.desdecode(secret, crypt.base64decode(args.etokens))
 		end
-
+		
 		--call logind中的auth_handler
 		--返回了要登录的服务器和账号
 		local ok, server, uid =  pcall(auth_handler,token)
