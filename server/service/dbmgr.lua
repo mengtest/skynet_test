@@ -48,7 +48,11 @@ local function get_fields(tbname)
 	local rs = skynet.call(service["mysqlpool"], "lua", "execute", sql)
 	local fields = {}
 	for _, row in pairs(rs) do
-		table.insert(fields, row["column_name"])
+		local name = row["column_name"]
+		if name == nil then
+			name = row["COLUMN_NAME"]
+		end
+		table.insert(fields, name)
 	end
 
 	return fields
@@ -59,7 +63,7 @@ local function get_field_type(tbname, field)
 	local sql = string.format("select data_type from information_schema.columns where table_schema='%s' and table_name='%s' and column_name='%s'",
 			dbname, tbname, field)
 	local rs = skynet.call(service["mysqlpool"], "lua", "execute", sql)
-	return rs[1]["data_type"]
+	return rs[1]["data_type"] or rs[1]["DATA_TYPE"]
 end
 
 --构建DB中的结构到schema中
