@@ -12,35 +12,38 @@ local function init_method(monster)
   end
 
   function monster:run(aoisvr)
-    local pos = self:getpos()
-    local n = random(10000)
-    local datlex
-    if n > 5000 then
-      datlex = 10
-    else
-      datlex = -10
+    if skynet.time() >= self.nextruntime then
+      self.nextruntime = skynet.time() + random(100) * 0.01
+      local pos = self:getpos()
+      local n = random(10000)
+      local datlex
+      if n > 5000 then
+        datlex = 10
+      else
+        datlex = -10
+      end
+      local y = random(10000)
+      local datley
+      if y > 5000 then
+        datley = 10
+      else
+        datley = -10
+      end
+      pos.x = pos.x + datlex
+      if  pos.x > 300 then
+        pos.x = 300
+      elseif pos.x < -300 then
+        pos.x = -300
+      end
+      pos.z = pos.z + datley
+      if  pos.z > 300 then
+        pos.z = 300
+      elseif  pos.z < -300 then
+          pos.z = -300
+      end
+      self:setpos(pos)
+      skynet.send(aoisvr,"lua","characterenter",self:getaoiobj())
     end
-    local y = random(10000)
-    local datley
-    if y > 5000 then
-      datley = 10
-    else
-      datley = -10
-    end
-    pos.x = pos.x + datlex
-    if  pos.x > 300 then
-      pos.x = 300
-    elseif pos.x < -300 then
-      pos.x = -300
-    end
-    pos.y = pos.y + datley
-    if  pos.y > 300 then
-      pos.y = 300
-    elseif  pos.y < -300 then
-        pos.y = -300
-    end
-    self:setpos(pos)
-    skynet.send(aoisvr,"lua","characterenter",self:getaoiobj())
   end
 
   basechar.expandmethod(monster)
@@ -52,6 +55,7 @@ function _monster.create(id,tempid,conf,mapobj)
   local monster = basechar.create(enumtype.CHAR_TYPE_MONSTER)
   --monster特有属性
   monster.id = 0
+  monster.nextruntime = 0
 
   monster = setmetatable(monster, s_method)
 

@@ -109,7 +109,7 @@ local function initUserData(dbdata)
 	--aoi对象，主要用于广播相关
 	local aoiobj = {
 		movement = {
-			mode = "wm",
+			mode = "w",
 			pos = {
 				x = dbdata.x,
 				y = dbdata.y,

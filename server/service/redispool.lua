@@ -15,6 +15,11 @@ function CMD.open()
 	for _, c in ipairs (config.group) do
 		table.insert (group, redis.connect (c))
 	end
+	
+	center:flushall()
+	for _, db in ipairs (group) do
+		db:flushall()
+	end
 end
 
 function CMD.close()

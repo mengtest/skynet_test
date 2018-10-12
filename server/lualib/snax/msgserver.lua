@@ -285,7 +285,6 @@ function server.start(conf)
 		else
 			result = result
 		end
-
 		p[2] = string.pack(">s2",result)
 		p[3] = u.version
 		p[4] = u.index
