@@ -27,10 +27,10 @@ CSERVICE_OBJ = $(foreach v, $(CSERVICE_NAME), $(CSERVICE_PATH)/$(v).so)
 VPATH += $(LUACLIB_SRC_PATH)
 VPATH += $(CSERVICE_CSRC_PATH)
 
-all : make3rd createdir $(LUACLIB_OBJ) $(CSERVICE_OBJ)
+linux macosx freebsd : make3rd createdir $(LUACLIB_OBJ) $(CSERVICE_OBJ)
 
 make3rd :
-	@$(MAKE) -C $(SKYNET_ROOT) --no-print-directory
+	@$(MAKE) $(PLAT) -C $(SKYNET_ROOT) --no-print-directory
 	@$(MAKE) -C $(LUA_CJSON_ROOT) --no-print-directory
 
 createdir:
@@ -52,4 +52,4 @@ cleanall: clean
 	@$(MAKE) -C $(LUA_CJSON_ROOT) clean --no-print-directory
 	@$(MAKE) -C $(SKYNET_ROOT) clean --no-print-directory
 
-.PHONY : all make3rd createdir clean cleanall
+.PHONY : linux macosx freebsd make3rd createdir clean cleanall

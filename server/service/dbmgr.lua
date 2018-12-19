@@ -11,6 +11,7 @@ local service = {}
 local servername = {
 	"redispool",
 	"mysqlpool",
+	"mongopool",
 	"dbsync",
 }
 --DB表结构
