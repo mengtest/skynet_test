@@ -3,6 +3,7 @@ local crypt = require "skynet.crypt"
 local skynet = require "skynet"
 local config = require "config.system"
 local log = require "syslog"
+local cluster = require "skynet.cluster"
 
 local server = config.logind
 
@@ -63,7 +64,10 @@ local CMD = {}
 
 --注册一个服务器
 function CMD.register_gate(server, address)
-	server_list[server] = address
+	log.notice("gate server register ["..server.."]["..address.."]")
+	gated = cluster.proxy(server, "@gated")
+	server_list[server] = gated
+	log.notice("gate server register ["..server.."]["..gated.."]")
 end
 
 --玩家下线

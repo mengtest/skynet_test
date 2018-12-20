@@ -16,7 +16,7 @@ config.gated = {
 	port = 8547,
 	maxclient = 64,
 	nodelay = true,
-	servername = "sample",
+	servername = "game0",
 	agentpool = 1
 }
 

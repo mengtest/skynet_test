@@ -1,9 +1,9 @@
 local msgserver = require "snax.msgserver"
 local skynet = require "skynet"
 local log = require "syslog"
+local cluster = require "skynet.cluster"
 
-local loginservice = tonumber(...)
-
+local loginservice
 local server = {}
 local users = {}
 local username_map = {}
@@ -114,6 +114,7 @@ function server.register_handler(conf)
 	servername = assert(conf.servername)
 	--向logind发送请求
 	--将自己注册到server_list
+	loginservice = cluster.proxy("login", "@loginservice")
 	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
 	skynet.uniqueservice ("gdd")
 	world = skynet.uniqueservice ("world")

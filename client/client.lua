@@ -108,7 +108,7 @@ function RESPONSE:handshake(args)
 end
 
 local token = {
-	server = "sample",
+	server = "game0",
 	user = account,
 	pass = "password",
 }
