@@ -10,7 +10,7 @@ skynet.start(function()
 	profile.start()
 	local t = os.clock()
 	--启动后台
-	skynet.newservice("debug_console",config.debug_port)
+	skynet.newservice("debug_console",8124)
 
 	--加载解析proto文件
 	local proto = skynet.uniqueservice "protoloader"

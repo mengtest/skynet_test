@@ -30,7 +30,7 @@ VPATH += $(CSERVICE_CSRC_PATH)
 linux macosx freebsd : make3rd createdir $(LUACLIB_OBJ) $(CSERVICE_OBJ)
 
 make3rd :
-	git submodule update --init
+	#git submodule update --init
 	@$(MAKE) $(PLAT) -C $(SKYNET_ROOT) --no-print-directory
 	@$(MAKE) -C $(LUA_CJSON_ROOT) --no-print-directory
 

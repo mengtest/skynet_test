@@ -210,7 +210,7 @@ local function updateviewplayer(viewertempid)
             obj = myobj,
             monsterlist = movelist.monsterlist,
         }
-        skynet.send(mapagent,"lua","updatemonsteraoiinfo",monsterenterlist,monsterleavelist,monstermovelist)
+        self.map_info.monstermgr:updatemonsteraoiinfo(monsterenterlist,monsterleavelist,monstermovelist)
     end
 
     --通知自己
@@ -256,7 +256,7 @@ local function init_method(mgr)
         assert(obj.movement.pos.x)
         assert(obj.movement.pos.y)
         assert(obj.movement.pos.z)
-    --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
+        --log.debug("AOI ENTER %d %s %d %d %d",obj.tempid,obj.movement.mode,obj.movement.pos.x,obj.movement.pos.y,obj.movement.pos.z)
         OBJ[obj.tempid] = obj
         if obj.type ~= enumtype.CHAR_TYPE_PLAYER then
             updateviewmonster(obj.tempid)
@@ -298,7 +298,7 @@ local function init_method(mgr)
             end
             --通知视野内的怪物移除自己
             if not table.empty(monsterleavelist.monsterlist) then
-                skynet.send(mapagent,"lua","updatemonsteraoiinfo",{monsterlist = {}},monsterleavelist,{monsterlist = {}})
+                self.map_info.monstermgr:updatemonsteraoiinfo({monsterlist = {}},monsterleavelist,{monsterlist = {}})
             end
             playerview[obj.tempid] = nil
         elseif monsterview[obj.tempid] then
@@ -326,16 +326,17 @@ local function init_method(mgr)
     function mgr:update()
         if need_update then
             need_update = false
-            assert(pcall(skynet.send,aoi, "text", "message "))
+            assert(pcall(skynet.send, self.aoi, "text", "message "))
         end
     end
 end
 
 init_method(s_method.__index)
 
-function _aoimgr.create(aoi)
+function _aoimgr.create(aoi, map_info)
     local aoimgr = {
         aoi = aoi,
+        map_info = map_info,
     }
 
     setmetatable(aoimgr, s_method)

@@ -29,7 +29,7 @@ function CMD.open(source)
 end
 
 function CMD.close()
-  log.notice("close world...")
+  log.notice("close mapmgr...")
   for name, map in pairs (mapinstance) do
     skynet.call (map, "lua", "close")
     mapinstance[name] = nil

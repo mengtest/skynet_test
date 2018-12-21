@@ -1,6 +1,6 @@
 local conf = {}
 
-local host = "redis.tbiglong.com"
+local host = "127.0.0.1"
 local port = 6379
 local db = 0
 

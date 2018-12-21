@@ -1,4 +1,3 @@
-local monster = require "obj.monster"
 local idmgr = require "idmgr"
 local skynet = require "skynet"
 local random = math.random

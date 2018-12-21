@@ -10,7 +10,7 @@ local username_map = {}
 local internal_id = 0
 local agentpool = {}
 local servername
-local world
+local mapmgr
 
 -- login server disallow multi login, so login_handler never be reentry
 -- call by login server
@@ -117,8 +117,8 @@ function server.register_handler(conf)
 	loginservice = cluster.proxy("login", "@loginservice")
 	skynet.call(loginservice, "lua", "register_gate", servername)
 	skynet.uniqueservice ("gdd")
-	world = skynet.uniqueservice ("world")
-	skynet.call(world, "lua", "open")
+	mapmgr = skynet.uniqueservice ("mapmgr")
+	skynet.call(mapmgr, "lua", "open")
 
 	local n = assert(conf.agentpool) or 0
 	for _ = 1, n do
@@ -154,7 +154,7 @@ end
 function server.close_handler()
 	log.notice("close gated...")
 	--这边通知所有服务退出
-	skynet.call(world, "lua", "close")
+	skynet.call(mapmgr, "lua", "close")
 	local dbmgr = skynet.uniqueservice "dbmgr"
 	skynet.call(dbmgr, "lua", "system", "close")
 end

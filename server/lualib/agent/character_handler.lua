@@ -15,7 +15,7 @@ local dbmgr
 local namecheck
 local jobdata
 local mapdata
-local world
+local mapmgr
 
 local REQUEST = {}
 
@@ -25,7 +25,7 @@ _handler:init (function (u)
 	user = u
   dbmgr = skynet.uniqueservice ("dbmgr")
 	namecheck = skynet.uniqueservice ("namecheck")
-	world = skynet.uniqueservice ("world")
+	mapmgr = skynet.uniqueservice ("mapmgr")
 	local obj = sharedata.query "gdd"
 	jobdata = obj["job"]
 	mapdata = obj["map"]
@@ -37,7 +37,7 @@ _handler:release (function ()
 	namecheck = nil
 	jobdata = nil
 	mapdata = nil
-	world = nil
+	mapmgr = nil
 end)
 
 local function loadlist ()
@@ -151,10 +151,10 @@ function REQUEST.characterpick (args)
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
 		user.characterlist = nil
 		initUserData(list)
-		local mapaddress = skynet.call (world, "lua", "getmapaddressbyid", user.character:getmapid())
+		local mapaddress = skynet.call (mapmgr, "lua", "getmapaddressbyid", user.character:getmapid())
 		if mapaddress ~= nil then
 			user.character:setaoimode("w")
-			local tempid = skynet.call (mapaddress, "lua", "characterenter")
+			local tempid = skynet.call (mapaddress, "lua", "gettempid")
 			if tempid > 0 then
 				user.map = mapaddress
 				user.character:settempid(tempid)

@@ -9,3 +9,4 @@
 *.dSYM
 /xcuserdata
 *.DS_Store
+/.vscode

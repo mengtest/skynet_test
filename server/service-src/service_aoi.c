@@ -36,7 +36,7 @@ my_alloc(void * ud, void *ptr, size_t sz) {
 	return NULL;
 }
 
-static int
+/*static int
 getnumbercount(uint32_t n) {
 	int count = 0;
 	while(n!=0)
@@ -45,18 +45,20 @@ getnumbercount(uint32_t n) {
 		++ count;
 	}
 	return count;
-}
+}*/
 
 static void
 callbackmessage(void *ud, uint32_t watcher, uint32_t marker) {
 	struct skynet_context * ctx = ud;
-	size_t sz = getnumbercount(watcher) + getnumbercount(marker) + strlen("aoicallback") + 2;
-	char * msg = skynet_malloc(sz);
-	memset(msg,0,sz);
-	sprintf(msg,"aoicallback %d %d",watcher,marker);
+	//size_t sz = getnumbercount(watcher) + getnumbercount(marker) + strlen("aoicallback") + 2;
+	//char * msg = skynet_malloc(sz);
+	//memset(msg,0,sz);
+	char temp[64];
+	int n = sprintf(temp,"aoicallback %d %d",watcher,marker);
 	//caoi server的启动在laoi启动之后，handle理论是caoi = laoi + 1
 	//如果失败,就需要换方式了
-	skynet_send(ctx,0,skynet_current_handle() - 1,PTYPE_TEXT|PTYPE_TAG_DONTCOPY,0,(void *)msg,sz);
+	skynet_send(ctx,0,skynet_current_handle() - 1,PTYPE_TEXT,0,temp,n);
+	//skynet_free(msg);
 }
 
 static void

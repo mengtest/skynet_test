@@ -24,14 +24,32 @@ skynet.register_protocol {
 }
 
 --0.1秒更新一次
-local function message_update ()
+local function maprun()
+  monstermgr:monsterrun()
   aoimgr:update()
-	update_thread = settimeout (10, message_update)
+	update_thread = settimeout (10, maprun)
+end
+
+function CMD.addaoiobj(monstertempid,aoiobj)
+  --return monstermgr:addaoiobj(monstertempid,aoiobj)
+end
+
+function CMD.updatemonsteraoiinfo(enterlist,leavelist,movelist)
+  --return monstermgr:updatemonsteraoiinfo(enterlist,leavelist,movelist)
+end
+
+function CMD.updateaoilist(monstertempid,enterlist,leavelist)
+  --return monstermgr:updateaoilist(monstertempid,enterlist,leavelist)
+end
+
+--获取临时id
+function CMD.gettempid()
+  return map_info:createtempid()
 end
 
 --角色请求进入地图
-function CMD.characterenter(uuid,aoiobj)
-  return map_info:createtempid()
+function CMD.characterenter(aoiobj)
+  aoimgr:characterenter(aoiobj)
 end
 
 --角色离开地图
@@ -61,13 +79,17 @@ function CMD.open(conf)
   config = conf
 	msgsender = msgsender.create()
   msgsender:init()
-  aoimgr = aoimgr.create(assert(skynet.launch("caoi", config.name)))
-  message_update ()
   map_info = basemap.create(conf.id, conf.type, conf)
+  aoimgr = aoimgr.create(assert(skynet.launch("caoi", conf.name)),map_info)
   map_info.CMD = CMD
-	map_info.msgsender = msgsender
+  map_info.msgsender = msgsender
+  map_info.aoimgr = aoimgr
   map_info:loadmapinfo()
-  monstermgr = monstermgr.create(msgsender)
+  monstermgr = monstermgr.create(msgsender, conf.monster_list, aoimgr, map_info)
+  monstermgr:createmonster()
+  map_info.monstermgr = monstermgr
+  
+  skynet.fork(maprun)
 end
 
 function CMD.close()
@@ -94,7 +116,7 @@ end)
 skynet.start (function ()
   skynet.dispatch("text", function (_, _, cmd)
 		local t = cmd:split(" ")
-    local f = assert (CMD[t[1]],t[1])
+    local f = assert (CMD[t[1]],"["..cmd.."]")
     f(tonumber(t[2]),tonumber(t[3]))
   end)
   
