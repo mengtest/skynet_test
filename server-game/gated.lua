@@ -64,7 +64,7 @@ end
 
 -- call by agent
 --agent通知玩家下线
-function server.logout_handler(uid, subid)
+function server.logout_handler(uid, subid, agent)
 	local u = users[uid]
 	if u then
 		local username = msgserver.username(uid, subid, servername)
@@ -72,8 +72,8 @@ function server.logout_handler(uid, subid)
 		msgserver.logout(u.username)
 		users[uid] = nil
 		username_map[u.username] = nil
-		skynet.call(loginservice, "lua", "logout",uid, subid)
-		--table.insert(agentpool,u.agent)
+		skynet.send(loginservice, "lua", "logout",uid, subid)
+		table.insert(agentpool,agent)
 	end
 end
 
@@ -115,7 +115,7 @@ function server.register_handler(conf)
 	--向logind发送请求
 	--将自己注册到server_list
 	loginservice = cluster.proxy("login", "@loginservice")
-	skynet.call(loginservice, "lua", "register_gate", servername, skynet.self())
+	skynet.call(loginservice, "lua", "register_gate", servername)
 	skynet.uniqueservice ("gdd")
 	world = skynet.uniqueservice ("world")
 	skynet.call(world, "lua", "open")
@@ -148,12 +148,6 @@ function server.send_board_request_handler(msg,userlist)
 			msgserver.request(u.username,msg)
 		end
 	end
-end
-
--- call by agent
-function server.addtoagentpool_handler(agent)
-	log.debug("!!!add old agent(:%08X) to pool",agent)
-	table.insert(agentpool,agent)
 end
 
 -- 退出服务

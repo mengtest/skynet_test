@@ -15,51 +15,22 @@ local requestqueue = queue()
 local responsequeue = queue()
 local luaqueue = queue()
 local CMD = {}
-local InitCMD = {}
-local sender = {}
-
-local agentstatus = {
-	AGENT_INIT = 1,
-	AGENT_RUNNING = 2,
-	AGENT_QUIT = 3,
-}
 
 local user
 local host
-
-local running = {
-	status = agentstatus.AGENT_INIT
-}
-
---玩家的run
-local function playerrun()
-	while (true) do
-		if running.status == agentstatus.AGENT_RUNNING then
-			local nowtime = timer.gettime()
-			--玩家延迟检测
-			user.character.moveobj:delayrun(nowtime)
-			skynet.sleep(10)
-		else
-			break
-		end
-	end
-end
 
 --当请求退出和被T出的时候
 --因为请求消息在requestqueue，而被T的消息在luaqueue中
 --这边可能重入
 local function logout(type)
-	if not user or running.status ~= agentstatus.AGENT_RUNNING then return end
-	running.status = agentstatus.AGENT_QUIT
+	if not user then return end
 	log.notice("logout, agent(:%08X) type(%d) subid(%d)",skynet.self(),type,user.subid)
-
-	skynet.send(gate, "lua", "logout", user.uid, user.subid)
 
 	if user.map then
 		local map = user.map
 		user.map = nil
 		if map then
-			skynet.call(map, "lua", "characterleave", user.character:getaoiobj())
+			skynet.send(map, "lua", "characterleave", user.character:getaoiobj())
 			--在玩家被挤下线的时候，这边可能还没有init
 			--所以要放在这边release
 			map_handler:unregister(user)
@@ -67,37 +38,14 @@ local function logout(type)
 			move_handler:unregister(user)
 		end
 	end
-	if user.world then
-		local world = user.world
-		user.world = nil
-		if world then
-			skynet.call(world, "lua", "characterleave", user.character:getuuid())
-		end
-	end
 
 	testhandler:unregister(user)
 	character_handler:unregister (user)
+	skynet.send(gate, "lua", "logout", user.uid, user.subid, skynet.self())
 	user = nil
-	skynet.send(gate, "lua", "addtoagentpool", skynet.self())
-	running.status = agentstatus.AGENT_INIT
 	--不退出，在这里清理agent的数据就行了
 	--会在gated里面将该agent加到agentpool中
 	--skynet.exit()
-end
-
---心跳检测
-local last_heartbeat_time = 0
-local HEARTBEAT_TIME_MAX = 0 * 100
-local function heartbeatcheck ()
-	if HEARTBEAT_TIME_MAX <= 0 or running.status ~= agentstatus.AGENT_RUNNING then return end
-
-	local t = last_heartbeat_time + HEARTBEAT_TIME_MAX - skynet.now ()
-	if t <= 0 then
-		log.warning ("heatbeat check failed")
-		logout(1)
-	else
-		skynet.timeout (t, heartbeatcheck)
-	end
 end
 
 local traceback = debug.traceback
@@ -153,29 +101,8 @@ skynet.register_protocol {
 	end,
 }
 
---通知agent进入world
-function InitCMD.worldenter(_,world)
-	user.world = world
-	character_handler:unregister (user)
-	user.character:setaoimode("w")
-end
-
---通知agent进入地图
-function InitCMD.mapenter(_,map,tempid)
-	user.map = map
-	user.character:settempid(tempid)
-
-	log.debug("enter map and set tempid:"..user.character:gettempid())
-	map_handler:register(user)
-	aoi_handler:register(user)
-	move_handler:register(user)
-	running.status = agentstatus.AGENT_RUNNING
-	heartbeatcheck ()
-	skynet.fork(playerrun)
-end
-
 --gate 通知 agent 有玩家正在认证
-function InitCMD.login(source, uid, sid, secret, fd)
+function CMD.login(source, uid, sid, secret, fd)
 	-- you may use secret to make a encrypted data stream
 	log.notice("%s is login",uid)
 	user = {
@@ -184,14 +111,14 @@ function InitCMD.login(source, uid, sid, secret, fd)
 		REQUEST = {},
 		RESPONSE = {},
 		CMD = CMD,
-		sendrequest = sender.sendrequest,
+		sendrequest = sendrequest,
 		msgsender = msgsender,
 		running = running,
 	}
 end
 
 --gate 通知 agent 认证成功
-function InitCMD.auth(source, fd)
+function CMD.auth(source, fd)
 	user.fd = fd
 	
 	REQUEST = user.REQUEST
@@ -211,7 +138,7 @@ function CMD.logout(_)
 	logout(0)
 end
 
-function InitCMD.logout(_)
+function CMD.logout(_)
 	--下线
 	-- NOTICE: The logout MAY be reentry
 	logout(0)
@@ -222,12 +149,12 @@ function CMD.afk(_)
 	log.notice("%s AFK",user.uid)
 end
 
-function InitCMD.afk(_)
+function CMD.afk(_)
 	-- the connection is broken, but the user may back
 	log.notice("%s AFK",user.uid)
 end
 
-function InitCMD.close()
+function CMD.close()
 	log.notice("close agent(:%08X)",skynet.self())
 	logout(8)
 	skynet.exit()
@@ -237,7 +164,7 @@ skynet.memlimit(1 * 1024 * 1024)
 
 --发送广播消息给client
 --消息名，参数列表，是否发送给指定对象，是否广播，广播时是否排除自己
-function sender.sendrequest(name, args, ref, not_send_to_me, fdlist)
+function sendrequest(name, args, ref, not_send_to_me, fdlist)
 	if fdlist then
 		--广播给指定列表中的对象
 		user.character:sendboardrequest(name, args, fdlist)
@@ -265,23 +192,7 @@ skynet.start(function()
 	msgsender = msgsender.create()
 
 	skynet.dispatch("lua", function(_, source, command, ...)
-		local docmd
-		if running.status == agentstatus.AGENT_INIT then
-			local f = assert(InitCMD[command],command)
-			docmd =  function (f,source, ...)
-						if running.status == agentstatus.AGENT_INIT then
-							return f(source, ...)
-						end
-					end
-			skynet.ret(skynet.pack(luaqueue(docmd,f,source, ...)))
-		elseif running.status == agentstatus.AGENT_RUNNING then
-			local f = assert(CMD[command],command)
-			docmd =  function (f,source, ...)
-						if running.status == agentstatus.AGENT_RUNNING then
-							return f(source, ...)
-						end
-					end
-			skynet.ret(skynet.pack(luaqueue(docmd,f,source, ...)))
-		end
+		local f = assert(CMD[command],command)
+		skynet.ret(skynet.pack(luaqueue(f,source, ...)))
 	end)
 end)

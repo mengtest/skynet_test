@@ -153,7 +153,6 @@ function server.start(conf)
 		kick = assert(conf.kick_handler),
 		request = assert(conf.send_request_handler),
 		boardrequest = assert(conf.send_board_request_handler),
-		addtoagentpool = assert(conf.addtoagentpool_handler),
 		close = assert(conf.close_handler),
 		auth_handler = assert(conf.auth_handler),
 	}

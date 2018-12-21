@@ -20,11 +20,6 @@ _handler:release (function ()
 	user = nil
 end)
 
---client回应的延迟检测
-function RESPONSE.delaytest(args)
-	user.moveobj:delaytest(args.time)
-end
-
 function REQUEST.moveto (args)
   local newpos = args.pos
   local oldpos = user.character:getpos()

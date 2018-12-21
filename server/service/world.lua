@@ -7,43 +7,9 @@ local mapinstance = {}
 local onlinecharacter = {}
 local gate
 
---踢出玩家
-function CMD.kick (uuid)
-	local a = onlinecharacter[uuid]
-	if a then
-		skynet.send (a, "lua", "logout")
-		onlinecharacter[uuid] = nil
-    log.debug("kick uuid(%d) out of world",uuid)
-	end
-end
-
---玩家进入
-function CMD.characterenter(agent, uuid, map, aoiobj)
-  if onlinecharacter[uuid] ~= nil then
-		log.notice ("multiple login detected, uuid %d", uuid)
-		CMD.kick (uuid)
-		return
-	end
-
-	onlinecharacter[uuid] = agent
-	log.notice ("uuid(%d) enter world ,agent(:%08X)", uuid,agent)
-  --通知玩家进入了哪个世界
-	skynet.send (agent, "lua", "worldenter", skynet.self ())
-	
-	local m = mapinstance[map]
-	if not m then
-    log.debug("uuid(%d) error map :"..map,uuid)
-		CMD.kick (uuid)
-		return
-	end
-
-	 return skynet.call (m, "lua", "characterenter", uuid, aoiobj)
-end
-
---玩家离开
-function CMD.characterleave(agent,uuid)
-  log.notice ("uuid(%d) leave world ,agent(:%08X)", uuid,agent)
-  onlinecharacter[uuid] = nil
+--获取地图地址
+function CMD.getmapaddressbyid(source, mapname)
+	return mapinstance[mapname]
 end
 
 function CMD.open(source)

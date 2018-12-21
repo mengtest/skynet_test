@@ -20,9 +20,8 @@ function CMD.characterenter(uuid,aoiobj)
   assert(aoi)
   aoiobj.tempid = map_info:createtempid()
   pendingcharacter[aoiobj.agent] = uuid
-  skynet.send (aoiobj.agent, "lua", "mapenter", skynet.self (),aoiobj.tempid)
   skynet.send(aoi,"lua","characterenter",aoiobj)
-  return true
+  return aoiobj.tempid
 end
 
 --角色离开地图

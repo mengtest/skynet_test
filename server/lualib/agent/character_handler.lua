@@ -6,6 +6,10 @@ local sharedata = require "skynet.sharedata"
 local packer = require "db.packer"
 local player = require "obj.player"
 
+local map_handler = require "agent.map_handler"
+local aoi_handler = require "agent.aoi_handler"
+local move_handler = require "agent.move_handler"
+
 local user
 local dbmgr
 local namecheck
@@ -141,15 +145,33 @@ function REQUEST.characterpick (args)
 		log.debug("%s pick character failed!",user.uid)
 		return
 	end
+	local ret = false
 	local list = skynet.call (dbmgr, "lua", "playerdate", "load", user.uid,args.uuid)
 	if list.uuid then
 		log.debug("%s pick character[%s] succ!",user.uid,list.name)
 		user.characterlist = nil
 		initUserData(list)
-		local ret = skynet.call (world, "lua", "characterenter", list.uuid, user.character:getmapid(), user.character:getaoiobj())
+		local mapaddress = skynet.call (world, "lua", "getmapaddressbyid", user.character:getmapid())
+		if mapaddress ~= nil then
+			user.character:setaoimode("w")
+			local tempid = skynet.call (mapaddress, "lua", "characterenter", list.uuid, user.character:getaoiobj())
+			if tempid > 0 then
+				user.map = mapaddress
+				user.character:settempid(tempid)
+				map_handler:register(user)
+				aoi_handler:register(user)
+				move_handler:register(user)
+				log.debug("enter map and set tempid:"..user.character:gettempid())
+				_handler:unregister (user)
+			else
+				log.debug("player enter map failed:"..user.character:getmapid())
+			end
+		else
+			log.debug("player get map address failed:"..user.character:getmapid())
+		end
 		return {ok = ret}
 	else
-		return {ok = false}
+		return {ok = ret}
 	end
 end
 

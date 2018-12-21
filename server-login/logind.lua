@@ -63,8 +63,7 @@ end
 local CMD = {}
 
 --注册一个服务器
-function CMD.register_gate(server, address)
-	log.notice("gate server register ["..server.."]["..address.."]")
+function CMD.register_gate(server)
 	gated = cluster.proxy(server, "@gated")
 	server_list[server] = gated
 	log.notice("gate server register ["..server.."]["..gated.."]")
