@@ -154,7 +154,7 @@ function REQUEST.characterpick (args)
 		local mapaddress = skynet.call (world, "lua", "getmapaddressbyid", user.character:getmapid())
 		if mapaddress ~= nil then
 			user.character:setaoimode("w")
-			local tempid = skynet.call (mapaddress, "lua", "characterenter", list.uuid, user.character:getaoiobj())
+			local tempid = skynet.call (mapaddress, "lua", "characterenter")
 			if tempid > 0 then
 				user.map = mapaddress
 				user.character:settempid(tempid)

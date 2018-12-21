@@ -1,86 +1,78 @@
 local skynet = require "skynet"
 local msgsender = require "msgsender"
+require "skynet.manager"
+local util = require "util"
+local settimeout = util.settimeout
 
 local log = require "syslog"
 local basemap = require "map.basemap"
-local aoi_handle = require "map.aoi_handler"
+local aoimgr = require "map.aoimgr"
+local monstermgr = require "map.monstermgr"
 
 local CMD = {}
 local onlinecharacter = {}
 local pendingcharacter = {}
-local aoi
+local update_thread
 local map_info
-
-local world = ...
-world = tonumber(world)
 local config
+
+skynet.register_protocol {
+  name = "text",
+  id = skynet.PTYPE_TEXT,
+  pack = function(text) return text end,
+  unpack = function(buf, sz) return skynet.tostring(buf,sz) end,
+}
+
+--0.1秒更新一次
+local function message_update ()
+  aoimgr:update()
+	update_thread = settimeout (10, message_update)
+end
+
 --角色请求进入地图
 function CMD.characterenter(uuid,aoiobj)
-  log.debug("uuid(%d) enter map(%s)",uuid,config.name)
-  assert(aoi)
-  aoiobj.tempid = map_info:createtempid()
-  pendingcharacter[aoiobj.agent] = uuid
-  skynet.send(aoi,"lua","characterenter",aoiobj)
-  return aoiobj.tempid
+  return map_info:createtempid()
 end
 
 --角色离开地图
 function CMD.characterleave(aoiobj)
-  local uuid = onlinecharacter[aoiobj.agent] or pendingcharacter[aoiobj.agent]
-  if uuid ~=nil then
-    log.debug("uuid(%d) leave map(%s)",uuid,config.name)
-    skynet.call(aoi,"lua","characterleave",aoiobj)
-  else
-    log.debug("uuid(%d) leave map(%s) BUT cannot find !",uuid,config.name)
-  end
+  aoimgr:characterleave(aoiobj)
   map_info:releasetempid(aoiobj.tempid)
-  onlinecharacter[aoiobj.agent] = nil
-  pendingcharacter[aoiobj.agent] = nil
 end
 
 --角色加载地图完成，正式进入地图
 function CMD.characterready(uuid,aoiobj)
-  if pendingcharacter[aoiobj.agent] == nil then
-    log.debug("user(%s) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
-    return false
-  end
-  onlinecharacter[aoiobj.agent] = pendingcharacter[aoiobj.agent]
-  pendingcharacter[aoiobj.agent] = nil
-  log.debug("uuid(%d) load map ready",uuid)
-  skynet.send(aoi,"lua","characterenter",aoiobj)
+  aoimgr:characterenter(aoiobj)
   return true
 end
 
 --角色移动
 function CMD.moveto(aoiobj)
-  if onlinecharacter[aoiobj.agent] == nil then
-    log.debug("user(%d) post load map ready,BUT not find in pendingcharacter",aoiobj.info.uid)
-    return false
-  end
   --TODO 这边应该检查pos的合法性
-  skynet.send(aoi,"lua","characterenter",aoiobj)
+  aoimgr:characterenter(aoiobj)
   return true, aoiobj.movement.pos
+end
+
+function CMD.aoicallback(w,m)
+  aoimgr:aoicallback(w,m)
 end
 
 function CMD.open(conf)
   config = conf
 	msgsender = msgsender.create()
   msgsender:init()
-  aoi = skynet.newservice("aoi",config.name)
-  skynet.call(aoi,"lua","open",config.name)
-  map_info = basemap.create(conf.id,conf.type,conf,aoi)
+  aoimgr = aoimgr.create(assert(skynet.launch("caoi", config.name)))
+  message_update ()
+  map_info = basemap.create(conf.id, conf.type, conf)
   map_info.CMD = CMD
 	map_info.msgsender = msgsender
   map_info:loadmapinfo()
-  aoi_handle.init(map_info)
-  skynet.fork(function ()
-    map_info:monsterrun()
-  end)
+  monstermgr = monstermgr.create(msgsender)
 end
 
 function CMD.close()
   log.notice("close map(%s)...",config.name)
-  skynet.call(aoi,"lua","close",config.name)
+  update_thread()
   for k,_ in pairs(onlinecharacter) do
     skynet.call(k,"lua","close")
   end
@@ -96,10 +88,16 @@ end
 --skynet.memlimit(10 * 1024 * 1024)
 
 skynet.init(function()
-  merge(CMD,aoi_handle.CMD)
+  
 end)
 
 skynet.start (function ()
+  skynet.dispatch("text", function (_, _, cmd)
+		local t = cmd:split(" ")
+    local f = assert (CMD[t[1]],t[1])
+    f(tonumber(t[2]),tonumber(t[3]))
+  end)
+  
 	skynet.dispatch ("lua", function (_, _, command, ...)
 		local f = assert (CMD[command],command)
 		skynet.retpack (f (...))

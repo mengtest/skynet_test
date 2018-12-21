@@ -20,7 +20,7 @@ function CMD.open(source)
 	while n > 0 do
 	  for _, conf in pairs (mapdata) do
 			local name = conf.name
-			local m = skynet.newservice ("map", skynet.self (),name)
+			local m = skynet.newservice ("map", name)
 			skynet.call (m, "lua", "open", conf)
 			mapinstance[name] = m
 		end

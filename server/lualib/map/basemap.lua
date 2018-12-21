@@ -4,27 +4,11 @@ local skynet = require "skynet"
 local random = math.random
 
 local _map = {}
-local aoisvr
 
 local s_method = {__index = {}}
 
 local function init_method(map)
 
-  --怪物run
-  function map:monsterrun()
-    while true do
-      for k,v in pairs(self.monster_list) do
-        v:run(aoisvr)
-      end
-      skynet.sleep(10)
-    end
-  end
-
-  --获取一个怪物
-  function map:getmonster(tempid)
-    assert(self.monster_list[tempid],tempid)
-    return self.monster_list[tempid]
-  end
   --创建一个临时id
   function map:createtempid()
     return idmgr:createid()
@@ -38,27 +22,14 @@ local function init_method(map)
 
   --加载地图信息
   function map:loadmapinfo()
-    local monster_list = self.map_info.monster_list
-    local obj
-    local tempid
-    assert(aoisvr)
-    local n = 5
-    while n > 0 do
-      for _,v in pairs(monster_list) do
-        tempid = self:createtempid()
-        obj = monster.create(v.id,tempid,v,self)
-        assert(self.monster_list[tempid] == nil)
-        obj:set_msgsender(self.msgsender)
-        self.monster_list[tempid] = obj
-        skynet.send(aoisvr,"lua","characterenter",obj:getaoiobj())
-      end
-      n = n - 1
-    end
+    
   end
 
+  --获取地图id
   function map:getmapid()
     return self.id
   end
+
   --获取副本id
   function map:getdungonid()
     return self.dungeon_id
@@ -82,7 +53,7 @@ end
 
 init_method(s_method.__index)
 
-function _map.create(id, type, map_info,aoi)
+function _map.create(id, type, map_info)
   local map = {
     --地图id
     id = 0,
@@ -105,9 +76,6 @@ function _map.create(id, type, map_info,aoi)
     --玩家列表
     player_list = {},
 
-    --怪物列表
-    monster_list = {},
-
     --npc列表
     npc_list = {},
   }
@@ -118,8 +86,6 @@ function _map.create(id, type, map_info,aoi)
   assert(map_info)
   map.map_info = map_info
   idmgr:setmaxid(map_info.maxtempid)
-  assert(aoi)
-  aoisvr = aoi
   return map
 end
 
