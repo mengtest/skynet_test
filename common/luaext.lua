@@ -1,15 +1,13 @@
 ----table
 table.size = function(t)
-	local count = 0
-	for _ in pairs(t) do
-		count = count + 1
-	end
-	return count
+    local count = 0
+    for _ in pairs(t) do
+        count = count + 1
+    end
+    return count
 end
 
-table.empty = function(t)
-    return not next(t)
-end
+table.empty = function(t) return not next(t) end
 
 -- 浅拷贝
 table.clone = function(t, nometa)
@@ -17,7 +15,7 @@ table.clone = function(t, nometa)
     if not nometa then
         setmetatable(result, getmetatable(t))
     end
-    for k, v in pairs (t) do
+    for k, v in pairs(t) do
         result[k] = v
     end
     return result
@@ -57,19 +55,13 @@ string.rtrim = function(s, c)
     return (string.gsub(s, pattern, ""))
 end
 
-string.trim = function(s, c)
-    return string.rtrim(string.ltrim(s, c), c)
-end
+string.trim = function(s, c) return string.rtrim(string.ltrim(s, c), c) end
 
 ----function
 local function dump(obj)
     local getIndent, quoteStr, wrapKey, wrapVal, dumpObj
-    getIndent = function(level)
-        return string.rep("\t", level)
-    end
-    quoteStr = function(str)
-        return '"' .. string.gsub(str, '"', '\\"') .. '"'
-    end
+    getIndent = function(level) return string.rep("\t", level) end
+    quoteStr = function(str) return '"' .. string.gsub(str, '"', '\\"') .. '"' end
     wrapKey = function(val)
         if type(val) == "number" then
             return "[" .. val .. "]"
