@@ -1,7 +1,9 @@
 local dbmgrcmd = {}
 local playerdate = {}
 
-function playerdate.init(cmd) dbmgrcmd = cmd end
+function playerdate.init(cmd)
+    dbmgrcmd = cmd
+end
 
 -- agent请求角色列表
 function playerdate.getlist(uid)
@@ -24,6 +26,8 @@ function playerdate.load(uid, uuid)
 end
 
 -- 保存角色信息
-function playerdate.save(character) return dbmgrcmd.add("playerdate", character, true) end
+function playerdate.save(character)
+    return dbmgrcmd.add("playerdate", character, true)
+end
 
 return playerdate

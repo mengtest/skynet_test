@@ -1,9 +1,9 @@
-local skynet = require"skynet"
-local gateserver = require"snax.gateserver"
-local netpack = require"skynet.netpack"
-local crypt = require"skynet.crypt"
-local socketdriver = require"skynet.socketdriver"
-local sprotoloader = require"sprotoloader"
+local skynet = require "skynet"
+local gateserver = require "snax.gateserver"
+local netpack = require "skynet.netpack"
+local crypt = require "skynet.crypt"
+local socketdriver = require "skynet.socketdriver"
+local sprotoloader = require "sprotoloader"
 local assert = assert
 local b64encode = crypt.base64encode
 local b64decode = crypt.base64decode
@@ -75,12 +75,11 @@ Config for server.start:
 	conf.register_handler(servername) : call when gate open
 	conf.disconnect_handler(username) : call when a connection disconnect (afk)
 ]]
-
 local server = {}
 
-skynet.register_protocol{
+skynet.register_protocol {
     name = "client",
-    id = skynet.PTYPE_CLIENT,
+    id = skynet.PTYPE_CLIENT
 }
 
 -- 在线玩家， logind 那边验证成功的玩家
@@ -105,11 +104,13 @@ end
 
 function server.userid(username)
     -- base64(uid)@base64(server)#base64(subid)
-    local uid, servername, subid = username:match"([^@]*)@([^#]*)#(.*)"
+    local uid, servername, subid = username:match "([^@]*)@([^#]*)#(.*)"
     return b64decode(uid), b64decode(subid), b64decode(servername)
 end
 
-function server.username(uid, subid, servername) return string.format("%s@%s#%s", b64encode(uid), b64encode(servername), b64encode(tostring(subid))) end
+function server.username(uid, subid, servername)
+    return string.format("%s@%s#%s", b64encode(uid), b64encode(servername), b64encode(tostring(subid)))
+end
 
 function server.logout(username)
     local u = user_online[username]
@@ -127,7 +128,7 @@ function server.login(username, secret)
         version = 0,
         index = 0,
         username = username,
-        response = {}, -- response cache
+        response = {} -- response cache
     }
 end
 
@@ -152,7 +153,7 @@ function server.start(conf)
         request = assert(conf.send_request_handler),
         boardrequest = assert(conf.send_board_request_handler),
         close = assert(conf.close_handler),
-        auth_handler = assert(conf.auth_handler),
+        auth_handler = assert(conf.auth_handler)
     }
 
     function handler.command(cmd, _, ...)
@@ -161,9 +162,9 @@ function server.start(conf)
     end
 
     function handler.open(_, gateconf)
-        local protoloader = skynet.uniqueservice"protoloader"
+        local protoloader = skynet.uniqueservice "protoloader"
         local slot = skynet.call(protoloader, "lua", "index", "clientproto")
-        host = sprotoloader.load(slot):host"package"
+        host = sprotoloader.load(slot):host "package"
         return conf.register_handler(gateconf)
     end
 
@@ -234,7 +235,8 @@ function server.start(conf)
         if result == nil then
             result = "200 OK"
         end
-        local package = response{
+        local package =
+            response {
             result = result
         }
         socketdriver.send(fd, netpack.pack(package))
@@ -273,7 +275,7 @@ function server.start(conf)
     local function do_request(fd, message)
         local u = assert(connection[fd], "invalid fd")
 
-        local p = { fd }
+        local p = {fd}
         local ok, result = pcall(conf.request_handler, u.username, message)
         -- NOTICE: YIELD here, socket may close.
         result = result or ""

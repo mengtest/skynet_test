@@ -1,7 +1,7 @@
-local service = require"service"
-local mysql = require"skynet.db.mysql"
-local config = require"config.mysqlconf"
-local log = require"syslog"
+local service = require "service"
+local mysql = require "skynet.db.mysql"
+local config = require "config.mysqlconf"
+local log = require "syslog"
 
 local CMD = {}
 local center
@@ -54,6 +54,6 @@ function CMD.close()
     group = {}
 end
 
-service.init{
-    command = CMD,
+service.init {
+    command = CMD
 }

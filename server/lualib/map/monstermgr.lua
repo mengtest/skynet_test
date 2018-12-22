@@ -1,6 +1,5 @@
-local skynet = require"skynet"
-local monster = require"obj.monster"
-local enumtype = require"enumtype"
+local monsterobj = require "obj.monster"
+local enumtype = require "enumtype"
 
 local _monstermgr = {}
 
@@ -9,7 +8,6 @@ local s_method = {
 }
 
 local function init_method(mgr)
-
     -- 添加对象到怪物的aoilist中
     -- aoi callback
     function mgr:addaoiobj(monstertempid, aoiobj)
@@ -22,12 +20,16 @@ local function init_method(mgr)
                 local info = {
                     name = monster:getname(),
                     tempid = monster:gettempid(),
-                    pos = monster:getpos(),
+                    pos = monster:getpos()
                 }
                 -- 将我的信息发送给对方
-                self.msgsender:sendrequest("characterupdate", {
-                    info = info
-                }, aoiobj.info)
+                self.basemap.msgsender:sendrequest(
+                    "characterupdate",
+                    {
+                        info = info
+                    },
+                    aoiobj.info
+                )
             end
         end
     end
@@ -43,12 +45,16 @@ local function init_method(mgr)
                 local info = {
                     name = monster:getname(),
                     tempid = monster:gettempid(),
-                    pos = monster:getpos(),
+                    pos = monster:getpos()
                 }
                 -- 将我的信息发送给对方
-                self.msgsender:sendrequest("characterupdate", {
-                    info = info
-                }, enterlist.obj.info)
+                self.basemap.msgsender:sendrequest(
+                    "characterupdate",
+                    {
+                        info = info
+                    },
+                    enterlist.obj.info
+                )
             end
         end
         -- 离开怪物视野
@@ -74,12 +80,16 @@ local function init_method(mgr)
             local info = {
                 name = monster:getname(),
                 tempid = monster:gettempid(),
-                pos = monster:getpos(),
+                pos = monster:getpos()
             }
             -- 将我的信息发送给对方
-            self.msgsender:sendrequest("characterupdate", {
-                info = info
-            }, v.info)
+            self.basemap.msgsender:sendrequest(
+                "characterupdate",
+                {
+                    info = info
+                },
+                v.info
+            )
         end
         for _, v in pairs(leavelist) do
             monster:delfromaoilist(v.tempid)
@@ -88,8 +98,8 @@ local function init_method(mgr)
 
     -- 怪物run
     function mgr:monsterrun()
-        for k, v in pairs(self.monster_list) do
-            v:run(self.aoimgr)
+        for _, v in pairs(self.monster_list) do
+            v:run(self.basemap.aoimgr)
         end
     end
 
@@ -99,37 +109,25 @@ local function init_method(mgr)
         return self.monster_list[tempid]
     end
 
-    function mgr:createmonster()
-        local obj
-        local tempid
-        local n = 5
-        while n > 0 do
-            for _, v in pairs(self.monsterlist) do
-                tempid = self.map:createtempid()
-                obj = monster.create(v.id, tempid, v, self.map)
-                assert(self.monster_list[tempid] == nil)
-                obj:set_msgsender(self.msgsender)
-                self.monster_list[tempid] = obj
-                self.aoimgr:characterenter(obj:getaoiobj())
-            end
-            n = n - 1
-        end
+    -- 创建一个怪物
+    function mgr:createmonster(monsterid, x, y, z)
+        local tempid = self.basemap:createtempid()
+        local obj = monsterobj.create(monsterid, x, y, z)
+        obj:settempid(tempid)
+        assert(self.monster_list[tempid] == nil)
+        obj:set_msgsender(self.basemap.msgsender)
+        self.monster_list[tempid] = obj
+        self.basemap.aoimgr:characterenter(obj:getaoiobj())
     end
 end
 
 init_method(s_method.__index)
 
-function _monstermgr.create(msgsender, monsterlist, aoimgr, map)
+function _monstermgr.create(basemap)
     local monstermgr = {
-        msgsender = msgsender,
+        basemap = basemap,
         -- 怪物列表
-        monster_list = {},
-
-        monsterlist = monsterlist,
-
-        aoimgr = aoimgr,
-
-        map = map,
+        monster_list = {}
     }
 
     setmetatable(monstermgr, s_method)

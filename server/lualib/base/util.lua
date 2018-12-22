@@ -1,4 +1,4 @@
-local skynet = require"skynet"
+local skynet = require "skynet"
 
 local util = {}
 
@@ -11,7 +11,9 @@ function util.settimeout(ti, f)
         end
     end
     skynet.timeout(ti, t)
-    return function() f = nil end
+    return function()
+        f = nil
+    end
 end
 
 return util

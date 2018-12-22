@@ -1,6 +1,6 @@
-local skynet = require"skynet"
-local aoifun = require"obj.aoifunc"
-local enumtype = require"enumtype"
+local skynet = require "skynet"
+local aoifun = require "obj.aoifunc"
+local enumtype = require "enumtype"
 
 local _basechar = {}
 
@@ -20,17 +20,17 @@ function _basechar.create(type)
                 pos = {
                     x = 0,
                     y = 0,
-                    z = 0,
+                    z = 0
                 },
-                map = 0,
-            },
+                map = 0
+            }
         },
         -- 角色信息
         objinfo = {},
         -- 视野内的角色
         aoilist = {},
         -- msgsender
-        msgsender = nil,
+        msgsender = nil
     }
     assert(type and type > enumtype.CHAR_TYPE_UNKNOW and type < enumtype.CHAR_TYPE_MAX)
 
@@ -40,7 +40,6 @@ end
 
 -- 扩展方法表
 function _basechar.expandmethod(obj)
-
     function obj:sendboardrequest(name, args, agentlist)
         assert(self.msgsender)
         self.msgsender:sendboardrequest(name, args, agentlist, self)
@@ -59,16 +58,24 @@ function _basechar.expandmethod(obj)
     end
 
     -- 获取角色类型
-    function obj:gettype() return self.aoiobj.type end
+    function obj:gettype()
+        return self.aoiobj.type
+    end
 
     -- 是否玩家
-    function obj:isplayer() return self.aoiobj.type == enumtype.CHAR_TYPE_PLAYER end
+    function obj:isplayer()
+        return self.aoiobj.type == enumtype.CHAR_TYPE_PLAYER
+    end
 
     -- 是否玩家
-    function obj:isnpc() return self.aoiobj.type == enumtype.CHAR_TYPE_NPC end
+    function obj:isnpc()
+        return self.aoiobj.type == enumtype.CHAR_TYPE_NPC
+    end
 
     -- 是否玩家
-    function obj:ismonster() return self.aoiobj.type == enumtype.CHAR_TYPE_MONSTER end
+    function obj:ismonster()
+        return self.aoiobj.type == enumtype.CHAR_TYPE_MONSTER
+    end
 
     -- 设置角色信息
     function obj:setobjinfo(info)
@@ -77,7 +84,9 @@ function _basechar.expandmethod(obj)
     end
 
     -- 获取角色信息
-    function obj:getobjinfo() return self.objinfo end
+    function obj:getobjinfo()
+        return self.objinfo
+    end
 
     -- 设置角色名称
     function obj:setname(name)
@@ -106,7 +115,9 @@ function _basechar.expandmethod(obj)
     end
 
     -- 添加到初始化函数中
-    function obj:addinitfunc(f) table.insert(self.init_func, f) end
+    function obj:addinitfunc(f)
+        table.insert(self.init_func, f)
+    end
 
     -- 调用初始化函数
     function obj:init()
@@ -116,7 +127,9 @@ function _basechar.expandmethod(obj)
     end
 
     -- 添加到输出化函数中
-    function obj:addreleasefunc(f) table.insert(self.release_func, f) end
+    function obj:addreleasefunc(f)
+        table.insert(self.release_func, f)
+    end
 
     -- 调用初始化函数
     function obj:release()

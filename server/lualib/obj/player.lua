@@ -1,5 +1,5 @@
-local basechar = require"obj.basechar"
-local enumtype = require"enumtype"
+local basechar = require "obj.basechar"
+local enumtype = require "enumtype"
 
 local _player = {}
 local s_method = {
@@ -7,15 +7,20 @@ local s_method = {
 }
 
 local function init_method(player)
-
     -- 给自己客户端发消息
-    function player:sendrequest(name, args) self.msgsender:sendrequest(name, args, self.aoiobj.info) end
+    function player:sendrequest(name, args)
+        self.msgsender:sendrequest(name, args, self.aoiobj.info)
+    end
 
     -- 设置玩家所在地图id
-    function player:setmapid(mapid) self.mapid = mapid end
+    function player:setmapid(mapid)
+        self.mapid = mapid
+    end
 
     -- 获取玩家当前所在地图id
-    function player:getmapid() return self.mapid end
+    function player:getmapid()
+        return self.mapid
+    end
 
     -- 设置玩家uuid
     function player:setuuid(uuid)
@@ -43,7 +48,9 @@ local function init_method(player)
     end
 
     -- 设置玩家数据
-    function player:setdata(data) self.data = data end
+    function player:setdata(data)
+        self.data = data
+    end
 
     -- 获取玩家指定类型的数据
     function player:getdatabytype(ntype)

@@ -1,18 +1,14 @@
-local skynet = require"skynet"
-local queue = require"skynet.queue"
-local log = require"syslog"
-local msgsender = require"msgsender"
-local timer = require"timer"
-
-local testhandler = require"agent.testhandler"
-local character_handler = require"agent.character_handler"
-local map_handler = require"agent.map_handler"
-local aoi_handler = require"agent.aoi_handler"
-local move_handler = require"agent.move_handler"
+local skynet = require "skynet"
+local queue = require "skynet.queue"
+local log = require "syslog"
+local msgsender = require "msgsender"
+local testhandler = require "agent.testhandler"
+local character_handler = require "agent.character_handler"
+local map_handler = require "agent.map_handler"
+local aoi_handler = require "agent.aoi_handler"
+local move_handler = require "agent.move_handler"
 
 local gate = tonumber(...)
-local requestqueue = queue()
-local responsequeue = queue()
 local luaqueue = queue()
 local CMD = {}
 
@@ -62,7 +58,6 @@ local function handlerequest(name, args, response)
             log.warning("handle message(%s) failed : %s", name, ret)
             logout(2)
         else
-            last_heartbeat_time = skynet.now()
             if response and ret then
                 return response(ret)
             end
@@ -76,13 +71,17 @@ end
 -- 接受到的回应
 -- 现在不应该收到回应
 local RESPONSE = {}
-local function handle_response(id, args) log.warning("handle_response : %d", id) end
+local function handle_response(id, args)
+    log.warning("handle_response : %d", id)
+end
 
 -- 处理client发来的消息
-skynet.register_protocol{
+skynet.register_protocol {
     name = "client",
     id = skynet.PTYPE_CLIENT,
-    unpack = function(msg, sz) return host:dispatch(msg, sz) end,
+    unpack = function(msg, sz)
+        return host:dispatch(msg, sz)
+    end,
     dispatch = function(_, _, type, ...)
         if type == "REQUEST" then
             local result = luaqueue(handlerequest, ...)
@@ -96,7 +95,7 @@ skynet.register_protocol{
             logout(7)
         end
         skynet.sleep(10)
-    end,
+    end
 }
 
 -- gate 通知 agent 有玩家正在认证
@@ -110,8 +109,7 @@ function CMD.login(source, uid, sid, secret, fd)
         RESPONSE = {},
         CMD = CMD,
         sendrequest = sendrequest,
-        msgsender = msgsender,
-        running = running,
+        msgsender = msgsender
     }
 end
 
@@ -126,8 +124,6 @@ function CMD.auth(source, fd)
     -- you may load user data from database
     testhandler:register(user)
     character_handler:register(user)
-    -- 心跳检测
-    last_heartbeat_time = skynet.now()
 end
 
 function CMD.logout(_)
@@ -184,13 +180,18 @@ function sendrequest(name, args, ref, not_send_to_me, fdlist)
     end
 end
 
-skynet.start(function()
-    -- If you want to fork a work thread , you MUST do it in CMD.login
-    -- 加载proto
-    msgsender = msgsender.create()
+skynet.start(
+    function()
+        -- If you want to fork a work thread , you MUST do it in CMD.login
+        -- 加载proto
+        msgsender = msgsender.create()
 
-    skynet.dispatch("lua", function(_, source, command, ...)
-        local f = assert(CMD[command], command)
-        skynet.ret(skynet.pack(luaqueue(f, source, ...)))
-    end)
-end)
+        skynet.dispatch(
+            "lua",
+            function(_, source, command, ...)
+                local f = assert(CMD[command], command)
+                skynet.ret(skynet.pack(luaqueue(f, source, ...)))
+            end
+        )
+    end
+)

@@ -1,67 +1,91 @@
-local enumtype = require"enumtype"
-local handler = require"agent.handler"
-local skynet = require"skynet"
+local enumtype = require "enumtype"
+local handler = require "agent.handler"
+local skynet = require "skynet"
 
 local CMD = {}
 local _handler = handler.new(nil, nil, CMD)
 local user
 local running
 
-_handler:init(function(u)
-    user = u
-    running = u.running
-end)
+_handler:init(
+    function(u)
+        user = u
+        running = u.running
+    end
+)
 
-_handler:release(function() user = nil end)
+_handler:release(
+    function()
+        user = nil
+    end
+)
 
 -- 添加对象到aoilist中
 function CMD.addaoiobj(_, aoiobj)
-    assert(user, {
-        _,
-        skynet.self(),
-        running,
-        aoiobj
-    })
+    assert(
+        user,
+        {
+            _,
+            skynet.self(),
+            running,
+            aoiobj
+        }
+    )
     if not user.character:getfromaoilist(aoiobj.tempid) then
         user.character:addtoaoilist(aoiobj)
         if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
             local info = {
                 name = user.character:getname(),
                 tempid = user.character:gettempid(),
-                pos = user.character:getpos(),
+                pos = user.character:getpos()
             }
             -- 将我的信息发送给对方
-            user.sendrequest("characterupdate", {
-                info = info
-            }, nil, nil, { aoiobj.info })
+            user.sendrequest(
+                "characterupdate",
+                {
+                    info = info
+                },
+                nil,
+                nil,
+                {aoiobj.info}
+            )
         end
     end
 end
 
 -- 更新对象的aoiobj信息
 function CMD.updateaoiobj(_, aoiobj)
-    assert(user, {
-        _,
-        skynet.self(),
-        running,
-        aoiobj
-    })
+    assert(
+        user,
+        {
+            _,
+            skynet.self(),
+            running,
+            aoiobj
+        }
+    )
     user.character:updateaoiobj(aoiobj)
     local character_move = {
         tempid = aoiobj.tempid,
-        pos = aoiobj.movement.pos,
+        pos = aoiobj.movement.pos
     }
-    user.sendrequest("moveto", {
-        move = { character_move }
-    })
+    user.sendrequest(
+        "moveto",
+        {
+            move = {character_move}
+        }
+    )
 end
 
 -- 从自己的aoilist中移除对象
 function CMD.delaoiobj(_, tempid)
     user.character:delfromaoilist(tempid)
-    user.sendrequest("characterleave", {
-        tempid = { tempid }
-    })
+    user.sendrequest(
+        "characterleave",
+        {
+            tempid = {tempid}
+        }
+    )
 end
 
 -- 进入和离开我视野的列表
@@ -73,12 +97,18 @@ function CMD.updateaoilist(_, enterlist, leavelist)
                 local info = {
                     name = user.character:getname(),
                     tempid = user.character:gettempid(),
-                    pos = user.character:getpos(),
+                    pos = user.character:getpos()
                 }
                 -- 将我的信息发送给对方
-                user.sendrequest("characterupdate", {
-                    info = info
-                }, nil, nil, { vv.info })
+                user.sendrequest(
+                    "characterupdate",
+                    {
+                        info = info
+                    },
+                    nil,
+                    nil,
+                    {vv.info}
+                )
             end
         end
     end
@@ -89,9 +119,12 @@ function CMD.updateaoilist(_, enterlist, leavelist)
             table.insert(leaveid, vv.tempid)
         end
     end
-    user.sendrequest("characterleave", {
-        tempid = leaveid
-    })
+    user.sendrequest(
+        "characterleave",
+        {
+            tempid = leaveid
+        }
+    )
 end
 
 return _handler

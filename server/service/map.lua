@@ -1,26 +1,29 @@
-local skynet = require"skynet"
-local msgsender = require"msgsender"
-require"skynet.manager"
-local util = require"util"
+local skynet = require "skynet"
+local msgsender = require "msgsender"
+require "skynet.manager"
+local util = require "util"
 local settimeout = util.settimeout
 
-local log = require"syslog"
-local basemap = require"map.basemap"
-local aoimgr = require"map.aoimgr"
-local monstermgr = require"map.monstermgr"
+local log = require "syslog"
+local basemap = require "map.basemap"
+local aoimgr = require "map.aoimgr"
+local monstermgr = require "map.monstermgr"
+local createmonstermgr = require "map.createmonstermgr"
+local sharedata = require "skynet.sharedata"
 
 local CMD = {}
-local onlinecharacter = {}
-local pendingcharacter = {}
 local update_thread
-local map_info
 local config
 
-skynet.register_protocol{
+skynet.register_protocol {
     name = "text",
     id = skynet.PTYPE_TEXT,
-    pack = function(text) return text end,
-    unpack = function(buf, sz) return skynet.tostring(buf, sz) end,
+    pack = function(text)
+        return text
+    end,
+    unpack = function(buf, sz)
+        return skynet.tostring(buf, sz)
+    end
 }
 
 -- 0.1秒更新一次
@@ -30,26 +33,36 @@ local function maprun()
     update_thread = settimeout(10, maprun)
 end
 
-function CMD.addaoiobj(monstertempid, aoiobj) return monstermgr:addaoiobj(monstertempid, aoiobj) end
+function CMD.addaoiobj(monstertempid, aoiobj)
+    return monstermgr:addaoiobj(monstertempid, aoiobj)
+end
 
-function CMD.updatemonsteraoiinfo(enterlist, leavelist, movelist) return monstermgr:updatemonsteraoiinfo(enterlist, leavelist, movelist) end
+function CMD.updatemonsteraoiinfo(enterlist, leavelist, movelist)
+    return monstermgr:updatemonsteraoiinfo(enterlist, leavelist, movelist)
+end
 
-function CMD.updateaoilist(monstertempid, enterlist, leavelist) return monstermgr:updateaoilist(monstertempid, enterlist, leavelist) end
+function CMD.updateaoilist(monstertempid, enterlist, leavelist)
+    return monstermgr:updateaoilist(monstertempid, enterlist, leavelist)
+end
 
 -- 获取临时id
-function CMD.gettempid() return map_info:createtempid() end
+function CMD.gettempid()
+    return basemap:createtempid()
+end
 
 -- 角色请求进入地图
-function CMD.characterenter(aoiobj) aoimgr:characterenter(aoiobj) end
+function CMD.characterenter(aoiobj)
+    aoimgr:characterenter(aoiobj)
+end
 
 -- 角色离开地图
 function CMD.characterleave(aoiobj)
     aoimgr:characterleave(aoiobj)
-    map_info:releasetempid(aoiobj.tempid)
+    basemap:releasetempid(aoiobj.tempid)
 end
 
 -- 角色加载地图完成，正式进入地图
-function CMD.characterready(uuid, aoiobj)
+function CMD.characterready(aoiobj)
     aoimgr:characterenter(aoiobj)
     return true
 end
@@ -61,21 +74,26 @@ function CMD.moveto(aoiobj)
     return true, aoiobj.movement.pos
 end
 
-function CMD.aoicallback(w, m) aoimgr:aoicallback(w, m) end
+function CMD.aoicallback(w, m)
+    aoimgr:aoicallback(w, m)
+end
 
 function CMD.open(conf)
     config = conf
     msgsender = msgsender.create()
     msgsender:init()
-    map_info = basemap.create(conf.id, conf.type, conf)
-    aoimgr = aoimgr.create(assert(skynet.launch("caoi", conf.name)), map_info)
-    map_info.CMD = CMD
-    map_info.msgsender = msgsender
-    map_info.aoimgr = aoimgr
-    map_info:loadmapinfo()
-    monstermgr = monstermgr.create(msgsender, conf.monster_list, aoimgr, map_info)
-    monstermgr:createmonster()
-    map_info.monstermgr = monstermgr
+    basemap = basemap.create(conf.id, conf.type, conf)
+    aoimgr = aoimgr.create(assert(skynet.launch("caoi", conf.name)), basemap)
+    basemap.CMD = CMD
+    basemap.msgsender = msgsender
+    basemap.aoimgr = aoimgr
+    basemap:loadmapinfo()
+    monstermgr = monstermgr.create(basemap)
+    basemap.monstermgr = monstermgr
+    local obj = sharedata.query "gdd"
+    createmonstermgr = createmonstermgr.create(basemap, obj["createmonster"][conf.name])
+    basemap.createmonstermgr = createmonstermgr
+    createmonstermgr:createmonster()
 
     skynet.fork(maprun)
 end
@@ -83,9 +101,6 @@ end
 function CMD.close()
     log.notice("close map(%s)...", config.name)
     update_thread()
-    for k, _ in pairs(onlinecharacter) do
-        skynet.call(k, "lua", "close")
-    end
 end
 
 local function merge(dest, t)
@@ -99,17 +114,28 @@ end
 
 -- skynet.memlimit(10 * 1024 * 1024)
 
-skynet.init(function() end)
+skynet.init(
+    function()
+    end
+)
 
-skynet.start(function()
-    skynet.dispatch("text", function(_, _, cmd)
-        local t = cmd:split(" ")
-        local f = assert(CMD[t[1]], "[" .. cmd .. "]")
-        f(tonumber(t[2]), tonumber(t[3]))
-    end)
+skynet.start(
+    function()
+        skynet.dispatch(
+            "text",
+            function(_, _, cmd)
+                local t = cmd:split(" ")
+                local f = assert(CMD[t[1]], "[" .. cmd .. "]")
+                f(tonumber(t[2]), tonumber(t[3]))
+            end
+        )
 
-    skynet.dispatch("lua", function(_, _, command, ...)
-        local f = assert(CMD[command], command)
-        skynet.retpack(f(...))
-    end)
-end)
+        skynet.dispatch(
+            "lua",
+            function(_, _, command, ...)
+                local f = assert(CMD[command], command)
+                skynet.retpack(f(...))
+            end
+        )
+    end
+)

@@ -1,8 +1,8 @@
 -- 与客户端的消息通讯
-local skynet = require"skynet"
-local sprotoloader = require"sprotoloader"
-local socketdriver = require"skynet.socketdriver"
-local log = require"syslog"
+local skynet = require "skynet"
+local sprotoloader = require "sprotoloader"
+local socketdriver = require "skynet.socketdriver"
+local string = string
 local request
 
 local _msgsender = {}
@@ -11,7 +11,6 @@ local s_method = {
 }
 
 local function init_method(func)
-
     function func:boardcast(package, list, obj)
         if list == nil then
             assert(obj)
@@ -41,12 +40,14 @@ local function init_method(func)
         self:boardcast(package, agentlist, user)
     end
 
-    function func:gethost() return self.host end
+    function func:gethost()
+        return self.host
+    end
 
     function func:init()
-        local protoloader = skynet.uniqueservice"protoloader"
+        local protoloader = skynet.uniqueservice "protoloader"
         local slot = skynet.call(protoloader, "lua", "index", "clientproto")
-        self.host = sprotoloader.load(slot):host"package"
+        self.host = sprotoloader.load(slot):host "package"
         slot = skynet.call(protoloader, "lua", "index", "serverproto")
         request = self.host:attach(sprotoloader.load(slot))
     end
@@ -56,7 +57,7 @@ init_method(s_method.__index)
 
 function _msgsender.create()
     local msgsender = {
-        host = nil,
+        host = nil
     }
 
     setmetatable(msgsender, s_method)

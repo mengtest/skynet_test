@@ -1,6 +1,6 @@
-local skynet = require"skynet"
-local service = require"service"
-local log = require"syslog"
+local skynet = require "skynet"
+local service = require "service"
+local log = require "syslog"
 
 local queue = {}
 local CMD = {}
@@ -29,7 +29,9 @@ function CMD.open()
     mysqlpool = skynet.uniqueservice("mysqlpool")
 end
 
-function CMD.close() log.notice("close dbsync...") end
+function CMD.close()
+    log.notice("close dbsync...")
+end
 
 function CMD.sync(sql, now)
     if not now then
@@ -44,6 +46,6 @@ function CMD.sync(sql, now)
     return true
 end
 
-service.init{
-    command = CMD,
+service.init {
+    command = CMD
 }

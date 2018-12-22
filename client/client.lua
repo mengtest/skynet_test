@@ -5,18 +5,18 @@ package.path = skynet_root .. "lualib/?.lua;" .. common .. "?.lua"
 
 local account, name = ...
 
-local socket = require"client.socket"
-local crypt = require"client.crypt"
-local sprotoparser = require"sprotoparser"
-local sprotoloader = require"sprotoloader"
-require"luaext"
+local socket = require "client.socket"
+local crypt = require "client.crypt"
+local sprotoparser = require "sprotoparser"
+local sprotoloader = require "sprotoloader"
+require "luaext"
 -- 加载解析proto文件
 local f = io.open("./common/proto/clientproto.lua")
 if f == nil then
     print("proto open faild")
     return
 end
-local t = f:read"a"
+local t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t), 0)
 f = io.open("./common/proto/serverproto.lua")
@@ -24,7 +24,7 @@ if f == nil then
     print("proto open faild")
     return
 end
-t = f:read"a"
+t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t), 1)
 
@@ -59,9 +59,8 @@ local type, session, args,response = hostclient:dispatch(str3)
 print(type, session, args,response)
 
 ]]
-
 -- host用来解析接受到的消息
-local host = sprotoloader.load(1):host"package"
+local host = sprotoloader.load(1):host "package"
 -- request用来发送消息
 local request = host:attach(sprotoloader.load(0))
 
@@ -69,7 +68,7 @@ local session = {}
 local session_id = 0
 
 if _VERSION ~= "Lua 5.3" then
-    error"Use lua 5.3"
+    error "Use lua 5.3"
 end
 
 -- 与loginserver建立连接
@@ -90,9 +89,12 @@ end
 
 -- 1.给login服务器发送clientkey
 local clientkey = crypt.randomkey()
-send_request("handshake", {
-    clientkey = crypt.base64encode(crypt.dhexchange(clientkey))
-})
+send_request(
+    "handshake",
+    {
+        clientkey = crypt.base64encode(crypt.dhexchange(clientkey))
+    }
+)
 
 local RESPONSE = {}
 local challenge
@@ -108,27 +110,40 @@ function RESPONSE:handshake(args)
 
     -- 回应服务器第一步握手的挑战码，确认握手正常。
     hmac = crypt.hmac64(challenge, secret)
-    send_request("challenge", {
-        hmac = crypt.base64encode(hmac)
-    })
+    send_request(
+        "challenge",
+        {
+            hmac = crypt.base64encode(hmac)
+        }
+    )
 end
 
 local token = {
     server = "game0",
     user = account,
-    pass = "password",
+    pass = "password"
 }
 
-local function encode_token(token) return string.format("%s@%s:%s", crypt.base64encode(token.user), crypt.base64encode(token.server), crypt.base64encode(token.pass)) end
+local function encode_token(token)
+    return string.format(
+        "%s@%s:%s",
+        crypt.base64encode(token.user),
+        crypt.base64encode(token.server),
+        crypt.base64encode(token.pass)
+    )
+end
 
 function RESPONSE:challenge(args)
     print(args.result)
 
     -- 使用DES算法，以secret做key，加密传输token串
     local etoken = crypt.desencode(secret, encode_token(token))
-    send_request("auth", {
-        etokens = crypt.base64encode(etoken)
-    })
+    send_request(
+        "auth",
+        {
+            etokens = crypt.base64encode(etoken)
+        }
+    )
 end
 
 local subid
@@ -139,18 +154,31 @@ local function login()
     -- 连接到gameserver
     print("connect index:" .. index)
     fd = assert(socket.connect(gameserverip, 8547))
-    local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server), crypt.base64encode(subid), index)
+    local handshake =
+        string.format(
+        "%s@%s#%s:%d",
+        crypt.base64encode(token.user),
+        crypt.base64encode(token.server),
+        crypt.base64encode(subid),
+        index
+    )
     local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
-    send_request("login", {
-        handshake = handshake .. ":" .. crypt.base64encode(hmac)
-    })
+    send_request(
+        "login",
+        {
+            handshake = handshake .. ":" .. crypt.base64encode(hmac)
+        }
+    )
 end
 
 function RESPONSE:login(args)
     print("send ping")
-    send_request("ping", {
-        userid = "hahaha"
-    })
+    send_request(
+        "ping",
+        {
+            userid = "hahaha"
+        }
+    )
 end
 
 local function getcharacterlist()
@@ -163,16 +191,19 @@ local function charactercreate()
     local character_create = {
         name = name,
         job = 1,
-        sex = 1,
+        sex = 1
     }
     send_request("charactercreate", character_create)
 end
 
 local function characterpick(uuid)
     print("send characterpick :" .. uuid)
-    send_request("characterpick", {
-        uuid = uuid
-    })
+    send_request(
+        "characterpick",
+        {
+            uuid = uuid
+        }
+    )
 end
 
 local function mapready()
@@ -185,14 +216,19 @@ local function moveto()
     local pos = {
         x = 1,
         y = 2,
-        z = 3,
+        z = 3
     }
-    send_request("moveto", {
-        pos = pos
-    })
+    send_request(
+        "moveto",
+        {
+            pos = pos
+        }
+    )
 end
 
-local function quitgame() send_request("quitgame") end
+local function quitgame()
+    send_request("quitgame")
+end
 
 function RESPONSE:ping(args)
     print("ping:" .. tostring(args.ok))
@@ -279,7 +315,9 @@ function REQUEST.subid(args)
     login()
 end
 
-function REQUEST.heartbeat() print("===heartbeat===") end
+function REQUEST.heartbeat()
+    print("===heartbeat===")
+end
 
 function REQUEST.characterupdate(args)
     -- print("characterupdate:")
@@ -297,7 +335,9 @@ function REQUEST.delaytest(args)
     }
 end
 
-function REQUEST.delayresult(args) print("delayresult:" .. args.time) end
+function REQUEST.delayresult(args)
+    print("delayresult:" .. args.time)
+end
 
 function REQUEST.moveto(args)
     local move = args.move
@@ -323,7 +363,7 @@ local function unpack_f(f)
             return nil, last
         end
         if r == "" then
-            error"Server closed"
+            error "Server closed"
         end
         return f(last .. r)
     end

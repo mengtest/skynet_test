@@ -1,22 +1,14 @@
-local enumtype = require"enumtype"
+local enumtype = require "enumtype"
 local math_sqrt = math.sqrt
 
 local _aoifun = {}
 
-local function DIST2(p1, p2) return ((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z)) end
-
--- 根据对象类型插入table
-local function inserttotablebytype(t, v, type)
-    if type ~= enumtype.CHAR_TYPE_PLAYER then
-        table.insert(t.monsterlist, v)
-    else
-        table.insert(t.playerlist, v)
-    end
+local function DIST2(p1, p2)
+    return ((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z))
 end
 
 -- 扩展方法表
 function _aoifun.expandmethod(obj)
-
     -- 获取obj的agent
     function obj:getagentid()
         assert(self.aoiobj)
@@ -36,7 +28,9 @@ function _aoifun.expandmethod(obj)
     end
 
     -- 从aoilist中获取对象
-    function obj:getfromaoilist(tempid) return self.aoilist[tempid] end
+    function obj:getfromaoilist(tempid)
+        return self.aoilist[tempid]
+    end
 
     -- 从aoilist中移除对象
     function obj:delfromaoilist(tempid)
@@ -45,10 +39,14 @@ function _aoifun.expandmethod(obj)
     end
 
     -- 清空aoilist
-    function obj:cleanaoilist() self.aoilist = {} end
+    function obj:cleanaoilist()
+        self.aoilist = {}
+    end
 
     -- 获取aoilist
-    function obj:getaoilist() return self.aoilist end
+    function obj:getaoilist()
+        return self.aoilist
+    end
 
     -- 获取可以发送信息的给前段的aoilist
     function obj:getsend2clientaoilist()
@@ -95,7 +93,7 @@ function _aoifun.expandmethod(obj)
         for k, v in pairs(aoiobj) do
             for kk, vv in pairs(v) do
                 if self.aoiobj[k] == nil then
-                    self.aoiobj[k] = { kk }
+                    self.aoiobj[k] = {kk}
                 end
                 self.aoiobj[k][kk] = vv
             end
@@ -103,7 +101,9 @@ function _aoifun.expandmethod(obj)
     end
 
     -- 获取aoi对象
-    function obj:getaoiobj() return self.aoiobj end
+    function obj:getaoiobj()
+        return self.aoiobj
+    end
 
     -- 设置角色所在坐标点
     function obj:setpos(pos)
@@ -125,10 +125,14 @@ function _aoifun.expandmethod(obj)
     end
 
     -- 获取两个角色之间的距离
-    function obj:getdistance(o) return math_sqrt(DIST2(self:getpos(), o:getpos())) end
+    function obj:getdistance(o)
+        return math_sqrt(DIST2(self:getpos(), o:getpos()))
+    end
 
     -- 获取两个角色之间的距离的平方
-    function obj:getdistancesquare(o) return DIST2(self:getpos(), o:getpos()) end
+    function obj:getdistancesquare(o)
+        return DIST2(self:getpos(), o:getpos())
+    end
 end
 
 return _aoifun

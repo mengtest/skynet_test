@@ -1,6 +1,6 @@
-local skynet = require"skynet"
-local service = require"service"
-local log = require"syslog"
+local skynet = require "skynet"
+local service = require "service"
+local log = require "syslog"
 
 local mysqlpool
 local CMD = {}
@@ -16,16 +16,22 @@ function CMD.playernamecheck(name)
             return false
         end
     else
-        log.error("errno:" .. result.errno .. " sqlstate:" .. result.sqlstate .. " err:" .. result.err .. "\nsql:" .. sql)
+        log.error(
+            "errno:" .. result.errno .. " sqlstate:" .. result.sqlstate .. " err:" .. result.err .. "\nsql:" .. sql
+        )
         return false
     end
 end
 
-function CMD.close() log.notice("close namecheck...") end
+function CMD.close()
+    log.notice("close namecheck...")
+end
 
-local function init() mysqlpool = skynet.uniqueservice("mysqlpool") end
+local function init()
+    mysqlpool = skynet.uniqueservice("mysqlpool")
+end
 
-service.init{
+service.init {
     command = CMD,
-    init = init,
+    init = init
 }

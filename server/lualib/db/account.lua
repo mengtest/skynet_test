@@ -1,9 +1,12 @@
-local log = require"syslog"
+local log = require "syslog"
+local table = table
 
 local dbmgrcmd = {}
 local account = {}
 
-function account.init(cmd) dbmgrcmd = cmd end
+function account.init(cmd)
+    dbmgrcmd = cmd
+end
 
 -- logind请求认证
 function account.auth(uid, password)

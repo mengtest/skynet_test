@@ -1,7 +1,7 @@
-local service = require"service"
-local redis = require"skynet.db.redis"
-local config = require"config.redisconf"
-local log = require"syslog"
+local service = require "service"
+local redis = require "skynet.db.redis"
+local config = require "config.redisconf"
+local log = require "syslog"
 
 local CMD = {}
 local center
@@ -9,7 +9,6 @@ local group = {}
 local ngroup
 
 function CMD.open()
-
     center = redis.connect(config.center)
     ngroup = #config.group
     for _, c in ipairs(config.group) do
@@ -35,7 +34,13 @@ end
 
 local function hash_str(str)
     local hash = 0
-    string.gsub(str, "(%w)", function(c) hash = hash + string.byte(c) end)
+    string.gsub(
+        str,
+        "(%w)",
+        function(c)
+            hash = hash + string.byte(c)
+        end
+    )
     return hash
 end
 
@@ -140,6 +145,6 @@ function CMD.del(uid, key)
     return result
 end
 
-service.init{
-    command = CMD,
+service.init {
+    command = CMD
 }

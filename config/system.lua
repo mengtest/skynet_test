@@ -9,7 +9,7 @@ config.logind = {
     port = 8101,
     multilogin = false, -- disallow multilogin
     name = "login_master",
-    instance = 8,
+    instance = 8
 }
 
 config.gated = {

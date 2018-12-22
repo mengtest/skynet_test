@@ -81,7 +81,7 @@ return _idmgr
 local _idmgr = {
     id = 1,
     max = 1,
-    pool = {},
+    pool = {}
 }
 
 local s_method = {
@@ -90,7 +90,9 @@ local s_method = {
 
 local function init_method(func)
     -- 设置最大id
-    function func:setmaxid(id) self.max = id end
+    function func:setmaxid(id)
+        self.max = id
+    end
 
     -- 分配一个id
     function func:createid()
@@ -115,7 +117,9 @@ local function init_method(func)
     end
 
     -- 释放一个id
-    function func:releaseid(id) self.pool[id] = nil end
+    function func:releaseid(id)
+        self.pool[id] = nil
+    end
 end
 
 init_method(s_method.__index)

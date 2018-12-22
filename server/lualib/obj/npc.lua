@@ -1,5 +1,5 @@
-local basechar = require"obj.basechar"
-local enumtype = require"enumtype"
+local basechar = require "obj.basechar"
+local enumtype = require "enumtype"
 
 local _npc = {}
 local s_method = {
@@ -8,7 +8,9 @@ local s_method = {
 
 local function init_method(npc)
     -- 获取npcid
-    function npc:getid() return self.id end
+    function npc:getid()
+        return self.id
+    end
 
     basechar.expandmethod(npc)
 end

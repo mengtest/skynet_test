@@ -1,8 +1,8 @@
-local protopatch = {}
+local protopatch
 
 protopatch = {
     "clientproto",
-    "serverproto",
+    "serverproto"
 }
 
 return protopatch

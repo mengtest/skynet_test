@@ -1,6 +1,6 @@
-local skynet = require"skynet"
-local basechar = require"obj.basechar"
-local enumtype = require"enumtype"
+local skynet = require "skynet"
+local basechar = require "obj.basechar"
+local enumtype = require "enumtype"
 local random = math.random
 local _monster = {}
 local s_method = {
@@ -9,7 +9,9 @@ local s_method = {
 
 local function init_method(monster)
     -- 获取npcid
-    function monster:getid() return self.id end
+    function monster:getid()
+        return self.id
+    end
 
     function monster:run(aoimgr)
         if skynet.time() >= self.nextruntime then
@@ -51,16 +53,12 @@ end
 init_method(s_method.__index)
 
 -- 创建monster
-function _monster.create(id, tempid, conf, mapobj)
+function _monster.create(id, x, y, z)
     local monster = basechar.create(enumtype.CHAR_TYPE_MONSTER)
-    -- monster特有属性
-    monster.id = 0
-    monster.nextruntime = 0
-
     monster = setmetatable(monster, s_method)
 
-    assert(id > 0)
-    assert(tempid > 0)
+    -- monster特有属性
+    monster.nextruntime = 0
     -- 设置怪物的id
     monster.id = id
 
@@ -69,22 +67,13 @@ function _monster.create(id, tempid, conf, mapobj)
         movement = {
             mode = "m",
             pos = {
-                x = conf.x,
-                y = conf.y,
-                z = conf.z,
-            },
-            map = mapobj:getmapid(),
+                x = x,
+                y = y,
+                z = z
+            }
         }
     }
     monster:setaoiobj(aoiobj)
-    monster:settempid(tempid)
-    -- 设置怪物信息
-    local monsterinfo = {
-        name = conf.name,
-        sex = conf.sex,
-        level = conf.level,
-    }
-    monster:setobjinfo(monsterinfo)
     return monster
 end
 

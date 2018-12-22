@@ -1,7 +1,5 @@
-local skynet = require"skynet"
-local handler = require"agent.handler"
-local timer = require"timer"
-local mfloor = math.floor
+local skynet = require "skynet"
+local handler = require "agent.handler"
 
 local REQUEST = {}
 local RESPONSE = {}
@@ -11,12 +9,17 @@ local _handler = handler.new(REQUEST, RESPONSE, CMD)
 
 local user
 
-_handler:init(function(u)
-    user = u
-    alreadytestnum = -1
-end)
+_handler:init(
+    function(u)
+        user = u
+    end
+)
 
-_handler:release(function() user = nil end)
+_handler:release(
+    function()
+        user = nil
+    end
+)
 
 function REQUEST.moveto(args)
     local newpos = args.pos

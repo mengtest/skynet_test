@@ -1,9 +1,9 @@
-local login = require"snax.loginserver"
-local crypt = require"skynet.crypt"
-local skynet = require"skynet"
-local config = require"config.system"
-local log = require"syslog"
-local cluster = require"skynet.cluster"
+local login = require "snax.loginserver"
+local crypt = require "skynet.crypt"
+local skynet = require "skynet"
+local config = require "config.system"
+local log = require "syslog"
+local cluster = require "skynet.cluster"
 
 local server = config.logind
 
@@ -25,7 +25,7 @@ function server.auth_handler(token)
     assert(password == "password", "Invalid password")
     log.debug("%s@%s is auth, password is %s", user, server, password)
     if not dbmgrserver then
-        dbmgrserver = skynet.uniqueservice"dbmgr"
+        dbmgrserver = skynet.uniqueservice "dbmgr"
     end
 
     -- 数据库查询账号信息
@@ -44,7 +44,7 @@ function server.login_handler(server, uid, secret)
     log.notice("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret))
     -- 校验要登陆的服务器是否存在
     -- gate启动的时候注册到server_list了
-    local gameserver = assert(server_list[server], "Unknown server")
+    local gameserver = assert(server_list[server], "Unknown server :"..server)
     -- only one can login, because disallow multilogin
     local last = user_online[uid]
     -- 已经登陆了的话，把上次登录的踢下线
@@ -67,10 +67,9 @@ end
 local CMD = {}
 
 -- 注册一个服务器
-function CMD.register_gate(server)
-    gated = cluster.proxy(server, "@gated")
-    server_list[server] = gated
-    log.notice("gate server register [" .. server .. "][" .. gated .. "]")
+function CMD.register_gate(servername)
+    server_list[servername] = cluster.proxy(servername, "@gated")
+    log.notice("gate server register [" .. servername .. "][" .. server_list[servername] .. "]")
 end
 
 -- 玩家下线

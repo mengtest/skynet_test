@@ -1,10 +1,11 @@
-local skynet = require"skynet"
-local sharedata = require"skynet.sharedata"
-local service = require"service"
-local gdd = require"gddata.gdd"
+local sharedata = require "skynet.sharedata"
+local service = require "service"
+local gdd = require "gddata.gdd"
 
-function init() sharedata.new("gdd", gdd) end
+function init()
+    sharedata.new("gdd", gdd)
+end
 
-service.init{
+service.init {
     init = init
 }

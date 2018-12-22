@@ -1,6 +1,7 @@
-local skynet = require"skynet"
-local log = require"syslog"
-local enumtype = require"enumtype"
+local skynet = require "skynet"
+local log = require "syslog"
+local enumtype = require "enumtype"
+local table = table
 
 local _aoimgr = {}
 
@@ -14,7 +15,9 @@ local AOI_RADIS = 200
 local AOI_RADIS2 = AOI_RADIS * AOI_RADIS
 local LEAVE_AOI_RADIS2 = AOI_RADIS2 * 4
 
-local function DIST2(p1, p2) return ((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z)) end
+local function DIST2(p1, p2)
+    return ((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z))
+end
 
 local s_method = {
     __index = {}
@@ -45,7 +48,7 @@ local function updateviewmonster(monstertempid)
         otheragent = OBJ[k].agent
         otherobj = {
             tempid = othertempid,
-            agent = OBJ[k].agent,
+            agent = OBJ[k].agent
         }
         local distance = DIST2(mypos, otherpos)
         if distance <= AOI_RADIS2 then
@@ -99,7 +102,6 @@ local function inserttotablebytype(t, v, type)
 end
 
 local function init_method(mgr)
-
     -- aoi回调
     function mgr:aoicallback(w, m)
         assert(OBJ[w], w)
@@ -143,7 +145,18 @@ local function init_method(mgr)
         else
             self:updateviewplayer(obj.tempid)
         end
-        assert(pcall(skynet.send, self.aoi, "text", "update " .. obj.tempid .. " " .. obj.movement.mode .. " " .. obj.movement.pos.x .. " " .. obj.movement.pos.y .. " " .. obj.movement.pos.z))
+        assert(
+            pcall(
+                skynet.send,
+                self.aoi,
+                "text",
+                "update " ..
+                    obj.tempid ..
+                        " " ..
+                            obj.movement.mode ..
+                                " " .. obj.movement.pos.x .. " " .. obj.movement.pos.y .. " " .. obj.movement.pos.z
+            )
+        )
         need_update = true
     end
 
@@ -151,13 +164,21 @@ local function init_method(mgr)
     function mgr:characterleave(obj)
         assert(obj)
         log.debug("%d leave aoi", obj.tempid)
-        assert(pcall(skynet.send, self.aoi, "text", "update " .. obj.tempid .. " d " .. obj.movement.pos.x .. " " .. obj.movement.pos.y .. " " .. obj.movement.pos.z))
+        assert(
+            pcall(
+                skynet.send,
+                self.aoi,
+                "text",
+                "update " ..
+                    obj.tempid .. " d " .. obj.movement.pos.x .. " " .. obj.movement.pos.y .. " " .. obj.movement.pos.z
+            )
+        )
         OBJ[obj.tempid] = nil
         if playerview[obj.tempid] then
             -- 玩家离开地图
             local monsterleavelist = {
                 tempid = obj.tempid,
-                monsterlist = {},
+                monsterlist = {}
             }
             for k, _ in pairs(playerview[obj.tempid]) do
                 if playerview[k] then
@@ -171,27 +192,34 @@ local function init_method(mgr)
                     -- 视野内的怪物，先插入到table中，后面一起发送
                     if monsterview[k][obj.tempid] then
                         -- 视野内需要通知
-                        table.insert(monsterleavelist.monsterlist, {
-                            tempid = k
-                        })
+                        table.insert(
+                            monsterleavelist.monsterlist,
+                            {
+                                tempid = k
+                            }
+                        )
                     end
                     monsterview[k][obj.tempid] = nil
                 end
             end
             -- 通知视野内的怪物移除自己
             if not table.empty(monsterleavelist.monsterlist) then
-                self.map_info.monstermgr:updatemonsteraoiinfo({
-                    monsterlist = {}
-                }, monsterleavelist, {
-                    monsterlist = {}
-                })
+                self.basemap.monstermgr:updatemonsteraoiinfo(
+                    {
+                        monsterlist = {}
+                    },
+                    monsterleavelist,
+                    {
+                        monsterlist = {}
+                    }
+                )
             end
             playerview[obj.tempid] = nil
         elseif monsterview[obj.tempid] then
             -- 怪物离开地图
             local monsterleavelist = {
                 tempid = obj.tempid,
-                monsterlist = {},
+                monsterlist = {}
             }
             for k, _ in pairs(monsterview[obj.tempid]) do
                 if playerview[k] then
@@ -221,17 +249,17 @@ local function init_method(mgr)
         -- 离开他人视野
         local leavelist = {
             playerlist = {},
-            monsterlist = {},
+            monsterlist = {}
         }
         -- 进入他人视野
         local enterlist = {
             playerlist = {},
-            monsterlist = {},
+            monsterlist = {}
         }
         -- 通知他人自己移动
         local movelist = {
             playerlist = {},
-            monsterlist = {},
+            monsterlist = {}
         }
 
         local othertempid
@@ -245,7 +273,7 @@ local function init_method(mgr)
             othertype = OBJ[k].type
             otherobj = {
                 tempid = othertempid,
-                agent = OBJ[k].agent,
+                agent = OBJ[k].agent
             }
             -- 计算对象之间的距离
             local distance = DIST2(mypos, otherpos)
@@ -310,20 +338,23 @@ local function init_method(mgr)
         end
 
         -- 怪物的更新合并一起发送
-        if not table.empty(leavelist.monsterlist) or not table.empty(enterlist.monsterlist) or not table.empty(movelist.monsterlist) then
+        if
+            not table.empty(leavelist.monsterlist) or not table.empty(enterlist.monsterlist) or
+                not table.empty(movelist.monsterlist)
+         then
             local monsterenterlist = {
                 obj = myobj,
-                monsterlist = enterlist.monsterlist,
+                monsterlist = enterlist.monsterlist
             }
             local monsterleavelist = {
                 tempid = viewertempid,
-                monsterlist = leavelist.monsterlist,
+                monsterlist = leavelist.monsterlist
             }
             local monstermovelist = {
                 obj = myobj,
-                monsterlist = movelist.monsterlist,
+                monsterlist = movelist.monsterlist
             }
-            self.map_info.monstermgr:updatemonsteraoiinfo(monsterenterlist, monsterleavelist, monstermovelist)
+            self.basemap.monstermgr:updatemonsteraoiinfo(monsterenterlist, monsterleavelist, monstermovelist)
         end
 
         -- 通知自己
@@ -340,10 +371,10 @@ end
 
 init_method(s_method.__index)
 
-function _aoimgr.create(aoi, map_info)
+function _aoimgr.create(aoi, basemap)
     local aoimgr = {
         aoi = aoi,
-        map_info = map_info,
+        basemap = basemap
     }
 
     setmetatable(aoimgr, s_method)

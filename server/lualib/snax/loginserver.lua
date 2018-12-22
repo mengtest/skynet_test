@@ -1,8 +1,8 @@
-local skynet = require"skynet"
-require"skynet.manager"
-local socket = require"skynet.socket"
-local crypt = require"skynet.crypt"
-local sprotoloader = require"sprotoloader"
+local skynet = require "skynet"
+require "skynet.manager"
+local socket = require "skynet.socket"
+local crypt = require "skynet.crypt"
+local sprotoloader = require "sprotoloader"
 local table = table
 local string = string
 local assert = assert
@@ -50,7 +50,9 @@ local function write(service, fd, text)
     assert_socket(service, socket.write(fd, package), fd)
 end
 
-local function read(fd, size) return socket.read(fd, size) or error() end
+local function read(fd, size)
+    return socket.read(fd, size) or error()
+end
 
 local function read_msg(fd)
     local s = read(fd, 2)
@@ -82,9 +84,10 @@ local function launch_slave(auth_handler)
             assert(args and args.clientkey, "invalid handshake request")
             clientkey = crypt.base64decode(args.clientkey)
             if #clientkey ~= 8 then
-                error"Invalid client key"
+                error "Invalid client key"
             end
-            local msg = response{
+            local msg =
+                response {
                 challenge = crypt.base64encode(challenge),
                 serverkey = crypt.base64encode(crypt.dhexchange(serverkey))
             }
@@ -100,13 +103,15 @@ local function launch_slave(auth_handler)
             local hmac = crypt.hmac64(challenge, secret)
             -- 对比两边利用 challenge 和 secret 生成的结果
             if hmac ~= crypt.base64decode(args.hmac) then
-                local msg = response{
+                local msg =
+                    response {
                     result = "400 Bad Request"
                 }
                 write("auth", fd, msg)
-                error"challenge failed"
+                error "challenge failed"
             else
-                local msg = response{
+                local msg =
+                    response {
                     result = "challenge success"
                 }
                 write("auth", fd, msg)
@@ -152,14 +157,17 @@ local function launch_slave(auth_handler)
     end
 
     -- 接受来自login master的认证请求
-    skynet.dispatch("lua", function(_, _, ...)
-        local ok, msg, len = pcall(auth_fd, ...)
-        if ok then
-            skynet.ret(msg, len)
-        else
-            skynet.ret(skynet.pack(false, msg))
+    skynet.dispatch(
+        "lua",
+        function(_, _, ...)
+            local ok, msg, len = pcall(auth_fd, ...)
+            if ok then
+                skynet.ret(msg, len)
+            else
+                skynet.ret(skynet.pack(false, msg))
+            end
         end
-    end)
+    )
 end
 
 -- 正在登陆的玩家list
@@ -173,18 +181,28 @@ local function accept(conf, s, fd, addr)
     -- 根据认证结果
     if not ok then
         if ok ~= nil then
-            sendrequest("response 401", fd, "subid", {
-                result = "401 Unauthorized"
-            })
+            sendrequest(
+                "response 401",
+                fd,
+                "subid",
+                {
+                    result = "401 Unauthorized"
+                }
+            )
         end
         error(server)
     end
 
     if not conf.multilogin then
         if user_login[uid] then
-            sendrequest("response 406", fd, "subid", {
-                result = "406 Not Acceptable"
-            })
+            sendrequest(
+                "response 406",
+                fd,
+                "subid",
+                {
+                    result = "406 Not Acceptable"
+                }
+            )
             error(string.format("User %s is already login", uid))
         end
 
@@ -198,13 +216,23 @@ local function accept(conf, s, fd, addr)
 
     if ok then
         err = err or ""
-        sendrequest("response 200", fd, "subid", {
-            result = "200 " .. crypt.base64encode(err)
-        })
+        sendrequest(
+            "response 200",
+            fd,
+            "subid",
+            {
+                result = "200 " .. crypt.base64encode(err)
+            }
+        )
     else
-        sendrequest("response 403", fd, "subid", {
-            result = "403 Not Forbidden"
-        })
+        sendrequest(
+            "response 403",
+            fd,
+            "subid",
+            {
+                result = "403 Not Forbidden"
+            }
+        )
         error(err)
     end
 end
@@ -218,7 +246,12 @@ local function launch_master(conf)
     local balance = 1
 
     -- login master 收到的lua类消息，处理logind中CMD命令
-    skynet.dispatch("lua", function(_, source, command, ...) skynet.ret(skynet.pack(conf.command_handler(command, ...))) end)
+    skynet.dispatch(
+        "lua",
+        function(_, source, command, ...)
+            skynet.ret(skynet.pack(conf.command_handler(command, ...)))
+        end
+    )
 
     -- 根据配置中conf.instance的的数量启动login slave
     -- 其实就是在启动loginserver，但是在start中会检测是否有master
@@ -231,54 +264,59 @@ local function launch_master(conf)
     -- login server启动监听
     local id = socket.listen(host, port)
     -- 接收到新的socket连接的时候，就会触发这里
-    socket.start(id, function(fd, addr)
-        local s = slave[balance]
-        balance = balance + 1
-        if balance > #slave then
-            balance = 1
-        end
-        -- 让连接去slave中认证
-        local ok, err = pcall(accept, conf, s, fd, addr)
-        if not ok then
-            if err ~= socket_error then
-                skynet.error(string.format("invalid client (fd = %d) error = %s", fd, err))
+    socket.start(
+        id,
+        function(fd, addr)
+            local s = slave[balance]
+            balance = balance + 1
+            if balance > #slave then
+                balance = 1
             end
+            -- 让连接去slave中认证
+            local ok, err = pcall(accept, conf, s, fd, addr)
+            if not ok then
+                if err ~= socket_error then
+                    skynet.error(string.format("invalid client (fd = %d) error = %s", fd, err))
+                end
+            end
+            socket.close_fd(fd) -- We haven't call socket.start, so use socket.close_fd rather than socket.close.
         end
-        socket.close_fd(fd) -- We haven't call socket.start, so use socket.close_fd rather than socket.close.
-    end)
+    )
 end
 
 -- 在logind中调用,将logind中的方法注册到这里来
 -- 调用的时候,启动了launch_master
 local function login(conf)
     local name = "." .. (conf.name or "login")
-    skynet.start(function()
-        local protoloader = skynet.uniqueservice"protoloader"
-        local slot = skynet.call(protoloader, "lua", "index", "clientproto")
-        host = sprotoloader.load(slot):host"package"
-        slot = skynet.call(protoloader, "lua", "index", "serverproto")
-        request = host:attach(sprotoloader.load(slot))
-        -- 查询launch_master是否启动
-        local loginmaster = skynet.localname(name)
-        if loginmaster then
-            -- 已经启动了launch_master的时候
-            -- 启动launch_slave
-            -- 用于与客户端握手校验
-            local auth_handler = assert(conf.auth_handler)
-            launch_master = nil
-            conf = nil
-            launch_slave(auth_handler)
-        else
-            -- 启动launch_master
-            -- 用于登录到login
-            launch_slave = nil
-            conf.auth_handler = nil
-            assert(conf.login_handler)
-            assert(conf.command_handler)
-            skynet.register(name)
-            launch_master(conf)
+    skynet.start(
+        function()
+            local protoloader = skynet.uniqueservice "protoloader"
+            local slot = skynet.call(protoloader, "lua", "index", "clientproto")
+            host = sprotoloader.load(slot):host "package"
+            slot = skynet.call(protoloader, "lua", "index", "serverproto")
+            request = host:attach(sprotoloader.load(slot))
+            -- 查询launch_master是否启动
+            local loginmaster = skynet.localname(name)
+            if loginmaster then
+                -- 已经启动了launch_master的时候
+                -- 启动launch_slave
+                -- 用于与客户端握手校验
+                local auth_handler = assert(conf.auth_handler)
+                launch_master = nil
+                conf = nil
+                launch_slave(auth_handler)
+            else
+                -- 启动launch_master
+                -- 用于登录到login
+                launch_slave = nil
+                conf.auth_handler = nil
+                assert(conf.login_handler)
+                assert(conf.command_handler)
+                skynet.register(name)
+                launch_master(conf)
+            end
         end
-    end)
+    )
 end
 
 return login

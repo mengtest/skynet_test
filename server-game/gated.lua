@@ -1,7 +1,7 @@
-local msgserver = require"snax.msgserver"
-local skynet = require"skynet"
-local log = require"syslog"
-local cluster = require"skynet.cluster"
+local msgserver = require "snax.msgserver"
+local skynet = require "skynet"
+local log = require "syslog"
+local cluster = require "skynet.cluster"
 
 local loginservice
 local server = {}
@@ -37,7 +37,7 @@ function server.login_handler(uid, secret)
         username = username,
         agent = agent,
         uid = uid,
-        subid = id,
+        subid = id
     }
 
     -- trash subid (no used)
@@ -155,7 +155,7 @@ function server.close_handler()
     log.notice("close gated...")
     -- 这边通知所有服务退出
     skynet.call(mapmgr, "lua", "close")
-    local dbmgr = skynet.uniqueservice"dbmgr"
+    local dbmgr = skynet.uniqueservice "dbmgr"
     skynet.call(dbmgr, "lua", "system", "close")
 end
 

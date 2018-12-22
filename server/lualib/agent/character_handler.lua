@@ -1,14 +1,14 @@
-local skynet = require"skynet"
-local handler = require"agent.handler"
-local log = require"base.syslog"
-local uuid = require"uuid"
-local sharedata = require"skynet.sharedata"
-local packer = require"db.packer"
-local player = require"obj.player"
+local skynet = require "skynet"
+local handler = require "agent.handler"
+local log = require "base.syslog"
+local uuid = require "uuid"
+local sharedata = require "skynet.sharedata"
+local packer = require "db.packer"
+local player = require "obj.player"
 
-local map_handler = require"agent.map_handler"
-local aoi_handler = require"agent.aoi_handler"
-local move_handler = require"agent.move_handler"
+local map_handler = require "agent.map_handler"
+local aoi_handler = require "agent.aoi_handler"
+local move_handler = require "agent.move_handler"
 
 local user
 local dbmgr
@@ -21,24 +21,28 @@ local REQUEST = {}
 
 local _handler = handler.new(REQUEST)
 
-_handler:init(function(u)
-    user = u
-    dbmgr = skynet.uniqueservice("dbmgr")
-    namecheck = skynet.uniqueservice("namecheck")
-    mapmgr = skynet.uniqueservice("mapmgr")
-    local obj = sharedata.query"gdd"
-    jobdata = obj["job"]
-    mapdata = obj["map"]
-end)
+_handler:init(
+    function(u)
+        user = u
+        dbmgr = skynet.uniqueservice("dbmgr")
+        namecheck = skynet.uniqueservice("namecheck")
+        mapmgr = skynet.uniqueservice("mapmgr")
+        local obj = sharedata.query "gdd"
+        jobdata = obj["job"]
+        mapdata = obj["map"]
+    end
+)
 
-_handler:release(function()
-    user = nil
-    dbmgr = nil
-    namecheck = nil
-    jobdata = nil
-    mapdata = nil
-    mapmgr = nil
-end)
+_handler:release(
+    function()
+        user = nil
+        dbmgr = nil
+        namecheck = nil
+        jobdata = nil
+        mapdata = nil
+        mapmgr = nil
+    end
+)
 
 local function loadlist()
     local list = skynet.call(dbmgr, "lua", "playerdate", "getlist", user.uid)
@@ -126,13 +130,13 @@ local function initUserData(dbdata)
             pos = {
                 x = dbdata.x,
                 y = dbdata.y,
-                z = dbdata.z,
+                z = dbdata.z
             },
-            map = dbdata.mapid,
+            map = dbdata.mapid
         },
         info = {
-            fd = user.fd,
-        },
+            fd = user.fd
+        }
     }
     user.character:setaoiobj(aoiobj)
     -- 角色信息
@@ -141,7 +145,7 @@ local function initUserData(dbdata)
         job = dbdata.job,
         sex = dbdata.sex,
         level = dbdata.level,
-        uuid = dbdata.uuid,
+        uuid = dbdata.uuid
     }
     user.character:setobjinfo(playerinfo)
     user.character:setdata(dbdata.data)

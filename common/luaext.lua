@@ -7,7 +7,9 @@ table.size = function(t)
     return count
 end
 
-table.empty = function(t) return not next(t) end
+table.empty = function(t)
+    return not next(t)
+end
 
 -- 浅拷贝
 table.clone = function(t, nometa)
@@ -38,10 +40,17 @@ table.copy = function(t, nometa)
 end
 
 ----string
-string.split = function(s, delim)
+string.split =
+    function(s, delim)
     local split = {}
     local pattern = "[^" .. delim .. "]+"
-    string.gsub(s, pattern, function(v) table.insert(split, v) end)
+    string.gsub(
+        s,
+        pattern,
+        function(v)
+            table.insert(split, v)
+        end
+    )
     return split
 end
 
@@ -55,13 +64,19 @@ string.rtrim = function(s, c)
     return (string.gsub(s, pattern, ""))
 end
 
-string.trim = function(s, c) return string.rtrim(string.ltrim(s, c), c) end
+string.trim = function(s, c)
+    return string.rtrim(string.ltrim(s, c), c)
+end
 
 ----function
 local function dump(obj)
     local getIndent, quoteStr, wrapKey, wrapVal, dumpObj
-    getIndent = function(level) return string.rep("\t", level) end
-    quoteStr = function(str) return '"' .. string.gsub(str, '"', '\\"') .. '"' end
+    getIndent = function(level)
+        return string.rep("\t", level)
+    end
+    quoteStr = function(str)
+        return '"' .. string.gsub(str, '"', '\\"') .. '"'
+    end
     wrapKey = function(val)
         if type(val) == "number" then
             return "[" .. val .. "]"
@@ -101,7 +116,7 @@ end
 do
     local _tostring = tostring
     tostring = function(v)
-        if type(v) == 'table' then
+        if type(v) == "table" then
             return dump(v)
         else
             return _tostring(v)

@@ -1,9 +1,9 @@
-local skynet = require"skynet"
-local dbtableconfig = require"config.dbtableconfig"
-local mysqlconf = require"config.mysqlconf"
-local account = require"db.account"
-local playerdate = require"db.playerdate"
-local log = require"syslog"
+local skynet = require "skynet"
+local dbtableconfig = require "config.dbtableconfig"
+local mysqlconf = require "config.mysqlconf"
+local account = require "db.account"
+local playerdate = require "db.playerdate"
+local log = require "syslog"
 
 local CMD = {}
 local MODULE = {}
@@ -12,7 +12,7 @@ local servername = {
     "redispool",
     "mysqlpool",
     -- "mongopool",
-    "dbsync",
+    "dbsync"
 }
 -- DB表结构
 -- schema[tablename] = { "pk","fields" = {}}
@@ -30,7 +30,13 @@ end
 
 -- 获取table的主键
 local function get_primary_key(tbname)
-    local sql = "select k.column_name " .. "from information_schema.table_constraints t " .. "join information_schema.key_column_usage k " .. "using (constraint_name,table_schema,table_name) " .. "where t.constraint_type = 'PRIMARY KEY' " .. "and t.table_schema= '" .. dbname .. "'" .. "and t.table_name = '" .. tbname .. "'"
+    local sql =
+        "select k.column_name " ..
+        "from information_schema.table_constraints t " ..
+            "join information_schema.key_column_usage k " ..
+                "using (constraint_name,table_schema,table_name) " ..
+                    "where t.constraint_type = 'PRIMARY KEY' " ..
+                        "and t.table_schema= '" .. dbname .. "'" .. "and t.table_name = '" .. tbname .. "'"
 
     local t = skynet.call(service["mysqlpool"], "lua", "execute", sql)
 
@@ -39,7 +45,12 @@ end
 
 -- 获取table中所有的字段
 local function get_fields(tbname)
-    local sql = string.format("select column_name from information_schema.columns where table_schema = '%s' and table_name = '%s'", dbname, tbname)
+    local sql =
+        string.format(
+        "select column_name from information_schema.columns where table_schema = '%s' and table_name = '%s'",
+        dbname,
+        tbname
+    )
     local rs = skynet.call(service["mysqlpool"], "lua", "execute", sql)
     local fields = {}
     for _, row in pairs(rs) do
@@ -55,7 +66,13 @@ end
 
 -- 获取字段的变量类型
 local function get_field_type(tbname, field)
-    local sql = string.format("select data_type from information_schema.columns where table_schema='%s' and table_name='%s' and column_name='%s'", dbname, tbname, field)
+    local sql =
+        string.format(
+        "select data_type from information_schema.columns where table_schema='%s' and table_name='%s' and column_name='%s'",
+        dbname,
+        tbname,
+        field
+    )
     local rs = skynet.call(service["mysqlpool"], "lua", "execute", sql)
     return rs[1]["data_type"] or rs[1]["DATA_TYPE"]
 end
@@ -79,7 +96,11 @@ local function load_schema_to_redis()
         local fields = get_fields(tbname)
         for _, field in pairs(fields) do
             local field_type = get_field_type(tbname, field)
-            if field_type == "char" or field_type == "varchar" or field_type == "tinytext" or field_type == "text" or field_type == "mediumtext" or field_type == "longtext" then
+            if
+                field_type == "char" or field_type == "varchar" or field_type == "tinytext" or field_type == "text" or
+                    field_type == "mediumtext" or
+                    field_type == "longtext"
+             then
                 schema[tbname]["fields"][field] = "string"
             else
                 schema[tbname]["fields"][field] = "number"
@@ -148,14 +169,36 @@ function CMD.load_data_impl(config, uid)
             if not config.columns then
                 sql = string.format("select * from %s order by %s asc limit %d, 1000", tbname, pk, offset)
             else
-                sql = string.format("select %s from %s order by %s asc limit %d, 1000", config.columns, tbname, pk, offset)
+                sql =
+                    string.format(
+                    "select %s from %s order by %s asc limit %d, 1000",
+                    config.columns,
+                    tbname,
+                    pk,
+                    offset
+                )
             end
         else
             -- 这边看是不是要修改一下，account = '%s'，尽量用数字ID查询？
             if not config.columns then
-                sql = string.format("select * from %s where uid = '%s' order by %s asc limit %d, 1000", tbname, uid, pk, offset)
+                sql =
+                    string.format(
+                    "select * from %s where uid = '%s' order by %s asc limit %d, 1000",
+                    tbname,
+                    uid,
+                    pk,
+                    offset
+                )
             else
-                sql = string.format("select %s from %s where uid = '%s' order by %s asc limit %d, 1000", config.columns, tbname, uid, pk, offset)
+                sql =
+                    string.format(
+                    "select %s from %s where uid = '%s' order by %s asc limit %d, 1000",
+                    config.columns,
+                    tbname,
+                    uid,
+                    pk,
+                    offset
+                )
             end
         end
 
@@ -166,21 +209,27 @@ function CMD.load_data_impl(config, uid)
         for _, row in pairs(rs) do
             -- 将mysql中读取到的信息添加到redis的哈希表中
             local rediskey = make_rediskey(row, config.rediskey)
-            do_redis({
-                "hmset",
-                tbname .. ":" .. rediskey,
-                row
-            }, uid)
+            do_redis(
+                {
+                    "hmset",
+                    tbname .. ":" .. rediskey,
+                    row
+                },
+                uid
+            )
 
             -- 对需要排序的数据插入有序集合
             if config.indexkey then
                 local indexkey = make_rediskey(row, config.indexkey)
-                do_redis({
-                    "zadd",
-                    tbname .. ":index:" .. indexkey,
-                    0,
-                    rediskey
-                }, uid)
+                do_redis(
+                    {
+                        "zadd",
+                        tbname .. ":index:" .. indexkey,
+                        0,
+                        rediskey
+                    },
+                    uid
+                )
             end
 
             table.insert(data, row)
@@ -229,17 +278,25 @@ function CMD.execute_single(tbname, uid, fields)
     local result
     local rediskey = tbname .. ":" .. uid
     if fields then
-        result = do_redis({
-            "hmget",
-            rediskey,
-            table.unpack(fields)
-        }, uid)
+        result =
+            do_redis(
+            {
+                "hmget",
+                rediskey,
+                table.unpack(fields)
+            },
+            uid
+        )
         result = make_pairs_table(result, fields)
     else
-        result = do_redis({
-            "hgetall",
-            rediskey
-        }, uid)
+        result =
+            do_redis(
+            {
+                "hgetall",
+                rediskey
+            },
+            uid
+        )
         result = make_pairs_table(result)
     end
 
@@ -269,53 +326,72 @@ end
 function CMD.execute_multi(tbname, uid, id, fields)
     local result
     local rediskey = tbname .. ":index:" .. uid
-    local ids = do_redis({
-        "zrange",
-        rediskey,
-        0,
-        -1
-    }, uid)
+    local ids =
+        do_redis(
+        {
+            "zrange",
+            rediskey,
+            0,
+            -1
+        },
+        uid
+    )
 
     if not table.empty(ids) then
         if id then
             -- 获取一条数据
             if fields then
-                result = do_redis({
-                    "hmget",
-                    tbname .. ":" .. id,
-                    table.unpack(fields)
-                }, uid)
+                result =
+                    do_redis(
+                    {
+                        "hmget",
+                        tbname .. ":" .. id,
+                        table.unpack(fields)
+                    },
+                    uid
+                )
                 result = make_pairs_table(result, fields)
                 result = convert_record(tbname, result)
             else
-                result = do_redis({
-                    "hgetall",
-                    tbname .. ":" .. id
-                }, uid)
+                result =
+                    do_redis(
+                    {
+                        "hgetall",
+                        tbname .. ":" .. id
+                    },
+                    uid
+                )
                 result = make_pairs_table(result)
                 result = convert_record(tbname, result)
             end
-
         else
             -- 获取全部数据
             result = {}
             if fields then
                 for _, _id in pairs(ids) do
-                    local t = do_redis({
-                        "hmget",
-                        tbname .. ":" .. _id,
-                        table.unpack(fields)
-                    }, uid)
+                    local t =
+                        do_redis(
+                        {
+                            "hmget",
+                            tbname .. ":" .. _id,
+                            table.unpack(fields)
+                        },
+                        uid
+                    )
                     t = make_pairs_table(t, fields)
                     t = convert_record(tbname, t)
                     result[tonumber(_id)] = t
                 end
             else
                 for _, _id in pairs(ids) do
-                    local t = do_redis({
-                        "hgetall",
-                        tbname .. ":" .. _id
-                    }, uid)
+                    local t =
+                        do_redis(
+                        {
+                            "hgetall",
+                            tbname .. ":" .. _id
+                        },
+                        uid
+                    )
                     t = make_pairs_table(t)
                     t = convert_record(tbname, t)
                     result[tonumber(_id)] = t
@@ -340,9 +416,12 @@ function CMD.execute_multi(tbname, uid, id, fields)
                 result = {}
                 for k, _ in pairs(t) do
                     result[k] = {}
-                    setmetatable(result, {
-                        __mode = "k"
-                    })
+                    setmetatable(
+                        result,
+                        {
+                            __mode = "k"
+                        }
+                    )
 
                     for i = 1, #fields do
                         result[k][fields[i]] = t[k][fields[i]]
@@ -366,19 +445,25 @@ function CMD.add(tbname, row, immed, nosync)
     local indexkey = config.indexkey
 
     local rediskey = make_rediskey(row, key)
-    do_redis({
-        "hmset",
-        tbname .. ":" .. rediskey,
-        row
-    }, uid)
+    do_redis(
+        {
+            "hmset",
+            tbname .. ":" .. rediskey,
+            row
+        },
+        uid
+    )
     if indexkey then
         local linkey = make_rediskey(row, indexkey)
-        do_redis({
-            "zadd",
-            tbname .. ":index:" .. linkey,
-            0,
-            rediskey
-        }, uid)
+        do_redis(
+            {
+                "zadd",
+                tbname .. ":index:" .. linkey,
+                0,
+                rediskey
+            },
+            uid
+        )
     end
 
     if not nosync then
@@ -412,19 +497,25 @@ function CMD.update(tbname, row, nosync)
     local indexkey = config.indexkey
 
     local rediskey = make_rediskey(row, key)
-    do_redis({
-        "hmset",
-        tbname .. ":" .. rediskey,
-        row
-    }, uid)
+    do_redis(
+        {
+            "hmset",
+            tbname .. ":" .. rediskey,
+            row
+        },
+        uid
+    )
     if indexkey then
         local linkey = make_rediskey(row, indexkey)
-        do_redis({
-            "zadd",
-            tbname .. ":index:" .. linkey,
-            row[indexkey],
-            rediskey
-        }, uid)
+        do_redis(
+            {
+                "zadd",
+                tbname .. ":index:" .. linkey,
+                row[indexkey],
+                rediskey
+            },
+            uid
+        )
     end
 
     if not nosync then
@@ -470,19 +561,24 @@ end
 
 MODULE["system"] = system
 
-skynet.start(function()
-    skynet.dispatch("lua", function(_, _, cmd, subcmd, ...)
-        local m = MODULE[cmd]
-        if not m then
-            log.notice("Unknown command : [%s]", cmd)
-            skynet.response()(false)
-        end
-        local f = m[subcmd]
-        if f then
-            skynet.ret(skynet.pack(f(...)))
-        else
-            log.notice("Unknown sub command : [%s]", subcmd)
-            skynet.response()(false)
-        end
-    end)
-end)
+skynet.start(
+    function()
+        skynet.dispatch(
+            "lua",
+            function(_, _, cmd, subcmd, ...)
+                local m = MODULE[cmd]
+                if not m then
+                    log.notice("Unknown command : [%s]", cmd)
+                    skynet.response()(false)
+                end
+                local f = m[subcmd]
+                if f then
+                    skynet.ret(skynet.pack(f(...)))
+                else
+                    log.notice("Unknown sub command : [%s]", subcmd)
+                    skynet.response()(false)
+                end
+            end
+        )
+    end
+)

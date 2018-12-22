@@ -1,16 +1,22 @@
-local skynet = require"skynet"
-local netpack = require"skynet.netpack"
-local socketdriver = require"skynet.socketdriver"
+local skynet = require "skynet"
+local netpack = require "skynet.netpack"
+local socketdriver = require "skynet.socketdriver"
 
 local gateserver = {}
 
-local socket -- listen socket
-local queue -- message queue
-local maxclient -- max client
+local socket  -- listen socket
+local queue  -- message queue
+local maxclient  -- max client
 local client_number = 0
-local CMD = setmetatable({}, {
-    __gc = function() netpack.clear(queue) end
-})
+local CMD =
+    setmetatable(
+    {},
+    {
+        __gc = function()
+            netpack.clear(queue)
+        end
+    }
+)
 local nodelay = false
 
 local connection = {}
@@ -136,10 +142,12 @@ function gateserver.start(handler)
         end
     end
 
-    skynet.register_protocol{
+    skynet.register_protocol {
         name = "socket",
         id = skynet.PTYPE_SOCKET, -- PTYPE_SOCKET = 6
-        unpack = function(msg, sz) return netpack.filter(queue, msg, sz) end,
+        unpack = function(msg, sz)
+            return netpack.filter(queue, msg, sz)
+        end,
         dispatch = function(_, _, q, type, ...)
             queue = q
             if type then
@@ -149,16 +157,21 @@ function gateserver.start(handler)
     }
 
     -- 接收其他server发过来的请求
-    skynet.start(function()
-        skynet.dispatch("lua", function(_, address, cmd, ...)
-            local f = CMD[cmd]
-            if f then
-                skynet.ret(skynet.pack(f(address, ...)))
-            else
-                skynet.ret(skynet.pack(handler.command(cmd, address, ...)))
-            end
-        end)
-    end)
+    skynet.start(
+        function()
+            skynet.dispatch(
+                "lua",
+                function(_, address, cmd, ...)
+                    local f = CMD[cmd]
+                    if f then
+                        skynet.ret(skynet.pack(f(address, ...)))
+                    else
+                        skynet.ret(skynet.pack(handler.command(cmd, address, ...)))
+                    end
+                end
+            )
+        end
+    )
 end
 
 return gateserver

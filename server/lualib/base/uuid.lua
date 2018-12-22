@@ -1,5 +1,5 @@
-local core = require"uuid.core"
-local skynet = require"skynet"
+local core = require "uuid.core"
+local skynet = require "skynet"
 local skynet_timeout = skynet.timeout
 
 -- [[uuid format : (33bits timestamp)(6bits harbor)(15bits service)(10bits sequence)]]
@@ -17,7 +17,12 @@ function uuid.gen()
     if not timestamp then
         timestamp = (os.time() << 31) | service
         sequence = 0
-        skynet_timeout(100, function() timestamp = nil end)
+        skynet_timeout(
+            100,
+            function()
+                timestamp = nil
+            end
+        )
     end
 
     sequence = sequence + 1
@@ -27,11 +32,11 @@ function uuid.gen()
 end
 
 function uuid.split(id)
-    local timestamp = id >> 31
-    local harbor = (id & 0x7fffffff) >> 25
-    local service = (id & 0x1ffffff) >> 10
-    local sequence = id & 0x3ff
-    return timestamp, harbor, service, sequence
+    local _timestamp = id >> 31
+    local _harbor = (id & 0x7fffffff) >> 25
+    local _service = (id & 0x1ffffff) >> 10
+    local _sequence = id & 0x3ff
+    return _timestamp, _harbor, _service, _sequence
 end
 
 return uuid

@@ -4,18 +4,25 @@ local mt = {
 }
 
 function handler.new(request, response, cmd)
-    return setmetatable({
-        init_func = {},
-        release_func = {},
-        request = request,
-        response = response,
-        cmd = cmd,
-    }, mt)
+    return setmetatable(
+        {
+            init_func = {},
+            release_func = {},
+            request = request,
+            response = response,
+            cmd = cmd
+        },
+        mt
+    )
 end
 
-function handler:init(f) table.insert(self.init_func, f) end
+function handler:init(f)
+    table.insert(self.init_func, f)
+end
 
-function handler:release(f) table.insert(self.release_func, f) end
+function handler:release(f)
+    table.insert(self.release_func, f)
+end
 
 local function merge(dest, t)
     if not dest or not t then
