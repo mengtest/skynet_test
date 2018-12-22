@@ -83,17 +83,17 @@ end
 function REQUEST.charactercreate (args)
 	if table.size(loadlist ()) >= 3 then
 		log.debug("%s create character failed, character num >= 3!",user.uid)
-		return
+		return { character = nil}
 	end
 	--TODO 检查名称的合法性
 	local result = skynet.call(namecheck,"lua","playernamecheck",args.name)
 	if not result then
 		log.debug("%s create character failed, name repeat!",user.uid)
-		return
+		return { character = nil}
 	end
 	if jobdata[args.job] == nil then
 		log.debug("%s create character failed, job error!",user.uid)
-		return
+		return { character = nil}
 	end
 	local character = create(args.name, args.job, args.sex)
 	if _handler.save(character) then

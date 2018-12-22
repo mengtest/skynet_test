@@ -31,15 +31,15 @@ local function maprun()
 end
 
 function CMD.addaoiobj(monstertempid,aoiobj)
-  --return monstermgr:addaoiobj(monstertempid,aoiobj)
+  return monstermgr:addaoiobj(monstertempid,aoiobj)
 end
 
 function CMD.updatemonsteraoiinfo(enterlist,leavelist,movelist)
-  --return monstermgr:updatemonsteraoiinfo(enterlist,leavelist,movelist)
+  return monstermgr:updatemonsteraoiinfo(enterlist,leavelist,movelist)
 end
 
 function CMD.updateaoilist(monstertempid,enterlist,leavelist)
-  --return monstermgr:updateaoilist(monstertempid,enterlist,leavelist)
+  return monstermgr:updateaoilist(monstertempid,enterlist,leavelist)
 end
 
 --获取临时id

@@ -20,9 +20,6 @@ skynet.start(function()
 	local dbmgr = skynet.uniqueservice "dbmgr"
 	skynet.call(dbmgr,"lua","system","open")
 
-	--启动名称检查服务器
-	skynet.uniqueservice("namecheck")
-
 	--启动登录服务器
 	local loginservice = skynet.uniqueservice("logind")
 	--注册服务名

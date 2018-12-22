@@ -96,128 +96,6 @@ local function inserttotablebytype(t,v,type)
     end
 end
 
---观看者坐标更新的时候
---根据距离情况通知他人自己的信息
-local function updateviewplayer(viewertempid)
-    if playerview[viewertempid] == nil then return end
-    local myobj = OBJ[viewertempid]
-    local mypos = myobj.movement.pos
-
-    --离开他人视野
-    local leavelist = {
-        playerlist = {},
-        monsterlist = {},
-    }
-    --进入他人视野
-    local enterlist = {
-        playerlist = {},
-        monsterlist = {},
-    }
-    --通知他人自己移动
-    local movelist = {
-        playerlist = {},
-        monsterlist = {},
-    }
-
-    local othertempid
-    local otherpos
-    local othertype
-    local otherobj
-    --遍历视野中的对象
-    for k,v in pairs(playerview[viewertempid]) do
-        othertempid = OBJ[k].tempid
-        otherpos = OBJ[k].movement.pos
-        othertype = OBJ[k].type
-        otherobj = {
-            tempid = othertempid,
-            agent = OBJ[k].agent,
-        }
-        --计算对象之间的距离
-        local distance = DIST2(mypos,otherpos)
-        if distance <= AOI_RADIS2 then
-            --在视野范围内的时候
-            if not v then
-                --之前不在视野内，加入进入视野列表
-                playerview[viewertempid][k] = true
-                if othertype ~= enumtype.CHAR_TYPE_PLAYER then
-                    monsterview[k][viewertempid] = true
-                    table.insert(enterlist.monsterlist,OBJ[k])
-                else
-                    playerview[k][viewertempid] = true
-                    table.insert(enterlist.playerlist,OBJ[k])
-                end
-            else
-                --在视野内，更新坐标
-                inserttotablebytype(movelist,otherobj,othertype)
-            end
-        elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
-            --视野范围外，但是还在aoi控制内
-            if v then
-                --之前在视野内的话，加入离开视野列表
-                playerview[viewertempid][k] = false
-                if othertype ~= enumtype.CHAR_TYPE_PLAYER then
-                    monsterview[k][viewertempid] = false
-                    table.insert(leavelist.monsterlist,otherobj)
-                else
-                    playerview[k][viewertempid] = false
-                    table.insert(leavelist.playerlist,otherobj)
-                end
-            end
-        else
-            --aoi控制外
-            if v then
-                --之前在视野内的话，加入离开视野列表
-                inserttotablebytype(leavelist,otherobj,othertype)
-            end
-            playerview[viewertempid][k] = nil
-            --从对方视野中移除自己
-            if othertype ~= enumtype.CHAR_TYPE_PLAYER then
-                monsterview[k][viewertempid] = nil
-            else
-                playerview[k][viewertempid] = nil
-            end
-        end
-    end
-
-    --离开他人视野
-    for _,v in pairs(leavelist.playerlist) do
-        skynet.send(v.agent,"lua","delaoiobj",viewertempid)
-    end
-
-    --重新进入视野
-    for _,v in pairs(enterlist.playerlist) do
-        skynet.send(v.agent,"lua","addaoiobj",myobj)
-    end
-
-    --视野范围内移动
-    for _,v in pairs(movelist.playerlist) do
-        skynet.send(v.agent,"lua","updateaoiobj",myobj)
-    end
-
-    --怪物的更新合并一起发送
-    if not table.empty(leavelist.monsterlist) or
-    not table.empty(enterlist.monsterlist) or
-    not table.empty(movelist.monsterlist) then
-        local monsterenterlist = {
-            obj = myobj,
-            monsterlist = enterlist.monsterlist,
-        }
-        local monsterleavelist = {
-            tempid = viewertempid,
-            monsterlist = leavelist.monsterlist,
-        }
-        local monstermovelist = {
-            obj = myobj,
-            monsterlist = movelist.monsterlist,
-        }
-        self.map_info.monstermgr:updatemonsteraoiinfo(monsterenterlist,monsterleavelist,monstermovelist)
-    end
-
-    --通知自己
-    skynet.send(myobj.agent,"lua","updateaoilist",enterlist,leavelist)
-end
-
-
 local function init_method(mgr)
 
     --aoi回调
@@ -261,7 +139,7 @@ local function init_method(mgr)
         if obj.type ~= enumtype.CHAR_TYPE_PLAYER then
             updateviewmonster(obj.tempid)
         else
-            updateviewplayer(obj.tempid)
+            self:updateviewplayer(obj.tempid)
         end
         assert(pcall(skynet.send, self.aoi, "text", "update "..obj.tempid.." "..obj.movement.mode.." "..obj.movement.pos.x.." "..obj.movement.pos.y.." "..obj.movement.pos.z))
         need_update = true
@@ -323,6 +201,128 @@ local function init_method(mgr)
         need_update = true
     end
 
+
+    --观看者坐标更新的时候
+    --根据距离情况通知他人自己的信息
+    function mgr:updateviewplayer(viewertempid)
+        if playerview[viewertempid] == nil then return end
+        local myobj = OBJ[viewertempid]
+        local mypos = myobj.movement.pos
+
+        --离开他人视野
+        local leavelist = {
+            playerlist = {},
+            monsterlist = {},
+        }
+        --进入他人视野
+        local enterlist = {
+            playerlist = {},
+            monsterlist = {},
+        }
+        --通知他人自己移动
+        local movelist = {
+            playerlist = {},
+            monsterlist = {},
+        }
+
+        local othertempid
+        local otherpos
+        local othertype
+        local otherobj
+        --遍历视野中的对象
+        for k,v in pairs(playerview[viewertempid]) do
+            othertempid = OBJ[k].tempid
+            otherpos = OBJ[k].movement.pos
+            othertype = OBJ[k].type
+            otherobj = {
+                tempid = othertempid,
+                agent = OBJ[k].agent,
+            }
+            --计算对象之间的距离
+            local distance = DIST2(mypos,otherpos)
+            if distance <= AOI_RADIS2 then
+                --在视野范围内的时候
+                if not v then
+                    --之前不在视野内，加入进入视野列表
+                    playerview[viewertempid][k] = true
+                    if othertype ~= enumtype.CHAR_TYPE_PLAYER then
+                        monsterview[k][viewertempid] = true
+                        table.insert(enterlist.monsterlist,OBJ[k])
+                    else
+                        playerview[k][viewertempid] = true
+                        table.insert(enterlist.playerlist,OBJ[k])
+                    end
+                else
+                    --在视野内，更新坐标
+                    inserttotablebytype(movelist,otherobj,othertype)
+                end
+            elseif distance > AOI_RADIS2 and distance <= LEAVE_AOI_RADIS2 then
+                --视野范围外，但是还在aoi控制内
+                if v then
+                    --之前在视野内的话，加入离开视野列表
+                    playerview[viewertempid][k] = false
+                    if othertype ~= enumtype.CHAR_TYPE_PLAYER then
+                        monsterview[k][viewertempid] = false
+                        table.insert(leavelist.monsterlist,otherobj)
+                    else
+                        playerview[k][viewertempid] = false
+                        table.insert(leavelist.playerlist,otherobj)
+                    end
+                end
+            else
+                --aoi控制外
+                if v then
+                    --之前在视野内的话，加入离开视野列表
+                    inserttotablebytype(leavelist,otherobj,othertype)
+                end
+                playerview[viewertempid][k] = nil
+                --从对方视野中移除自己
+                if othertype ~= enumtype.CHAR_TYPE_PLAYER then
+                    monsterview[k][viewertempid] = nil
+                else
+                    playerview[k][viewertempid] = nil
+                end
+            end
+        end
+
+        --离开他人视野
+        for _,v in pairs(leavelist.playerlist) do
+            skynet.send(v.agent,"lua","delaoiobj",viewertempid)
+        end
+
+        --重新进入视野
+        for _,v in pairs(enterlist.playerlist) do
+            skynet.send(v.agent,"lua","addaoiobj",myobj)
+        end
+
+        --视野范围内移动
+        for _,v in pairs(movelist.playerlist) do
+            skynet.send(v.agent,"lua","updateaoiobj",myobj)
+        end
+
+        --怪物的更新合并一起发送
+        if not table.empty(leavelist.monsterlist) or
+        not table.empty(enterlist.monsterlist) or
+        not table.empty(movelist.monsterlist) then
+            local monsterenterlist = {
+                obj = myobj,
+                monsterlist = enterlist.monsterlist,
+            }
+            local monsterleavelist = {
+                tempid = viewertempid,
+                monsterlist = leavelist.monsterlist,
+            }
+            local monstermovelist = {
+                obj = myobj,
+                monsterlist = movelist.monsterlist,
+            }
+            self.map_info.monstermgr:updatemonsteraoiinfo(monsterenterlist,monsterleavelist,monstermovelist)
+        end
+
+        --通知自己
+        skynet.send(myobj.agent,"lua","updateaoilist",enterlist,leavelist)
+    end
+    
     function mgr:update()
         if need_update then
             need_update = false
