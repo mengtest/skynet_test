@@ -2,11 +2,11 @@ local monsterobj = require "obj.monster"
 local basemap = require "map.basemap"
 local idmgr = require "idmgr"
 local enumtype = require "enumtype"
+local msgsender = require "msgsender"
 
 local CMD = basemap.cmd()
 local monstermgr = {CMD = CMD}
 
-local msgsender
 local monsterlist = {}
 
 -- 添加对象到怪物的aoilist中
@@ -24,7 +24,7 @@ function CMD.addaoiobj(monstertempid, aoiobj)
                 pos = monster:getpos()
             }
             -- 将我的信息发送给对方
-            msgsender:sendrequest(
+            msgsender.sendrequest(
                 "characterupdate",
                 {
                     info = info
@@ -49,7 +49,7 @@ function CMD.updatemonsteraoiinfo(enterlist, leavelist, movelist)
                 pos = monster:getpos()
             }
             -- 将我的信息发送给对方
-            msgsender:sendrequest(
+            msgsender.sendrequest(
                 "characterupdate",
                 {
                     info = info
@@ -84,7 +84,7 @@ function CMD.updateaoilist(monstertempid, enterlist, leavelist)
             pos = monster:getpos()
         }
         -- 将我的信息发送给对方
-        msgsender:sendrequest(
+        msgsender.sendrequest(
             "characterupdate",
             {
                 info = info
@@ -116,13 +116,8 @@ function monstermgr.createmonster(monsterid, x, y, z)
     local obj = monsterobj.create(monsterid, x, y, z)
     obj:settempid(tempid)
     assert(monsterlist[tempid] == nil)
-    obj:set_msgsender(msgsender)
     monsterlist[tempid] = obj
     CMD.characterenter(obj:getaoiobj())
-end
-
-function monstermgr.init(_msgsender)
-    msgsender = _msgsender
 end
 
 return monstermgr

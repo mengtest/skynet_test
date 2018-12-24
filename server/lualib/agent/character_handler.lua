@@ -149,7 +149,6 @@ local function initUserData(dbdata)
     }
     user.character:setobjinfo(playerinfo)
     user.character:setdata(dbdata.data)
-    user.character:set_msgsender(user.msgsender)
 end
 
 -- 选择角色

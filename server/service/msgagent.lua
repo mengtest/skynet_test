@@ -108,8 +108,7 @@ function CMD.login(source, uid, sid, secret, fd)
         REQUEST = {},
         RESPONSE = {},
         CMD = CMD,
-        sendrequest = sendrequest,
-        msgsender = msgsender
+        sendrequest = sendrequest
     }
 end
 
@@ -119,8 +118,8 @@ function CMD.auth(source, fd)
 
     REQUEST = user.REQUEST
     RESPONSE = user.RESPONSE
-    msgsender:init()
-    host = msgsender:gethost()
+    msgsender.init()
+    host = msgsender.gethost()
     -- you may load user data from database
     testhandler:register(user)
     character_handler:register(user)
@@ -161,17 +160,17 @@ skynet.memlimit(1 * 1024 * 1024)
 function sendrequest(name, args, ref, not_send_to_me, fdlist)
     if fdlist then
         -- 广播给指定列表中的对象
-        user.character:sendboardrequest(name, args, fdlist)
+        msgsender.sendboardrequest(name, args, fdlist, user.character)
     else
         if ref then
             if not_send_to_me then
                 -- 广播消息不发送给自己
-                user.character:sendboardrequest(name, args, user.character:getaoilist())
+                msgsender.sendboardrequest(name, args, user.character:getaoilist(), user.character)
             else
                 -- 广播消息发送给自己
                 fdlist = user.character:getaoilist()
                 table.insert(fdlist, user.character:getaoiobj())
-                user.character:sendboardrequest(name, args, fdlist)
+                msgsender.sendboardrequest(name, args, fdlist, user.character)
             end
         else
             -- 发送消息给自己
@@ -184,8 +183,6 @@ skynet.start(
     function()
         -- If you want to fork a work thread , you MUST do it in CMD.login
         -- 加载proto
-        msgsender = msgsender.create()
-
         skynet.dispatch(
             "lua",
             function(_, source, command, ...)

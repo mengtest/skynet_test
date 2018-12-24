@@ -1,5 +1,6 @@
 local basechar = require "obj.basechar"
 local enumtype = require "enumtype"
+local msgsender = require "msgsender"
 
 local _player = {}
 local s_method = {
@@ -9,7 +10,7 @@ local s_method = {
 local function init_method(player)
     -- 给自己客户端发消息
     function player:sendrequest(name, args)
-        self.msgsender:sendrequest(name, args, self.aoiobj.info)
+        msgsender.sendrequest(name, args, self.aoiobj.info)
     end
 
     -- 设置玩家所在地图id

@@ -47,14 +47,11 @@ end
 
 function CMD.open(conf)
     config = conf
-    msgsender = msgsender.create()
-    msgsender:init()
+    msgsender.init()
     idmgr.setmaxid(conf.maxtempid)
     basemap.init(conf)
     aoimgr.init(assert(skynet.launch("caoi", conf.name)))
-    monstermgr.init(msgsender)
     createmonstermgr.init(conf.name)
-    basemap.msgsender = msgsender
     createmonstermgr:createmonster()
     skynet.fork(maprun)
 end

@@ -28,9 +28,7 @@ function _basechar.create(type)
         -- 角色信息
         objinfo = {},
         -- 视野内的角色
-        aoilist = {},
-        -- msgsender
-        msgsender = nil
+        aoilist = {}
     }
     assert(type and type > enumtype.CHAR_TYPE_UNKNOW and type < enumtype.CHAR_TYPE_MAX)
 
@@ -40,23 +38,6 @@ end
 
 -- 扩展方法表
 function _basechar.expandmethod(obj)
-    function obj:sendboardrequest(name, args, agentlist)
-        assert(self.msgsender)
-        self.msgsender:sendboardrequest(name, args, agentlist, self)
-    end
-
-    -- 设置msgsender
-    function obj:set_msgsender(msgsender)
-        assert(msgsender)
-        self.msgsender = msgsender
-    end
-
-    -- 获取msgsender
-    function obj:get_msgsender()
-        assert(self.msgsender)
-        return self.msgsender
-    end
-
     -- 获取角色类型
     function obj:gettype()
         return self.aoiobj.type
