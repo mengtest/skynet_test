@@ -1,15 +1,12 @@
+下载编译：
 git clone https://github.com/Ding8222/skynet_test.git
-
 cd skynet_test
-
 git submodule update --init
-
 make linux
 
+运行：
 login-run.sh
-
 game-run.sh
-
 client.sh
 
 关于make，不同平台请使用不同参数 linux/macosx/freebsd
