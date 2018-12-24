@@ -19,7 +19,6 @@ function CMD.addaoiobj(monstertempid, aoiobj)
         monster:addtoaoilist(aoiobj)
         if aoiobj.type == enumtype.CHAR_TYPE_PLAYER then
             local info = {
-                name = monster:getname(),
                 tempid = monster:gettempid(),
                 pos = monster:getpos()
             }
@@ -44,7 +43,6 @@ function CMD.updatemonsteraoiinfo(enterlist, leavelist, movelist)
         if monster:getfromaoilist(enterlist.obj.tempid) == nil then
             monster:addtoaoilist(enterlist.obj)
             local info = {
-                name = monster:getname(),
                 tempid = monster:gettempid(),
                 pos = monster:getpos()
             }
@@ -79,7 +77,6 @@ function CMD.updateaoilist(monstertempid, enterlist, leavelist)
     for _, v in pairs(enterlist) do
         monster:addtoaoilist(v)
         local info = {
-            name = monster:getname(),
             tempid = monster:gettempid(),
             pos = monster:getpos()
         }

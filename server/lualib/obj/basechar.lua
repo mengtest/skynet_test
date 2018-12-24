@@ -22,11 +22,8 @@ function _basechar.create(type)
                     y = 0,
                     z = 0
                 },
-                map = 0
             }
         },
-        -- 角色信息
-        objinfo = {},
         -- 视野内的角色
         aoilist = {}
     }
@@ -56,43 +53,6 @@ function _basechar.expandmethod(obj)
     -- 是否玩家
     function obj:ismonster()
         return self.aoiobj.type == enumtype.CHAR_TYPE_MONSTER
-    end
-
-    -- 设置角色信息
-    function obj:setobjinfo(info)
-        assert(info)
-        self.objinfo = info
-    end
-
-    -- 获取角色信息
-    function obj:getobjinfo()
-        return self.objinfo
-    end
-
-    -- 设置角色名称
-    function obj:setname(name)
-        assert(self.objinfo)
-        assert(#name > 0)
-        self.objinfo.name = name
-    end
-
-    -- 获取角色名称
-    function obj:getname()
-        assert(self.objinfo)
-        return self.objinfo.name
-    end
-
-    -- 设置角色等级
-    function obj:setlevel(level)
-        assert(self.objinfo)
-        assert(level > 0)
-        self.objinfo.level = level
-    end
-
-    -- 获取角色等级
-    function obj:getlevel()
-        assert(self.objinfo)
-        return self.objinfo.level
     end
 
     -- 添加到初始化函数中

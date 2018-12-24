@@ -25,27 +25,64 @@ local function init_method(player)
 
     -- 设置玩家uuid
     function player:setuuid(uuid)
-        assert(self.objinfo)
+        assert(self.playerinfo)
         assert(uuid > 0)
-        self.objinfo.uuid = uuid
+        self.playerinfo.uuid = uuid
     end
 
     -- 获取玩家uuid
     function player:getuuid()
-        assert(self.objinfo)
-        return self.objinfo.uuid
+        assert(self.playerinfo)
+        return self.playerinfo.uuid
     end
 
     -- 获取角色职业
     function player:getjob()
-        assert(self.objinfo)
-        return self.objinfo.job
+        assert(self.playerinfo)
+        return self.playerinfo.job
     end
 
     -- 获取角色性别
     function player:getsex()
-        assert(self.objinfo)
-        return self.objinfo.sex
+        assert(self.playerinfo)
+        return self.playerinfo.sex
+    end
+
+    -- 设置角色名称
+    function player:setname(name)
+        assert(self.playerinfo)
+        assert(#name > 0)
+        self.playerinfo.name = name
+    end
+
+    -- 获取角色名称
+    function player:getname()
+        assert(self.playerinfo)
+        return self.playerinfo.name
+    end
+
+    -- 设置角色等级
+    function player:setlevel(level)
+        assert(self.playerinfo)
+        assert(level > 0)
+        self.playerinfo.level = level
+    end
+
+    -- 获取角色等级
+    function player:getlevel()
+        assert(self.playerinfo)
+        return self.playerinfo.level
+    end
+
+    -- 设置角色信息
+    function player:setobjinfo(info)
+        assert(info)
+        self.playerinfo = info
+    end
+
+    -- 获取角色信息
+    function player:getobjinfo()
+        return self.playerinfo
     end
 
     -- 设置玩家数据
