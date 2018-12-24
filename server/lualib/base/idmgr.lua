@@ -77,7 +77,7 @@ function _idmgr:releaseid(id)
 end
 
 return _idmgr
-]] -- ================================
+
 local _idmgr = {
     id = 1,
     max = 1,
@@ -125,3 +125,43 @@ end
 init_method(s_method.__index)
 
 return setmetatable(_idmgr, s_method)
+
+]] -- ================================
+local idmgr = {}
+
+local id = 1
+local max = 1
+local pool = {}
+-- 设置最大id
+function idmgr.setmaxid(_id)
+    max = _id
+end
+
+-- 分配一个id
+function idmgr.createid()
+    local tempid = id
+    id = id + 1
+    if pool[tempid] then
+        for i = 1, max do
+            tempid = nil
+            if pool[i] == nil then
+                tempid = i
+                break
+            end
+        end
+        assert(tempid)
+    end
+    id = tempid + 1
+    if id >= max then
+        id = 1
+    end
+    pool[tempid] = true
+    return tempid
+end
+
+-- 释放一个id
+function idmgr.releaseid(_id)
+    pool[_id] = nil
+end
+
+return idmgr

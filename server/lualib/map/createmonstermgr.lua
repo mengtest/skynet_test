@@ -1,38 +1,31 @@
---所在地图的刷怪信息
-local _createmonstermgr = {}
+local monstermgr = require "map.monstermgr"
+local sharedata = require "skynet.sharedata"
 
-local s_method = {
-    __index = {}
-}
+local createmonstermgr = {}
+local n = 5
 
-local function init_method(mgr)
-    -- 获取怪物列表
-    function mgr:getmonsterlist()
-        return self.monsterlist
-    end
+local monsterlist
 
-    function mgr:createmonster()
-        local n = 5
-        while n > 0 do
-            for _, v in pairs(self.monsterlist) do
-                self.basemap.monstermgr:createmonster(v.id, v.x, v.y, v.z)
-            end
-            n = n - 1
+-- 获取怪物列表
+function createmonstermgr.getmonsterlist()
+    return monsterlist
+end
+
+function createmonstermgr.createmonster()
+    while n > 0 do
+        for _, v in pairs(monsterlist) do
+            monstermgr.createmonster(v.id, v.x, v.y, v.z)
         end
+        n = n - 1
     end
 end
 
-init_method(s_method.__index)
-
-function _createmonstermgr.create(basemap, monsterlist)
-    local createmonstermgr = {
-        basemap = basemap,
-        monsterlist = monsterlist
-    }
-
-    setmetatable(createmonstermgr, s_method)
-
-    return createmonstermgr
+function createmonstermgr.init(mapname)
+    local obj = sharedata.query "gdd"
+    monsterlist = obj["createmonster"][mapname]
+    if mapname == "main" then
+        n = 10
+    end
 end
 
-return _createmonstermgr
+return createmonstermgr

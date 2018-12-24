@@ -13,7 +13,7 @@ local function init_method(monster)
         return self.id
     end
 
-    function monster:run(aoimgr)
+    function monster:run(basemap)
         if skynet.time() >= self.nextruntime then
             self.nextruntime = skynet.time() + random(100) * 0.01
             local pos = self:getpos()
@@ -44,7 +44,7 @@ local function init_method(monster)
                 pos.z = -300
             end
             self:setpos(pos)
-            aoimgr:characterenter(self:getaoiobj())
+            basemap.CMD.characterenter(self:getaoiobj())
         end
     end
 

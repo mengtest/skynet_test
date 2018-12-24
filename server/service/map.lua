@@ -4,14 +4,14 @@ require "skynet.manager"
 local util = require "util"
 local settimeout = util.settimeout
 
+local idmgr = require "idmgr"
 local log = require "syslog"
 local basemap = require "map.basemap"
 local aoimgr = require "map.aoimgr"
 local monstermgr = require "map.monstermgr"
 local createmonstermgr = require "map.createmonstermgr"
-local sharedata = require "skynet.sharedata"
 
-local CMD = {}
+local CMD = basemap.cmd()
 local update_thread
 local config
 
@@ -28,88 +28,40 @@ skynet.register_protocol {
 
 -- 0.1秒更新一次
 local function maprun()
-    monstermgr:monsterrun()
-    aoimgr:update()
+    monstermgr.monsterrun()
+    aoimgr.update()
     update_thread = settimeout(10, maprun)
-end
-
-function CMD.addaoiobj(monstertempid, aoiobj)
-    return monstermgr:addaoiobj(monstertempid, aoiobj)
-end
-
-function CMD.updatemonsteraoiinfo(enterlist, leavelist, movelist)
-    return monstermgr:updatemonsteraoiinfo(enterlist, leavelist, movelist)
-end
-
-function CMD.updateaoilist(monstertempid, enterlist, leavelist)
-    return monstermgr:updateaoilist(monstertempid, enterlist, leavelist)
 end
 
 -- 获取临时id
 function CMD.gettempid()
-    return basemap:createtempid()
-end
-
--- 角色请求进入地图
-function CMD.characterenter(aoiobj)
-    aoimgr:characterenter(aoiobj)
-end
-
--- 角色离开地图
-function CMD.characterleave(aoiobj)
-    aoimgr:characterleave(aoiobj)
-    basemap:releasetempid(aoiobj.tempid)
-end
-
--- 角色加载地图完成，正式进入地图
-function CMD.characterready(aoiobj)
-    aoimgr:characterenter(aoiobj)
-    return true
+    return idmgr.createid()
 end
 
 -- 角色移动
 function CMD.moveto(aoiobj)
     -- TODO 这边应该检查pos的合法性
-    aoimgr:characterenter(aoiobj)
+    CMD.characterenter(aoiobj)
     return true, aoiobj.movement.pos
-end
-
-function CMD.aoicallback(w, m)
-    aoimgr:aoicallback(w, m)
 end
 
 function CMD.open(conf)
     config = conf
     msgsender = msgsender.create()
     msgsender:init()
-    basemap = basemap.create(conf.id, conf.type, conf)
-    aoimgr = aoimgr.create(assert(skynet.launch("caoi", conf.name)), basemap)
-    basemap.CMD = CMD
+    idmgr.setmaxid(conf.maxtempid)
+    basemap.init(conf)
+    aoimgr.init(assert(skynet.launch("caoi", conf.name)))
+    monstermgr.init(msgsender)
+    createmonstermgr.init(conf.name)
     basemap.msgsender = msgsender
-    basemap.aoimgr = aoimgr
-    basemap:loadmapinfo()
-    monstermgr = monstermgr.create(basemap)
-    basemap.monstermgr = monstermgr
-    local obj = sharedata.query "gdd"
-    createmonstermgr = createmonstermgr.create(basemap, obj["createmonster"][conf.name])
-    basemap.createmonstermgr = createmonstermgr
     createmonstermgr:createmonster()
-
     skynet.fork(maprun)
 end
 
 function CMD.close()
     log.notice("close map(%s)...", config.name)
     update_thread()
-end
-
-local function merge(dest, t)
-    if not dest or not t then
-        return
-    end
-    for k, v in pairs(t) do
-        dest[k] = v
-    end
 end
 
 -- skynet.memlimit(10 * 1024 * 1024)
