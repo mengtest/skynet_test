@@ -7,7 +7,7 @@ local loader = {}
 local data = {}
 
 local function load(name)
-    local filename = string.format("./common/proto/%s.lua", name)
+    local filename = string.format("./common/proto/%s.sproto", name)
     local f = assert(io.open(filename), "Can't open " .. name)
     local t = f:read "a"
     f:close()
