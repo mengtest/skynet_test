@@ -4,8 +4,6 @@ local protopatch = require "config.protopatch"
 local profile = require "skynet.profile"
 local log = require "syslog"
 local cluster = require "skynet.cluster"
-local builder = require "skynet.datasheet.builder"
-local gamedata = require "gamedata.gamedata"
 
 skynet.start(
     function()
@@ -15,7 +13,7 @@ skynet.start(
         -- 启动后台
         skynet.newservice("debug_console", 8124)
 
-        builder.new("gamedata", gamedata)
+        skynet.uniqueservice("gamedataload")
 
         -- 加载解析proto文件
         local proto = skynet.uniqueservice "protoloader"
@@ -25,8 +23,8 @@ skynet.start(
         local dbmgr = skynet.uniqueservice "dbmgr"
         skynet.call(dbmgr, "lua", "system", "open")
 
-        --启动名称检查服务
-        skynet.uniqueservice("namecheck")
+        --查询名称检查服务地址
+        namecheck = cluster.proxy "login@namecheck"
 
         -- 启动网关
         local gated = skynet.uniqueservice("gated")

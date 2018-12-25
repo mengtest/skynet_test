@@ -21,6 +21,9 @@ skynet.start(
         local dbmgr = skynet.uniqueservice "dbmgr"
         skynet.call(dbmgr, "lua", "system", "open")
 
+        local namecheck = skynet.uniqueservice("namecheck")
+        cluster.register("namecheck", namecheck)
+
         -- 启动登录服务器
         local loginservice = skynet.uniqueservice("logind")
         -- 注册服务名

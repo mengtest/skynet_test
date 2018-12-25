@@ -1,4 +1,5 @@
 local skynet = require "skynet"
+local cluster = require "skynet.cluster"
 local handler = require "agent.handler"
 local log = require "base.syslog"
 local uuid = require "uuid"
@@ -12,9 +13,6 @@ local move_handler = require "agent.move_handler"
 
 local user
 local dbmgr
-local namecheck
-local jobdata
-local mapdata
 local mapmgr
 
 local REQUEST = {}
@@ -25,11 +23,7 @@ _handler:init(
     function(u)
         user = u
         dbmgr = skynet.uniqueservice("dbmgr")
-        namecheck = skynet.uniqueservice("namecheck")
         mapmgr = skynet.uniqueservice("mapmgr")
-        local obj = datasheet.query "gamedata"
-        jobdata = obj["job"]
-        mapdata = obj["map"]
     end
 )
 
@@ -37,9 +31,6 @@ _handler:release(
     function()
         user = nil
         dbmgr = nil
-        namecheck = nil
-        jobdata = nil
-        mapdata = nil
         mapmgr = nil
     end
 )
@@ -93,6 +84,7 @@ function REQUEST.charactercreate(args)
         }
     end
     -- TODO 检查名称的合法性
+    local namecheck = cluster.proxy "login@namecheck"
     local result = skynet.call(namecheck, "lua", "playernamecheck", args.name)
     if not result then
         log.debug("%s create character failed, name repeat!", user.uid)
@@ -100,6 +92,8 @@ function REQUEST.charactercreate(args)
             character = nil
         }
     end
+    local obj = datasheet.query "gamedata"
+    local jobdata = obj["job"]
     if jobdata[args.job] == nil then
         log.debug("%s create character failed, job error!", user.uid)
         return {
@@ -120,7 +114,8 @@ end
 
 -- 初始化角色信息
 local function initUserData(dbdata)
-    assert(mapdata[dbdata.mapid])
+    local obj = datasheet.query "gamedata"
+    local mapdata = obj["map"]
     user.character = player.create()
     user.character:setmapid(mapdata[dbdata.mapid].name)
     -- aoi对象，主要用于广播相关
