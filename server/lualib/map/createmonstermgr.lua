@@ -1,5 +1,5 @@
 local monstermgr = require "map.monstermgr"
-local sharedata = require "skynet.sharedata"
+local datasheet = require "skynet.datasheet"
 
 local createmonstermgr = {}
 local n = 5
@@ -21,7 +21,7 @@ function createmonstermgr.createmonster()
 end
 
 function createmonstermgr.init(mapname)
-    local obj = sharedata.query "gdd"
+    local obj = datasheet.query "gamedata"
     monsterlist = obj["createmonster"][mapname]
     if mapname == "main" then
         n = 10

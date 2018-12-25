@@ -2,7 +2,7 @@ local skynet = require "skynet"
 local handler = require "agent.handler"
 local log = require "base.syslog"
 local uuid = require "uuid"
-local sharedata = require "skynet.sharedata"
+local datasheet = require "skynet.datasheet"
 local packer = require "db.packer"
 local player = require "obj.player"
 
@@ -27,7 +27,7 @@ _handler:init(
         dbmgr = skynet.uniqueservice("dbmgr")
         namecheck = skynet.uniqueservice("namecheck")
         mapmgr = skynet.uniqueservice("mapmgr")
-        local obj = sharedata.query "gdd"
+        local obj = datasheet.query "gamedata"
         jobdata = obj["job"]
         mapdata = obj["map"]
     end
@@ -74,7 +74,7 @@ local function create(name, job, sex)
         level = 1,
         createtime = os.time(),
         logintime = os.time(),
-        mapid = 0,
+        mapid = 1,
         x = 0,
         y = 0,
         z = 0,

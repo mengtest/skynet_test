@@ -11,7 +11,7 @@ local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
 require "luaext"
 -- 加载解析proto文件
-local f = io.open("./common/proto/clientproto.lua")
+local f = io.open("./common/proto/clientproto.sproto")
 if f == nil then
     print("proto open faild")
     return
@@ -19,7 +19,7 @@ end
 local t = f:read "a"
 f:close()
 sprotoloader.save(sprotoparser.parse(t), 0)
-f = io.open("./common/proto/serverproto.lua")
+f = io.open("./common/proto/serverproto.sproto")
 if f == nil then
     print("proto open faild")
     return
