@@ -1,5 +1,5 @@
 local skynet = require "skynet"
-local config = require "config.system"
+local config = require "config.gameconfig"
 local protopatch = require "config.protopatch"
 local profile = require "skynet.profile"
 local log = require "syslog"
@@ -7,7 +7,7 @@ local cluster = require "skynet.cluster"
 
 skynet.start(
     function()
-        log.debug(config.gated.servername .. " Server start")
+        log.debug(config.servername .. " Server start")
         profile.start()
         local t = os.clock()
         -- 启动后台
@@ -31,9 +31,9 @@ skynet.start(
         -- 注册服务名
         cluster.register("gated", gated)
         -- 注册自己
-        cluster.open(config.gated.servername)
+        cluster.open(config.servername)
 
-        skynet.call(gated, "lua", "open", config.gated)
+        skynet.call(gated, "lua", "open", config)
 
         local time = profile.stop()
         local t1 = os.clock()

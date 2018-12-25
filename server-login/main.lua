@@ -1,5 +1,5 @@
 local skynet = require "skynet"
-local config = require "config.system"
+local config = require "config.loginconfig"
 local protopatch = require "config.protopatch"
 local profile = require "skynet.profile"
 local log = require "syslog"

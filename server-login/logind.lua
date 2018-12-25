@@ -1,11 +1,11 @@
 local login = require "snax.loginserver"
 local crypt = require "skynet.crypt"
 local skynet = require "skynet"
-local config = require "config.system"
+local config = require "config.loginconfig"
 local log = require "syslog"
 local cluster = require "skynet.cluster"
 
-local server = config.logind
+local server = config
 
 local dbmgrserver
 
@@ -44,7 +44,7 @@ function server.login_handler(server, uid, secret)
     log.notice("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret))
     -- 校验要登陆的服务器是否存在
     -- gate启动的时候注册到server_list了
-    local gameserver = assert(server_list[server], "Unknown server :"..server)
+    local gameserver = assert(server_list[server], "Unknown server :" .. server)
     -- only one can login, because disallow multilogin
     local last = user_online[uid]
     -- 已经登陆了的话，把上次登录的踢下线
