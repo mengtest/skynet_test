@@ -9,6 +9,7 @@ harbor = 0
 start = "main"
 nodename = "game0"
 
+logservice = "syslog"
 lualoader = skynet_root.."lualib/loader.lua"
 
 lua_path = "./?.lua;"..

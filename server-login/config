@@ -8,6 +8,7 @@ thread = 8
 harbor = 0
 start = "main"
 
+logservice = "syslog"
 lualoader = skynet_root.."lualib/loader.lua"
 
 lua_path = "./?.lua;"..

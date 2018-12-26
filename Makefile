@@ -21,7 +21,7 @@ LUACLIB_OBJ = $(foreach v, $(LUA_CLIB_NAME), $(LUACLIB_PATH)/$(v).so)
 CSERVICE_PATH ?= server/cservice
 CSERVICE_CSRC_PATH ?= server/service-src
 
-CSERVICE_NAME = caoi
+CSERVICE_NAME = caoi syslog
 CSERVICE_OBJ = $(foreach v, $(CSERVICE_NAME), $(CSERVICE_PATH)/$(v).so)
 
 VPATH += $(LUACLIB_SRC_PATH)
@@ -42,6 +42,10 @@ $(LUACLIB_OBJ) : $(LUACLIB_PATH)/%.so : lua-%.c
 	@$(CC) $(CFLAGS) $(SHARED) $^ -o $@
 
 $(CSERVICE_PATH)/caoi.so : service_aoi.c aoi.c
+	@echo "	$@"
+	@$(CC) $(CFLAGS) $(SHARED) $^ -o $@
+
+$(CSERVICE_PATH)/syslog.so : service_syslog.c
 	@echo "	$@"
 	@$(CC) $(CFLAGS) $(SHARED) $^ -o $@
 
