@@ -115,7 +115,6 @@ function server.register_handler(conf)
     -- 向logind发送请求
     -- 将自己注册到server_list
     loginservice = cluster.proxy("login", "@loginservice")
-    skynet.call(loginservice, "lua", "register_gate", servername)
     mapmgr = skynet.uniqueservice("mapmgr")
     skynet.call(mapmgr, "lua", "open")
 

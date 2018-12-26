@@ -61,16 +61,40 @@ function server.login_handler(server, uid, secret)
         subid = subid,
         server = server
     }
+    print(user_online)
     return subid
 end
 
-local CMD = {}
-
--- 注册一个服务器
-function CMD.register_gate(servername)
-    server_list[servername] = cluster.proxy(servername, "@gated")
-    log.notice("gate server register [" .. servername .. "][" .. server_list[servername] .. "]")
+-- login启动的时候，尝试获取所有gate的地址
+function server.register_gate()
+    local config_name = skynet.getenv "cluster"
+    local tmp = {}
+    if config_name then
+        local f = assert(io.open(config_name))
+        local source = f:read "*a"
+        f:close()
+        assert(load(source, "@" .. config_name, "t", tmp))()
+    end
+    for k, _ in pairs(tmp) do
+        if string.find(k, "game") ~= nil then
+            local gated = cluster.proxy(k, "@gated")
+            server_list[k] = gated
+            local ok, userlist = pcall(cluster.call, k, "@gated", "getalluser")
+            if ok then
+                for uid, _subid in pairs(userlist) do
+                    user_online[uid] = {
+                        address = gated,
+                        subid = _subid,
+                        server = k
+                    }
+                end
+                print(user_online)
+            end
+        end
+    end
 end
+
+local CMD = {}
 
 -- 玩家下线
 function CMD.logout(uid, subid)

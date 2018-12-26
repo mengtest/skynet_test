@@ -23,9 +23,6 @@ skynet.start(
         local dbmgr = skynet.uniqueservice "dbmgr"
         skynet.call(dbmgr, "lua", "system", "open")
 
-        --查询名称检查服务地址
-        namecheck = cluster.proxy "login@namecheck"
-
         -- 启动网关
         local gated = skynet.uniqueservice("gated")
         -- 注册服务名

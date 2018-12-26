@@ -238,6 +238,7 @@ local function accept(conf, s, fd, addr)
 end
 
 local function launch_master(conf)
+    conf.register_gate()
     local instance = conf.instance or 8
     assert(instance > 0)
     local host = conf.host or "0.0.0.0"

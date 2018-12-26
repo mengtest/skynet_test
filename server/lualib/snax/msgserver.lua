@@ -83,7 +83,7 @@ skynet.register_protocol {
 }
 
 -- 在线玩家， logind 那边验证成功的玩家
--- 再gated那边已经为该玩家启动了msgagent
+-- 在gated那边已经为该玩家启动了msgagent
 local user_online = {}
 -- 正在认证中的玩家
 local handshake = {}
@@ -92,6 +92,7 @@ local connection = {}
 
 local host
 
+-- 向指定玩家发送信息
 function server.request(username, msg)
     local u = user_online[username]
     local fd = u.fd
@@ -102,16 +103,19 @@ function server.request(username, msg)
     end
 end
 
+-- 解析username
 function server.userid(username)
     -- base64(uid)@base64(server)#base64(subid)
     local uid, servername, subid = username:match "([^@]*)@([^#]*)#(.*)"
     return b64decode(uid), b64decode(subid), b64decode(servername)
 end
 
+-- 合成username
 function server.username(uid, subid, servername)
     return string.format("%s@%s#%s", b64encode(uid), b64encode(servername), b64encode(tostring(subid)))
 end
 
+-- 玩家下线
 function server.logout(username)
     local u = user_online[username]
     user_online[username] = nil
@@ -121,6 +125,7 @@ function server.logout(username)
     end
 end
 
+-- 玩家登陆
 function server.login(username, secret)
     assert(user_online[username] == nil)
     user_online[username] = {
@@ -132,11 +137,24 @@ function server.login(username, secret)
     }
 end
 
+-- 获取玩家ip
 function server.ip(username)
     local u = user_online[username]
     if u and u.fd then
         return u.ip
     end
+end
+
+-- 获取所有在线玩家的信息
+local function getalluser()
+    local userlist = {}
+    local _uid
+    local _subid
+    for k, _ in pairs(user_online) do
+        _uid, _subid = server.userid(k)
+        userlist[_uid] = _subid
+    end
+    return userlist
 end
 
 -- gated调用了start函数
@@ -147,6 +165,8 @@ function server.start(conf)
     local handler = {}
 
     local CMD = {
+        getalluser = getalluser,
+        -- 这边主要是gated那边定义的函数
         login = assert(conf.login_handler),
         logout = assert(conf.logout_handler),
         kick = assert(conf.kick_handler),
