@@ -61,7 +61,6 @@ function server.login_handler(server, uid, secret)
         subid = subid,
         server = server
     }
-    print(user_online)
     return subid
 end
 
@@ -88,7 +87,6 @@ function server.register_gate()
                         server = k
                     }
                 end
-                print(user_online)
             end
         end
     end
