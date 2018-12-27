@@ -60,6 +60,9 @@ genfilename(struct logger * inst, time_t now) {
 
 bool
 trycreatenewlogfile(struct logger * inst, time_t now){
+	if(inst->pathname == NULL)
+		return false;
+
 	if(inst->filetime != now/FILE_TIME)
 	{
 		inst->filetime = now/FILE_TIME;
