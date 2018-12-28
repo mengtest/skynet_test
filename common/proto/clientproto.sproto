@@ -118,3 +118,12 @@ quitgame 11{
 		ok 0 : boolean
 	}
 }
+
+changemap 12{
+	request {
+		mapid 0 : integer
+	}
+	response {
+		ok 0 : boolean
+	}
+}

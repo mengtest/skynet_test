@@ -103,7 +103,7 @@ syslog_cb(struct skynet_context * context, void *ud, int type, int session, uint
 				}
 			}
             localtime_r(&now, &tm);
-            fprintf(inst->handle, "[%d/%d/%d-%d:%d:%d][:%08x] ", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, source);
+            fprintf(inst->handle, "[%d/%02d/%02d-%02d:%02d:%02d][:%08x] ", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, source);
             fwrite(msg, sz , 1, inst->handle);
             fprintf(inst->handle, "\n");
             inst->filesize += fflush(inst->handle);

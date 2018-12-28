@@ -123,6 +123,9 @@ function server.register_handler(conf)
         table.insert(agentpool, skynet.newservice("msgagent", skynet.self()))
     end
     log.notice("create %d agent", n)
+
+    instancemgr = skynet.uniqueservice("instancemgr")
+    skynet.call(instancemgr, "lua", "open", n)
 end
 
 -- call by msgagent(server send request)

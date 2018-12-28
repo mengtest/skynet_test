@@ -28,7 +28,7 @@ make linux
 ```
 login-run.sh
 game-run.sh
-client.sh
+client.sh 账号 玩家名（没有的时候会创建）
 ```
 
 * 关于make，不同平台请使用不同参数 linux/macosx/freebsd
@@ -50,5 +50,9 @@ git config --global core.autocrlf input
 
 目前使用了redis和mysql
 在config目录下，配置redis和mysql的地址和账号密码，并配置数据库"skynet"（也可以直接根据情况修改），将tools中的sql文件导入到mysql中
+
+* skynet的编译需要用到autoconf和readline-devel
+
+* lua的安装，在官网上根据提示下载安装，最后需要使用make install
 
 可以使用vscode中的插件LuaCoderAssist来进行代码分析和格式化（我这边用的就是这个格式化）

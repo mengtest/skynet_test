@@ -31,7 +31,8 @@ server_root.."service/?.lua;"..
 server_root.."lualib/db/?.lua;"..
 server_dir.."?.lua;"
 
-snax = server_root.."service/?.lua;"..server_root.."lualib/?.lua"
+snax = server_root.."service/?.lua;"..
+server_root.."lualib/?.lua;"
 
 preload = server_root.."lualib/global/preload.lua"
 

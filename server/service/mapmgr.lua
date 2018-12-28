@@ -19,6 +19,7 @@ function CMD.open()
             local name = conf.name
             local m = skynet.newservice("map", name)
             skynet.call(m, "lua", "open", conf)
+            skynet.call(m, "lua", "init", conf)
             mapinstance[name] = m
         end
         n = n - 1

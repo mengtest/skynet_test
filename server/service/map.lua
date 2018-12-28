@@ -45,15 +45,18 @@ function CMD.moveto(aoiobj)
     return true, aoiobj.movement.pos
 end
 
+function CMD.init(conf)
+    createmonstermgr.init(conf.name)
+    createmonstermgr:createmonster()
+    skynet.fork(maprun)
+end
+
 function CMD.open(conf)
     config = conf
     msgsender.init()
     idmgr.setmaxid(conf.maxtempid)
     basemap.init(conf)
     aoimgr.init(assert(skynet.launch("caoi", conf.name)))
-    createmonstermgr.init(conf.name)
-    createmonstermgr:createmonster()
-    skynet.fork(maprun)
 end
 
 function CMD.close()

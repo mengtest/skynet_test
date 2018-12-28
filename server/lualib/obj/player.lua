@@ -13,6 +13,16 @@ local function init_method(player)
         msgsender.sendrequest(name, args, self.aoiobj.info)
     end
 
+    -- 设置副本地址
+    function player:setinstanceaddress(address)
+        self.instanceaddress = address
+    end
+
+    -- 获取副本地址
+    function player:getinstanceaddress()
+        return self.instanceaddress
+    end
+
     -- 设置玩家所在地图id
     function player:setmapid(mapid)
         self.mapid = mapid

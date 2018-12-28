@@ -163,7 +163,7 @@ function REQUEST.characterpick(args)
             user.character:setaoimode("w")
             local tempid = skynet.call(mapaddress, "lua", "gettempid")
             if tempid > 0 then
-                user.map = mapaddress
+                user.mapaddress = mapaddress
                 user.character:settempid(tempid)
                 map_handler:register(user)
                 aoi_handler:register(user)
