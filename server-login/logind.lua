@@ -55,13 +55,14 @@ function server.login_handler(server, uid, secret)
         log.warning("user %s is already online", uid)
     end
     -- 向服务器发送登陆请求
-    local subid = tostring(skynet.call(gameserver, "lua", "login", uid, secret))
+    local subid, gateip, gateport = skynet.call(gameserver, "lua", "login", uid, secret)
+    subid = tostring(subid)
     user_online[uid] = {
         address = gameserver,
         subid = subid,
         server = server
     }
-    return subid
+    return subid, gateip, gateport
 end
 
 -- login启动的时候，尝试获取所有gate的地址

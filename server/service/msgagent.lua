@@ -24,10 +24,10 @@ local function logout(type)
     end
     log.notice("logout, agent(:%08X) type(%d) subid(%d)", skynet.self(), type, user.subid)
 
-    if user.mapaddress then
-        local map = user.mapaddress
-        user.mapaddress = nil
+    if user.character ~= nil then
+        local map = user.character:getmapaddress()
         if map then
+            user.character:setmapaddress(nil)
             skynet.send(map, "lua", "characterleave", user.character:getaoiobj())
             -- 在玩家被挤下线的时候，这边可能还没有init
             -- 所以要放在这边release

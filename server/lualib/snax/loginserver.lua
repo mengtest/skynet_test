@@ -210,7 +210,7 @@ local function accept(conf, s, fd, addr)
     end
 
     -- 通知gameserver登陆
-    local ok, err = pcall(conf.login_handler, server, uid, secret)
+    local ok, err, _gateip, _gateport = pcall(conf.login_handler, server, uid, secret)
     -- unlock login
     user_login[uid] = nil
 
@@ -221,7 +221,9 @@ local function accept(conf, s, fd, addr)
             fd,
             "subid",
             {
-                result = "200 " .. crypt.base64encode(err)
+                result = "200 " .. crypt.base64encode(err),
+                gateip = _gateip,
+                gateport = _gateport
             }
         )
     else

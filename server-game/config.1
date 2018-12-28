@@ -1,0 +1,43 @@
+root = "$ROOT/"
+skynet_root = "./3rd/skynet/"
+cjson_root = "./3rd/lua-cjson/"
+server_root = "./server/"
+server_dir = "./server-game/"
+common = "./common/"
+thread = 8
+harbor = 0
+start = "main"
+nodename = "game1"
+
+logservice = "syslog"
+lualoader = skynet_root.."lualib/loader.lua"
+
+lua_path = "./?.lua;"..
+server_root.."lualib/?.lua;"..
+server_root.."lualib/base/?.lua;"..
+server_root.."lualib/global/?.lua;"..
+common.."?.lua;"..
+skynet_root.."lualib/?.lua;"..
+skynet_root.."lualib/?/init.lua;"
+
+lua_cpath = skynet_root.."luaclib/?.so;"..
+server_root.."luaclib/?.so;"..
+cjson_root.."?.so;"
+
+cpath = skynet_root.."cservice/?.so;"..
+server_root.."cservice/?.so;"
+luaservice = skynet_root.."service/?.lua;"..
+server_root.."service/?.lua;"..
+server_root.."lualib/db/?.lua;"..
+server_dir.."?.lua;"
+
+snax = server_root.."service/?.lua;"..server_root.."lualib/?.lua"
+
+preload = server_root.."lualib/global/preload.lua"
+
+cluster = "./config/cluster/clustername.lua"
+
+if $DAEMON then
+	logger = server_dir.."run"
+	daemon = server_dir.."run/skynet.pid"
+end

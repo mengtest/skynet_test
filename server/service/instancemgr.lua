@@ -30,7 +30,7 @@ function CMD.open(n)
 end
 
 function CMD.close()
-    log.notice("close mapmgr...")
+    log.notice("close instancemgr...")
     for name, map in pairs(instancepool) do
         skynet.call(map, "lua", "close")
         instancepool[name] = nil

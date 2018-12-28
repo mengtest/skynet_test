@@ -19,7 +19,8 @@ _handler:release(
     function()
         user = nil
         if instanceaddress ~= nil then
-
+            skynet.send(instancemgr, "lua", "releaseinstance", instanceaddress)
+            instanceaddress = nil
         end
     end
 )
@@ -27,7 +28,6 @@ _handler:release(
 -- 请求进入副本
 function REQUEST.enterinstance(args)
     assert(args.instanceid)
-    assert(user.mapaddress)
     local ok = false
     local obj = datasheet.query "gamedata"
     local insatncedata = obj["insatnce"][args.instanceid]
@@ -39,14 +39,14 @@ function REQUEST.enterinstance(args)
         
         if instanceaddress ~= nil then
             skynet.call(instanceaddress, "lua", "init", insatncedata)
-            user.character:setaoimode("w")
             local tempid = skynet.call(instanceaddress, "lua", "gettempid")
             if tempid > 0 then
-                skynet.send(instanceaddress, "lua", "characterleave", user.character:getaoiobj())
-                user.mapaddress = instanceaddress
+                user.character:setaoimode("w")
+                skynet.send(user.character:getmapaddress(), "lua", "characterleave", user.character:getaoiobj())
+                user.character:setmapaddress(instanceaddress)
                 user.character:settempid(tempid)
-                user.character:setinstanceaddress(instanceaddress)
                 --user.character:setmapid(args.mapid)
+                ok = true
                 log.debug("enterinstance and set tempid:" .. user.character:gettempid())
             else
                 log.debug("player enterinstance failed:" .. args.instanceid)

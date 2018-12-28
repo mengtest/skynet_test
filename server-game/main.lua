@@ -7,11 +7,13 @@ local cluster = require "skynet.cluster"
 
 skynet.start(
     function()
-        log.debug(config.servername .. " Server start")
+        local nodename = skynet.getenv("nodename")
+        config = config[nodename]
+        log.debug(nodename .. " Server start")
         profile.start()
         local t = os.clock()
         -- 启动后台
-        skynet.newservice("debug_console", 8124)
+        skynet.newservice("debug_console", config.debug_port)
 
         skynet.uniqueservice("gamedataload")
 
@@ -28,7 +30,7 @@ skynet.start(
         -- 注册服务名
         cluster.register("gated", gated)
         -- 注册自己
-        cluster.open(config.servername)
+        cluster.open(nodename)
 
         skynet.call(gated, "lua", "open", config)
 

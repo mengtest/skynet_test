@@ -31,7 +31,8 @@ sprotoloader.save(sprotoparser.parse(t), 1)
 local testip = "127.0.0.1"
 -- local testip = "47.52.138.32"
 local loginserverip = testip
-local gameserverip = testip
+local gateip
+local gateport
 
 --[[
 --proto消息解析测试
@@ -119,7 +120,7 @@ function RESPONSE:handshake(args)
 end
 
 local token = {
-    server = "game0",
+    server = "game1",
     user = account,
     pass = "password"
 }
@@ -153,7 +154,7 @@ local index = 1
 local function login()
     -- 连接到gameserver
     print("connect index:" .. index)
-    fd = assert(socket.connect(gameserverip, 8547))
+    fd = assert(socket.connect(gateip, gateport))
     local handshake =
         string.format(
         "%s@%s#%s:%d",
@@ -299,6 +300,7 @@ end
 local REQUEST = {}
 
 function REQUEST.subid(args)
+    print(args)
     print("subid")
     -- 收到服务器发来的确认信息
     local result = args.result
@@ -310,8 +312,9 @@ function REQUEST.subid(args)
     -- 通过确认信息获取subid
     subid = crypt.base64decode(string.sub(result, 5))
 
-    print("login ok, subid=", subid)
-
+    print("login ok, subid="..subid)
+    gateip = args.gateip
+    gateport = args.gateport
     login()
 end
 

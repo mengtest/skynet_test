@@ -21,9 +21,8 @@ _handler:release(
 
 -- client通知地图加载成功
 function REQUEST.mapready()
-    assert(user.mapaddress)
     user.character:setaoimode("wm")
-    local ok = skynet.call(user.mapaddress, "lua", "characterenter", user.character:getaoiobj())
+    local ok = skynet.call(user.character:getmapaddress(), "lua", "characterenter", user.character:getaoiobj())
     return {
         ok = ok
     }
@@ -32,15 +31,14 @@ end
 -- 请求改变地图
 function REQUEST.changemap(args)
     assert(args.mapid)
-    assert(user.mapaddress)
     local ok = false
     local mapaddress = skynet.call(mapmgr, "lua", "getmapaddressbyid", args.mapid)
     if mapaddress ~= nil then
         user.character:setaoimode("w")
         local tempid = skynet.call(mapaddress, "lua", "gettempid")
         if tempid > 0 then
-            skynet.send(map, "lua", "characterleave", user.mapaddress)
-            user.mapaddress = mapaddress
+            skynet.send(user.character:getmapaddress(), "lua", "characterleave", user.character:getaoiobj())
+            user.character:setmapaddress(mapaddress)
             user.character:settempid(tempid)
             user.character:setmapid(args.mapid)
             ok = true

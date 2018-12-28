@@ -160,10 +160,10 @@ function REQUEST.characterpick(args)
         initUserData(list)
         local mapaddress = skynet.call(mapmgr, "lua", "getmapaddressbyid", user.character:getmapid())
         if mapaddress ~= nil then
-            user.character:setaoimode("w")
             local tempid = skynet.call(mapaddress, "lua", "gettempid")
             if tempid > 0 then
-                user.mapaddress = mapaddress
+                user.character:setaoimode("w")
+                user.character:setmapaddress(mapaddress)
                 user.character:settempid(tempid)
                 map_handler:register(user)
                 aoi_handler:register(user)

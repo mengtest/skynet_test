@@ -11,6 +11,8 @@ local internal_id = 0
 local agentpool = {}
 local servername
 local mapmgr
+local gateip
+local gateport
 
 -- login server disallow multi login, so login_handler never be reentry
 -- call by login server
@@ -52,7 +54,7 @@ function server.login_handler(uid, secret)
     msgserver.login(username, secret)
 
     -- you should return unique subid
-    return id
+    return id, gateip, gateport
 end
 
 -- call by self
@@ -111,6 +113,8 @@ end
 -- 通过对gate发送open请求的时候
 -- 在msgserver的open中调用了
 function server.register_handler(conf)
+    gateip = assert(conf.publicaddress)
+    gateport = assert(conf.port)
     servername = assert(conf.servername)
     -- 向logind发送请求
     -- 将自己注册到server_list
