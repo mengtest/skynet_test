@@ -36,7 +36,7 @@ local function logout(type)
             move_handler:unregister(user)
         end
     end
-
+    --character_handler.save(user.character)
     testhandler:unregister(user)
     character_handler:unregister(user)
     skynet.send(gate, "lua", "logout", user.uid, user.subid, skynet.self())

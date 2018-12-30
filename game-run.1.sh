@@ -16,4 +16,4 @@ do
 	esac
 done
 
-$ROOT/3rd/skynet/skynet $ROOT/server-game/config.1
+$ROOT/3rd/skynet/skynet $ROOT/server-game1/config

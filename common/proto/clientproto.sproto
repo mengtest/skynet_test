@@ -127,3 +127,12 @@ changemap 12{
 		ok 0 : boolean
 	}
 }
+
+enterinstance 13{
+	request {
+		instanceid 0 : integer
+	}
+	response {
+		ok 0 : boolean
+	}
+}

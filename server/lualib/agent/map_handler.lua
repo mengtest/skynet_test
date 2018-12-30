@@ -1,11 +1,13 @@
 local skynet = require "skynet"
 local handler = require "agent.handler"
+local log = require "base.syslog"
 
 local REQUEST = {}
 
 local _handler = handler.new(REQUEST)
 
 local user
+local mapmgr
 
 _handler:init(
     function(u)
@@ -32,22 +34,25 @@ end
 function REQUEST.changemap(args)
     assert(args.mapid)
     local ok = false
-    local mapaddress = skynet.call(mapmgr, "lua", "getmapaddressbyid", args.mapid)
-    if mapaddress ~= nil then
-        user.character:setaoimode("w")
-        local tempid = skynet.call(mapaddress, "lua", "gettempid")
-        if tempid > 0 then
-            skynet.send(user.character:getmapaddress(), "lua", "characterleave", user.character:getaoiobj())
-            user.character:setmapaddress(mapaddress)
-            user.character:settempid(tempid)
-            user.character:setmapid(args.mapid)
-            ok = true
-            log.debug("change map and set tempid:" .. user.character:gettempid())
+    if args.mapid ~= user.character:getmapid() then
+        mapmgr = mapmgr or skynet.uniqueservice("mapmgr")
+        local mapaddress = skynet.call(mapmgr, "lua", "getmapaddressbyid", args.mapid)
+        if mapaddress ~= nil then
+            user.character:setaoimode("w")
+            local tempid = skynet.call(mapaddress, "lua", "gettempid")
+            if tempid > 0 then
+                skynet.send(user.character:getmapaddress(), "lua", "characterleave", user.character:getaoiobj())
+                user.character:setmapaddress(mapaddress)
+                user.character:settempid(tempid)
+                user.character:setmapid(args.mapid)
+                ok = true
+                log.debug("change map and set tempid:" .. user.character:getmapid())
+            else
+                log.debug("player change map failed:" .. args.mapid)
+            end
         else
-            log.debug("player change map failed:" .. user.character:getmapid())
+            log.debug("player get change map address failed:" .. args.mapid)
         end
-    else
-        log.debug("player get change map address failed:" .. user.character:getmapid())
     end
     return {
         ok = ok

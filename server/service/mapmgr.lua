@@ -6,8 +6,8 @@ local CMD = {}
 local mapinstance = {}
 
 -- 获取地图地址
-function CMD.getmapaddressbyid(mapname)
-    return mapinstance[mapname]
+function CMD.getmapaddressbyid(mapid)
+    return mapinstance[mapid]
 end
 
 function CMD.open()
@@ -15,12 +15,11 @@ function CMD.open()
     local mapdata = obj["map"]
     local n = 1
     while n > 0 do
-        for _, conf in pairs(mapdata) do
-            local name = conf.name
-            local m = skynet.newservice("map", name)
+        for mapid, conf in pairs(mapdata) do
+            local m = skynet.newservice("map", conf.name)
             skynet.call(m, "lua", "open", conf)
             skynet.call(m, "lua", "init", conf)
-            mapinstance[name] = m
+            mapinstance[mapid] = m
         end
         n = n - 1
     end
@@ -28,9 +27,9 @@ end
 
 function CMD.close()
     log.notice("close mapmgr...")
-    for name, map in pairs(mapinstance) do
-        skynet.call(map, "lua", "close")
-        mapinstance[name] = nil
+    for mapid, mapaddress in pairs(mapinstance) do
+        skynet.call(mapaddress, "lua", "close")
+        mapinstance[mapid] = nil
     end
 end
 

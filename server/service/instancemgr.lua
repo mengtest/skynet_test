@@ -4,11 +4,12 @@ local log = require "syslog"
 local CMD = {}
 local instancepool = {}
 
--- 获取地图地址
+-- 获取副本地址
 function CMD.getinstanceaddress()
     local instance
     if #instancepool == 0 then
         instance = skynet.newservice("map")
+        skynet.call(instance, "lua", "open", {maxtempid = 65535})
         log.debug("instancepool is empty, new instance(:%08X) created", instance)
     else
         instance = table.remove(instancepool, 1)
@@ -17,15 +18,16 @@ function CMD.getinstanceaddress()
     return instance
 end
 
+-- 释放一个副本
 function CMD.releaseinstance(instance)
     table.insert(instancepool, instance)
 end
 
 function CMD.open(n)
     for _ = 1, n do
-        local m = skynet.newservice("map")
-        skynet.call(m, "lua", "open", {maxtempid = 65535})
-        table.insert(instancepool, m)
+        local instance = skynet.newservice("map")
+        skynet.call(instance, "lua", "open", {maxtempid = 65535})
+        table.insert(instancepool, instance)
     end
 end
 

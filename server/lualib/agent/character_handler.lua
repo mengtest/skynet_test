@@ -114,10 +114,8 @@ end
 
 -- 初始化角色信息
 local function initUserData(dbdata)
-    local obj = datasheet.query "gamedata"
-    local mapdata = obj["map"]
     user.character = player.create()
-    user.character:setmapid(mapdata[dbdata.mapid].name)
+    user.character:setmapid(dbdata.mapid)
     -- aoi对象，主要用于广播相关
     local aoiobj = {
         movement = {
@@ -169,7 +167,7 @@ function REQUEST.characterpick(args)
                 aoi_handler:register(user)
                 move_handler:register(user)
                 log.debug("enter map and set tempid:" .. user.character:gettempid())
-                _handler:unregister(user)
+                --_handler:unregister(user)
             else
                 log.debug("player enter map failed:" .. user.character:getmapid())
             end

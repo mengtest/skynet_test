@@ -1,6 +1,7 @@
 local skynet = require "skynet"
 local handler = require "agent.handler"
 local datasheet = require "skynet.datasheet"
+local log = require "base.syslog"
 
 local REQUEST = {}
 
@@ -8,6 +9,7 @@ local _handler = handler.new(REQUEST)
 
 local user
 local instanceaddress
+local instancemgr
 
 _handler:init(
     function(u)
@@ -31,12 +33,12 @@ function REQUEST.enterinstance(args)
     local ok = false
     local obj = datasheet.query "gamedata"
     local insatncedata = obj["insatnce"][args.instanceid]
-    if insatncedata ~= nill then
-        if instanceaddress = nil then
-            local instancemgr = skynet.uniqueservice("instancemgr")
+    if insatncedata ~= nil then
+        if instanceaddress == nil then
+            instancemgr = instancemgr or skynet.uniqueservice("instancemgr")
             instanceaddress = skynet.call(instancemgr, "lua", "getinstanceaddress")
         end
-        
+
         if instanceaddress ~= nil then
             skynet.call(instanceaddress, "lua", "init", insatncedata)
             local tempid = skynet.call(instanceaddress, "lua", "gettempid")

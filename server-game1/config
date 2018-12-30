@@ -38,6 +38,6 @@ preload = server_root.."lualib/global/preload.lua"
 cluster = "./config/cluster/clustername.lua"
 
 if $DAEMON then
-	logger = server_dir.."run"
-	daemon = server_dir.."run/skynet.pid"
+	logger = "./server-game1/run"
+	daemon = "./server-game1/run/skynet.pid"
 end

@@ -227,6 +227,16 @@ local function moveto()
     )
 end
 
+local function changemap()
+    print("send changemap")
+    send_request(
+        "changemap",
+        {
+            mapid = 2
+        }
+    )
+end
+
 local function quitgame()
     send_request("quitgame")
 end
@@ -285,11 +295,24 @@ function RESPONSE:mapready(args)
     moveto()
 end
 
+local bchangemap = false
 function RESPONSE:moveto(args)
     print("moveto:")
     print(args.pos)
+    if not bchangemap then
+        changemap()
+    end
     -- moveto()
     -- quitgame()
+end
+
+function RESPONSE:changemap(args)
+    print("changemap:")
+    print(args.ok)
+    if args.ok then
+        bchangemap = true
+        mapready()
+    end
 end
 
 function RESPONSE:quitgame(args)
@@ -312,7 +335,7 @@ function REQUEST.subid(args)
     -- 通过确认信息获取subid
     subid = crypt.base64decode(string.sub(result, 5))
 
-    print("login ok, subid="..subid)
+    print("login ok, subid=" .. subid)
     gateip = args.gateip
     gateport = args.gateport
     login()
