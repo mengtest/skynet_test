@@ -84,6 +84,24 @@ local function init_method(player)
         return self.playerinfo.level
     end
 
+    -- 获取账号
+    function player:getuid()
+        assert(self.playerinfo)
+        return self.playerinfo.uid
+    end
+
+    -- 获取创建时间
+    function player:getcreatetime()
+        assert(self.playerinfo)
+        return self.playerinfo.createtime
+    end
+    
+    -- 获取登陆时间
+    function player:getlogintime()
+        assert(self.playerinfo)
+        return self.playerinfo.logintime
+    end
+
     -- 设置角色信息
     function player:setobjinfo(info)
         assert(info)
@@ -98,6 +116,11 @@ local function init_method(player)
     -- 设置玩家数据
     function player:setdata(data)
         self.data = data
+    end
+
+    function player:getdata()
+        assert(self.data)
+        return self.data
     end
 
     -- 获取玩家指定类型的数据

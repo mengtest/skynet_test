@@ -69,7 +69,7 @@ local function create(name, job, sex)
         x = 0,
         y = 0,
         z = 0,
-        data = {}
+        data = packer.pack({})
     }
 
     return character
@@ -101,7 +101,7 @@ function REQUEST.charactercreate(args)
         }
     end
     local character = create(args.name, args.job, args.sex)
-    if _handler.save(character) then
+    if skynet.call(dbmgr, "lua", "playerdate", "create", character) then
         user.characterlist[character.uuid] = true
         log.debug("%s create character succ!", user.uid)
     else
@@ -138,7 +138,10 @@ local function initUserData(dbdata)
         job = dbdata.job,
         sex = dbdata.sex,
         level = dbdata.level,
-        uuid = dbdata.uuid
+        uuid = dbdata.uuid,
+        uid = dbdata.uid,
+        createtime = dbdata.createtime,
+        logintime = dbdata.logintime
     }
     user.character:setobjinfo(playerinfo)
     user.character:setdata(dbdata.data)
@@ -167,7 +170,7 @@ function REQUEST.characterpick(args)
                 aoi_handler:register(user)
                 move_handler:register(user)
                 log.debug("enter map and set tempid:" .. user.character:gettempid())
-                --_handler:unregister(user)
+                _handler:unregister(user)
             else
                 log.debug("player enter map failed:" .. user.character:getmapid())
             end
@@ -182,16 +185,6 @@ function REQUEST.characterpick(args)
             ok = ret
         }
     end
-end
-
--- 保存角色信息
-function _handler.save(character)
-    if not character then
-        log.debug("save character failed,not character.")
-        return
-    end
-    character.data = packer.pack(character.data)
-    return skynet.call(dbmgr, "lua", "playerdate", "save", character)
 end
 
 return _handler

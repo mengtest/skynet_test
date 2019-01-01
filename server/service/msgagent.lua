@@ -2,6 +2,7 @@ local skynet = require "skynet"
 local queue = require "skynet.queue"
 local log = require "syslog"
 local msgsender = require "msgsender"
+local packer = require "db.packer"
 local testhandler = require "agent.testhandler"
 local character_handler = require "agent.character_handler"
 local map_handler = require "agent.map_handler"
@@ -14,6 +15,7 @@ local CMD = {}
 
 local user
 local host
+local dbmgr
 
 -- 当请求退出和被T出的时候
 -- 因为请求消息在requestqueue，而被T的消息在luaqueue中
@@ -36,7 +38,7 @@ local function logout(type)
             move_handler:unregister(user)
         end
     end
-    --character_handler.save(user.character)
+    CMD.save()
     testhandler:unregister(user)
     character_handler:unregister(user)
     skynet.send(gate, "lua", "logout", user.uid, user.subid, skynet.self())
@@ -98,6 +100,32 @@ skynet.register_protocol {
     end
 }
 
+-- 保存角色信息
+function CMD.save()
+    assert(user)
+    local character = user.character
+    if not character then
+        log.debug("save character failed,not character.")
+        return
+    end
+
+    local pos = character:getpos()
+    local savedata = {
+        uid = character:getuid(),
+        name = character:getname(),
+        job = character:getjob(),
+        sex = character:getsex(),
+        uuid = character:getuuid(),
+        level = character:getlevel(),
+        mapid = character:getmapid(),
+        x = pos.x,
+        y = pos.y,
+        z = pos.z,
+        data = packer.pack(character:getdata())
+    }
+    return skynet.call(dbmgr, "lua", "playerdate", "save", savedata)
+end
+
 -- gate 通知 agent 有玩家正在认证
 function CMD.login(source, uid, sid, secret, fd)
     -- you may use secret to make a encrypted data stream
@@ -110,6 +138,7 @@ function CMD.login(source, uid, sid, secret, fd)
         CMD = CMD,
         sendrequest = sendrequest
     }
+    dbmgr = skynet.uniqueservice("dbmgr")
 end
 
 -- gate 通知 agent 认证成功

@@ -27,6 +27,11 @@ end
 
 -- 保存角色信息
 function playerdate.save(character)
+    return dbmgrcmd.update("playerdate", character)
+end
+
+-- 创建角色信息
+function playerdate.create(character)
     return dbmgrcmd.add("playerdate", character, true)
 end
 

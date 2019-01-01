@@ -438,6 +438,7 @@ end
 
 -- ！！这边的add、update都会导致uid这个字段跟着更新...可能需要调整一下
 -- redis中增加一行记录，默认同步到mysql
+-- 表名，列名，立刻同步到数据库，不同步到数据库
 function CMD.add(tbname, row, immed, nosync)
     local config = dbtableconfig[tbname]
     local uid = row.uid
@@ -459,7 +460,7 @@ function CMD.add(tbname, row, immed, nosync)
             {
                 "zadd",
                 tbname .. ":index:" .. linkey,
-                0,
+                row[indexkey],
                 rediskey
             },
             uid
@@ -490,6 +491,7 @@ function CMD.add(tbname, row, immed, nosync)
 end
 
 -- redis中更新一行记录，并同步到mysql
+-- 表名，列名，不同步到数据库
 function CMD.update(tbname, row, nosync)
     local config = dbtableconfig[tbname]
     local uid = row.uid
