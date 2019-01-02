@@ -221,11 +221,15 @@ function CMD.load_data_impl(config, uid)
             -- 对需要排序的数据插入有序集合
             if config.indexkey then
                 local indexkey = make_rediskey(row, config.indexkey)
+                local indexvalue = 0
+                if config.indexvalue then
+                    indexvalue = row[config.indexvalue]
+                end
                 do_redis(
                     {
                         "zadd",
                         tbname .. ":index:" .. indexkey,
-                        0,
+                        indexvalue,
                         rediskey
                     },
                     uid
@@ -443,7 +447,6 @@ function CMD.add(tbname, row, immed, nosync)
     local config = dbtableconfig[tbname]
     local uid = row.uid
     local key = config.rediskey
-    local indexkey = config.indexkey
 
     local rediskey = make_rediskey(row, key)
     do_redis(
@@ -454,13 +457,17 @@ function CMD.add(tbname, row, immed, nosync)
         },
         uid
     )
-    if indexkey then
-        local linkey = make_rediskey(row, indexkey)
+    if config.indexkey then
+        local linkey = make_rediskey(row, config.indexkey)
+        local indexvalue = 0
+        if config.indexvalue then
+            indexvalue = row[config.indexvalue]
+        end
         do_redis(
             {
                 "zadd",
                 tbname .. ":index:" .. linkey,
-                row[indexkey],
+                indexvalue,
                 rediskey
             },
             uid
@@ -496,7 +503,6 @@ function CMD.update(tbname, row, nosync)
     local config = dbtableconfig[tbname]
     local uid = row.uid
     local key = config.rediskey
-    local indexkey = config.indexkey
 
     local rediskey = make_rediskey(row, key)
     do_redis(
@@ -507,13 +513,17 @@ function CMD.update(tbname, row, nosync)
         },
         uid
     )
-    if indexkey then
-        local linkey = make_rediskey(row, indexkey)
+    if config.indexkey then
+        local linkey = make_rediskey(row, config.indexkey)
+        local indexvalue = 0
+        if config.indexvalue then
+            indexvalue = row[config.indexvalue]
+        end
         do_redis(
             {
                 "zadd",
                 tbname .. ":index:" .. linkey,
-                row[indexkey],
+                indexvalue,
                 rediskey
             },
             uid

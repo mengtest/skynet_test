@@ -1,8 +1,9 @@
 local conf = {}
 
--- DB的table表名，和对应的rediskey
--- 如需插入到有序集合中，还需要有indexkey,indexkey对应的值类型必须为数字类型
--- 为nil的可以不用填写，这边第一个作为示例
+-- rediskey 用于生产单条redis数据的key
+-- indexkey 用于生产redis集合数据的key
+-- indexvalue 用于集合排序的值
+-- columns 数据表字段
 conf["account"] = {
     rediskey = "uid",
     indexkey = nil,
@@ -11,7 +12,8 @@ conf["account"] = {
 
 conf["playerdate"] = {
     rediskey = "uuid",
-    indexkey = "uuid"
+    indexkey = "uid",
+    indexvalue = nil
 }
 
 for k, v in pairs(conf) do
