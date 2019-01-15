@@ -45,7 +45,7 @@ $(CSERVICE_PATH)/caoi.so : service_aoi.c aoi.c
 	@echo "	$@"
 	@$(CC) $(CFLAGS) $(SHARED) $^ -o $@
 
-$(CSERVICE_PATH)/syslog.so : service_syslog.c
+$(CSERVICE_PATH)/%.so : service_%.c
 	@echo "	$@"
 	@$(CC) $(CFLAGS) $(SHARED) $^ -o $@
 

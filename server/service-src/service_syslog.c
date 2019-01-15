@@ -2,10 +2,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
 #include <stdbool.h>
+#include <dirent.h>
 
 #define ONE_MB	(1024 * 1024)
 #define DEFAULT_ROLL_SIZE (1024 * ONE_MB)  // 单个文件大小大于xGB的时候新建log文件
@@ -47,15 +49,42 @@ syslog_release(struct logger * inst) {
 
 void
 genfilename(struct logger * inst, time_t now) {
-	char filename[64];
+	char filename[64] = {0};
+	char dirname[32] = {0};
 	struct tm tm;
 	localtime_r(&now, &tm);
-	sprintf(filename, "%d-%d-%d:%d_%d.log", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, inst->index);
+	sprintf(dirname, "%s/%d-%d-%d", inst->pathname, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+	
+	// 检查文件夹是否存在，如果不存在则创建
+	DIR* dir;
+	dir = opendir(dirname);
+	if (dir == NULL)
+	{
+		int saved_errno = errno;
+		if (saved_errno == ENOENT)
+		{
+			if (mkdir(dirname, 0755) == -1)
+			{
+				saved_errno = errno;
+				fprintf(stderr, "mkdir error: %s\n", strerror(saved_errno));
+				exit(EXIT_FAILURE);
+			}
+		}
+		else
+		{
+			fprintf(stderr, "opendir error: %s\n", strerror(saved_errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+		closedir(dir);
+
+	sprintf(filename, "%d-%d-%d-%d_%d.log", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, inst->index);
 
 	if(inst->filename != NULL)
 		skynet_free(inst->filename);
-	inst->filename = skynet_malloc(strlen(inst->pathname)+strlen(filename)+1);
-	sprintf(inst->filename, "%s/%s", inst->pathname, filename);
+	inst->filename = skynet_malloc(strlen(dirname)+strlen(filename)+1);
+	sprintf(inst->filename, "%s/%s", dirname, filename);
 }
 
 bool
@@ -91,24 +120,24 @@ syslog_cb(struct skynet_context * context, void *ud, int type, int session, uint
 		}
 		break;
 	case PTYPE_TEXT:
-        {
-            struct tm tm;
-            time_t now = time(NULL);
-			if(trycreatenewlogfile(inst,now))
+		{
+			struct tm tm;
+			time_t now = time(NULL);
+			if(trycreatenewlogfile(inst, now))
 			{
 				fclose(inst->handle);
-				inst->handle = fopen(inst->filename,"w");
+				inst->handle = fopen(inst->filename,"a");
 				if (inst->handle == NULL) {
 					skynet_error(context, "create log file fail![%s]\n", inst->filename);
 				}
 			}
-            localtime_r(&now, &tm);
-            fprintf(inst->handle, "[%d/%02d/%02d-%02d:%02d:%02d][:%08x] ", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, source);
-            fwrite(msg, sz , 1, inst->handle);
-            fprintf(inst->handle, "\n");
-            inst->filesize += fflush(inst->handle);
-        }
-        break;
+			localtime_r(&now, &tm);
+			fprintf(inst->handle, "[%d-%02d-%02d %02d:%02d:%02d][:%08x] ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, source);
+			fwrite(msg, sz , 1, inst->handle);
+			fprintf(inst->handle, "\n");
+			inst->filesize += fflush(inst->handle);
+		}
+		break;
 	}
 
 	return 0;
@@ -120,7 +149,7 @@ syslog_init(struct logger * inst, struct skynet_context *ctx, const char * parm)
 		inst->pathname = skynet_malloc(strlen(parm)+1);
 		strcpy(inst->pathname, parm);
 		trycreatenewlogfile(inst, time(NULL));
-		inst->handle = fopen(inst->filename,"w");
+		inst->handle = fopen(inst->filename,"a");
 		if (inst->handle == NULL) {
 			skynet_free(inst->filename);
 			skynet_free(inst->pathname);
