@@ -10,7 +10,7 @@ do
 			export DAEMON=true
 			;;
 		k)
-			kill `cat $ROOT/server-game/run/skynet.pid`
+			kill `cat $ROOT/server-game1/run/skynet.pid`
 			exit 0;
 			;;
 	esac
