@@ -160,8 +160,9 @@ function REQUEST.characterpick(args)
         user.characterlist = nil
         initUserData(list)
         local mapaddress = skynet.call(mapmgr, "lua", "getmapaddressbyid", user.character:getmapid())
+        local tempid
         if mapaddress ~= nil then
-            local tempid = skynet.call(mapaddress, "lua", "gettempid")
+            tempid = skynet.call(mapaddress, "lua", "gettempid")
             if tempid > 0 then
                 user.character:setaoimode("w")
                 user.character:setmapaddress(mapaddress)
@@ -178,7 +179,8 @@ function REQUEST.characterpick(args)
             log.debug("player get map address failed:" .. user.character:getmapid())
         end
         return {
-            ok = ret
+            ok = ret,
+            tempid = tempid
         }
     else
         return {

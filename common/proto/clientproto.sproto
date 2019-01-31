@@ -95,6 +95,7 @@ characterpick 8{
 	}
 	response {
 		ok 0 : boolean
+        tempid 1 : integer
 	}
 }
 
@@ -125,6 +126,7 @@ changemap 12{
 	}
 	response {
 		ok 0 : boolean
+        tempid 1 : integer
 	}
 }
 

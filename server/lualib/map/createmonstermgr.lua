@@ -8,7 +8,7 @@ local monsterlist
 function createmonstermgr.createmonster()
     if monsterlist ~= nil then
         for _, v in pairs(monsterlist) do
-            monstermgr.createmonster(v.id, v.x, v.y, v.z)
+            --monstermgr.createmonster(v.id, v.x, v.y, v.z)
         end
     end
 end

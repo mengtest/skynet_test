@@ -31,6 +31,8 @@ user这边有可能会出现nil的情况，应该是用户下线的时候，清�
 
 改用mongodb --2018.12.19
 
+log日志分割--logrotate
+
 warning:
 
 玩家数据保存需要处理一下

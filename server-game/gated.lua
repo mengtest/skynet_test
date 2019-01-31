@@ -128,7 +128,7 @@ function server.register_handler(conf)
     end
     log.notice("create %d agent", n)
 
-    instancemgr = skynet.uniqueservice("instancemgr")
+    local instancemgr = skynet.uniqueservice("instancemgr")
     skynet.call(instancemgr, "lua", "open", n)
 end
 

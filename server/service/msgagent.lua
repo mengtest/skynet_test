@@ -160,17 +160,6 @@ function CMD.logout(_)
     logout(0)
 end
 
-function CMD.logout(_)
-    -- 下线
-    -- NOTICE: The logout MAY be reentry
-    logout(0)
-end
-
-function CMD.afk(_)
-    -- the connection is broken, but the user may back
-    log.notice("%s AFK", user.uid)
-end
-
 function CMD.afk(_)
     -- the connection is broken, but the user may back
     log.notice("%s AFK", user.uid)
@@ -211,7 +200,6 @@ end
 skynet.start(
     function()
         -- If you want to fork a work thread , you MUST do it in CMD.login
-        -- 加载proto
         skynet.dispatch(
             "lua",
             function(_, source, command, ...)

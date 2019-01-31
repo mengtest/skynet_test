@@ -34,19 +34,20 @@ end
 function REQUEST.changemap(args)
     assert(args.mapid)
     local ok = false
+    local tempid
     if args.mapid ~= user.character:getmapid() then
         mapmgr = mapmgr or skynet.uniqueservice("mapmgr")
         local mapaddress = skynet.call(mapmgr, "lua", "getmapaddressbyid", args.mapid)
         if mapaddress ~= nil then
             user.character:setaoimode("w")
-            local tempid = skynet.call(mapaddress, "lua", "gettempid")
+            tempid = skynet.call(mapaddress, "lua", "gettempid")
             if tempid > 0 then
                 skynet.send(user.character:getmapaddress(), "lua", "characterleave", user.character:getaoiobj())
                 user.character:setmapaddress(mapaddress)
                 user.character:settempid(tempid)
                 user.character:setmapid(args.mapid)
                 ok = true
-                log.debug("change map and set tempid:" .. user.character:getmapid())
+                log.debug("change map and set tempid:" .. user.character:gettempid())
             else
                 log.debug("player change map failed:" .. args.mapid)
             end
@@ -55,7 +56,8 @@ function REQUEST.changemap(args)
         end
     end
     return {
-        ok = ok
+        ok = ok,
+        tempid = tempid
     }
 end
 
