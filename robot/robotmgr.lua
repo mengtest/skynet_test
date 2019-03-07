@@ -6,7 +6,7 @@ local robot = {}
 
 function CMD.init(index, count, server, ip, port)
     for i = 1, count do
-        table.insert(robot, r.create(index, server, ip, port, index * count + i))
+        table.insert(robot, r.create(index%10, server, ip, port, index * count + i))
     end
 end
 

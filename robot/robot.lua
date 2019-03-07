@@ -47,14 +47,26 @@ local function init_method(robot)
             if result then
                 return result, last
             end
-            local r = socket.read(fd)
-            if not r then
-                return nil, last
-            end
-            if r == "" then
+            local ok, r = socket.read(fd,2)
+            if not ok then
                 error "Server closed"
             end
-            return f(last .. r)
+            if not ok then
+                return nil, last..r
+            end
+            
+            last = last .. ok
+            local s = ok:byte(1) * 256 + ok:byte(2)
+
+            ok, r = socket.read(fd,s)
+            if not ok then
+                error "Server closed"
+            end
+            if not ok then
+                return nil, last..r
+            end
+            
+            return f(last .. ok)
         end
 
         -- 每秒尝试接受来自服务器的消息
@@ -65,7 +77,7 @@ local function init_method(robot)
                 if result then
                     return result
                 end
-                skynet.sleep(10)
+                skynet.sleep(1)
             end
         end
     end
@@ -109,7 +121,7 @@ local function init_method(robot)
             }
         )
 
-        self.dispatchmessage_thread = util.fork(10, self.dispatch_message, self)
+        self.dispatchmessage_thread = util.fork(self.dispatch_message, self)
     end
     function robot:close()
         self.dispatchmessage_thread()

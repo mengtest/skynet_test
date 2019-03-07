@@ -16,11 +16,10 @@ function util.settimeout(ti, f)
     end
 end
 
-function util.fork(ti, f,...)
+function util.fork(f,...)
     local function t(...)
         while f do
             f(...)
-            skynet.sleep(ti)
         end
     end
     skynet.fork(t, ...)
