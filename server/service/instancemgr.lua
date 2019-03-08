@@ -24,11 +24,11 @@ function CMD.releaseinstance(instance)
 end
 
 function CMD.open(n)
-    for _ = 1, n do
-        local instance = skynet.newservice("map")
-        skynet.call(instance, "lua", "open", {maxtempid = 65535})
-        table.insert(instancepool, instance)
-    end
+    --for _ = 1, n do
+    --    local instance = skynet.newservice("map")
+    --    skynet.call(instance, "lua", "open", {maxtempid = 65535})
+    --    table.insert(instancepool, instance)
+    --end
 end
 
 function CMD.close()

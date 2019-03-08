@@ -16,14 +16,17 @@ skynet.start(
         local totalmgr = 10
         local robotcount = 200
         local robotmgr = {}
+        -- 启动N个服务
         for _ = 1, totalmgr do
             table.insert(robotmgr, skynet.newservice("robotmgr"))
         end
 
+        --每个服务生成N个机器人
         for k, v in pairs(robotmgr) do
-            skynet.call(v, "lua", "init", k - 1, robotcount, "game1", "127.0.0.1", 8101)
+            skynet.call(v, "lua", "init", k - 1, robotcount, "game1", "192.168.0.191", 8101)
         end
 
+        --机器人Run
         for _, v in pairs(robotmgr) do
             skynet.call(v, "lua", "start")
         end

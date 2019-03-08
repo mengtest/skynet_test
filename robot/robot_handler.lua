@@ -177,7 +177,7 @@ function RESPONSE:getcharacterlist(args)
         end
         if not bpick then
             for k, v in pairs(args.character) do
-                log.err(self.name.." "..v.name)
+                log.err("getcharacterlist size > 1:"..self.name.." "..v.name)
             end
             
             --charactercreate(self)
@@ -205,10 +205,9 @@ function RESPONSE:mapready(args)
     moveto(self, pos)
 end
 
-local bchangemap = false
 function RESPONSE:moveto(args)
     --log.err("moveto:")
-    if not bchangemap then
+    if not self.bchangemap then
         changemap(self)
     else
         local pos = args.pos
@@ -245,10 +244,9 @@ function RESPONSE:moveto(args)
 end
 
 function RESPONSE:changemap(args)
-    log.err("changemap:")
-    bchangemap = true
+    self.bchangemap = true
     if args.ok then
-        log.debug("changemap:" .. args.tempid)
+        log.debug("changemap succ:" .. args.tempid)
         mapready(self)
     else
         local pos = {

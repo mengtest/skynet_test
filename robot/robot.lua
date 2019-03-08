@@ -158,7 +158,8 @@ function _robot.create(mapid, server, ip, port, robotindex)
         host = nil,
         request = nil,
         index = 1,
-        mapid = mapid + 1
+        mapid = mapid + 1,
+        bchangemap = false,
     }
     obj = setmetatable(obj, s_method)
 
