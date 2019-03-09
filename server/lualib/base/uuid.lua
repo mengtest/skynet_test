@@ -10,7 +10,7 @@ local service
 local sequence
 function uuid.gen()
     if not service then
-        local sid = skynet.self() --core.sid() or error("init uuid failed")
+        local sid = core.sid() or error("init uuid failed")
         local harbor = skynet.harbor(skynet.self())
         service = ((harbor & 0x3f) << 25) | ((sid & 0xffff) << 10)
     end
